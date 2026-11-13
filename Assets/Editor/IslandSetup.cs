@@ -169,6 +169,44 @@ public static class IslandSetup
         return z > 28f ? Zone.Forest : Zone.Meadow;
     }
 
+    /// <summary>
+    /// 지도(MapBake)용 색. 세계 좌표 (x, z)가 바다인지, 모래사장, 풀밭, 숲, 꽃 언덕인지에 따라 칠하고
+    /// 높이에 따라 살짝 밝고 어둡게 한다. 길은 그리지 않는다. 지형과 같은 계산을 쓰므로 섬을 다시 만들지 않아도 된다.
+    /// </summary>
+    public static Color MapColorAt(float x, float z)
+    {
+        float h = HeightAt(x, z);
+        if (h < 0.4f)
+        {
+            float depth = Mathf.Clamp01(-h / 6f); // 먼 바다일수록 짙게
+            return Color.Lerp(new Color(0.55f, 0.82f, 0.90f), new Color(0.30f, 0.56f, 0.76f), depth);
+        }
+
+        // 구역 경계가 칼로 자른 듯하지 않게, 구역마다 가중치를 주어 부드럽게 섞는다
+        Vector2 p = new Vector2(x, z);
+        float forestW = Smooth(22f, 34f, z) * Smooth(34f, 44f, Vector2.Distance(p, HutPlateau)); // 북쪽은 숲, 오두막 언덕은 초원
+        float hillW = 1f - Smooth(FlowerHillRadius - 3f, FlowerHillRadius + 3f, Vector2.Distance(p, FlowerHill));
+        float beachW = (h < 3.6f ? 1f : 0f) * (1f - hillW); // 모래사장 경계는 땅이 완만해서 높이로 섞으면 번지므로 또렷하게
+
+        Color c = Color.Lerp(new Color(0.60f, 0.80f, 0.42f), new Color(0.36f, 0.62f, 0.34f), forestW);
+        c = Color.Lerp(c, new Color(0.82f, 0.85f, 0.52f), hillW);
+        c = Shade(c, h);
+
+        // 물가는 하얗게, 나머지 모래사장은 모래색
+        Color sand = Color.Lerp(new Color(0.97f, 0.90f, 0.66f), new Color(1f, 0.98f, 0.9f), 1f - Smooth(0.4f, 0.9f, h));
+        c = Color.Lerp(c, sand, beachW);
+
+        // 아주 은은한 얼룩 (단색이라 밋밋해 보이지 않게)
+        float n = Mathf.PerlinNoise(x * 0.05f + 300f, z * 0.05f + 300f) * 0.08f - 0.04f;
+        return new Color(Mathf.Clamp01(c.r + n), Mathf.Clamp01(c.g + n), Mathf.Clamp01(c.b + n), 1f);
+    }
+
+    private static Color Shade(Color c, float h)
+    {
+        float k = 0.9f + 0.2f * Mathf.Clamp01(h / 22f); // 높은 곳이 조금 더 밝다
+        return new Color(c.r * k, c.g * k, c.b * k, 1f);
+    }
+
     private static Terrain BuildTerrain(Transform parent)
     {
         Directory.CreateDirectory(TerrainFolder);
