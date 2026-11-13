@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -30,12 +30,8 @@ public static class IslandSetup
     private const float FlowerHillRadius = 45f;
     private static readonly Vector3 HutPosition = new Vector3(0f, 0f, 14f); // y는 지형에서 읽는다
 
-    private static readonly Vector2[][] Paths =
-    {
-        new[] { new Vector2(0f, 6f), new Vector2(0f, -28f), new Vector2(-6f, -68f), new Vector2(-4f, -112f) },       // 바닷가로
-        new[] { new Vector2(0f, 28f), new Vector2(5f, 55f), new Vector2(-8f, 85f), new Vector2(-18f, 115f) },        // 작은 숲으로
-        new[] { new Vector2(12f, 8f), new Vector2(34f, 28f), new Vector2(62f, 52f), new Vector2(82f, 74f) },         // 꽃 언덕으로
-    };
+    // 길은 없다. (예전에는 바닷가, 작은 숲, 꽃 언덕으로 가는 흙길이 있었지만 지웠다. 비어 있으면 길 때문에 비워 두는 자리도 없다)
+    private static readonly Vector2[][] Paths = new Vector2[0][];
 
     private const string RootName = "IslandContent";
     private const string IslandPath = "Assets/Scenes/Island.unity";
@@ -183,9 +179,12 @@ public static class IslandSetup
         }
 
         // 구역 경계가 칼로 자른 듯하지 않게, 구역마다 가중치를 주어 부드럽게 섞는다
+        // 경계가 자로 잰 듯하지 않게 노이즈로 구불구불하게 흔든다
+        float wob = (Mathf.PerlinNoise(x * 0.035f + 40f, z * 0.035f + 40f) - 0.5f) * 26f;
+        float wob2 = (Mathf.PerlinNoise(x * 0.06f + 80f, z * 0.06f + 80f) - 0.5f) * 8f;
         Vector2 p = new Vector2(x, z);
-        float forestW = Smooth(22f, 34f, z) * Smooth(34f, 44f, Vector2.Distance(p, HutPlateau)); // 북쪽은 숲, 오두막 언덕은 초원
-        float hillW = 1f - Smooth(FlowerHillRadius - 3f, FlowerHillRadius + 3f, Vector2.Distance(p, FlowerHill));
+        float forestW = Smooth(22f, 34f, z + wob + wob2) * Smooth(34f, 44f, Vector2.Distance(p, HutPlateau) + wob * 0.5f); // 북쪽은 숲, 오두막 언덕은 초원
+        float hillW = 1f - Smooth(FlowerHillRadius - 3f, FlowerHillRadius + 3f, Vector2.Distance(p, FlowerHill) + wob * 0.35f);
         float beachW = (h < 3.6f ? 1f : 0f) * (1f - hillW); // 모래사장 경계는 땅이 완만해서 높이로 섞으면 번지므로 또렷하게
 
         Color c = Color.Lerp(new Color(0.60f, 0.80f, 0.42f), new Color(0.36f, 0.62f, 0.34f), forestW);
@@ -199,6 +198,15 @@ public static class IslandSetup
         // 아주 은은한 얼룩 (단색이라 밋밋해 보이지 않게)
         float n = Mathf.PerlinNoise(x * 0.05f + 300f, z * 0.05f + 300f) * 0.08f - 0.04f;
         return new Color(Mathf.Clamp01(c.r + n), Mathf.Clamp01(c.g + n), Mathf.Clamp01(c.b + n), 1f);
+    }
+
+    /// <summary>꽃 언덕의 가운데 (지도에 꽃을 흩뿌릴 때 쓴다)</summary>
+    public static Vector2 MapFlowerHill => FlowerHill;
+
+    /// <summary>지도용 땅 높이 (지도에 음영을 줄 때 쓴다)</summary>
+    public static float MapHeightAt(float x, float z)
+    {
+        return HeightAt(x, z);
     }
 
     private static Color Shade(Color c, float h)
@@ -443,33 +451,70 @@ public static class IslandSetup
         // Low Poly Tree Mega Pack에서 모양이 좋은 것만 골랐다 (번호는 팩의 프리팹 번호)
         string[] pines = { "Pine 1", "Pine 10", "Pine 20", "Pine 30", "Pine 40", "Pine 50", "Pine 60", "Pine 70", "Pine 90", "Pine 110", "Pine 170" };
         string[] woods = { "BasicTree 40", "BasicTree 50", "BasicTree 60", "BasicTree 70", "BasicTree 90", "BasicTree 150", "BasicTree 210", "BasicTree 270", "BasicTree 330", "BasicTree 450" };
-        string[] forest = pines.Concat(new[] { "BasicTree 40", "BasicTree 50", "BasicTree 60", "BasicTree 90", "BasicTree 150" }).ToArray(); // 숲: 소나무가 많고 활엽수가 섞인다
-        string[] meadow = woods;
-        string[] hill = { "BasicTree 40", "BasicTree 50", "BasicTree 60", "BasicTree 70", "BasicTree 90", "BasicTree 270" };
-        string[] palm = { "Palm 20", "Palm 30", "Palm 50", "Palm 60", "Palm 90", "Palm 110", "Palm 130", "Palm 170" };
+        string[] hillWoods = { "BasicTree 40", "BasicTree 50", "BasicTree 60", "BasicTree 70", "BasicTree 90", "BasicTree 270" };
+        string[] palms = { "Palm 20", "Palm 30", "Palm 50", "Palm 60", "Palm 90", "Palm 110", "Palm 130", "Palm 170" };
 
-        Grid(10f, (x, z, h, zone) =>
+        // 나무를 자연스럽게 놓는 규칙
+        // 1) 숲은 덩어리(grove)로 모여 있고 그 사이에 빈터가 있다. (느린 노이즈로 덩어리를 정한다)
+        // 2) 숲 덩어리마다 소나무 숲 또는 활엽수 숲으로 나뉜다. (다른 노이즈) 섞이는 나무는 조금만.
+        // 3) 나무끼리 겹치지 않는다. (잎 반지름 기준으로 간격을 잰다)
+        // 4) 숲 가장자리의 나무는 조금 작다.
+        // 5) 야자수는 해변에 몇 그루씩 모여 선다.
+        const float PineRadius = 2.6f, WoodRadius = 3.2f, PalmRadius = 2.8f;
+        var placed = new List<KeyValuePair<Vector2, float>>(); // (자리, 잎 반지름)
+        System.Func<Vector2, float, bool> isFree = (p, r) =>
         {
-            float path = DistanceToPaths(x, z);
-            if (path < 5f) return;
-            string[] pool; float prob;
+            foreach (KeyValuePair<Vector2, float> q in placed)
+                if (Vector2.Distance(p, q.Key) < (r + q.Value) * 0.85f) return false;
+            return true;
+        };
+
+        Grid(4.5f, (x, z, h, zone) =>
+        {
+            Vector2 pos = new Vector2(x, z);
+            float grove = Mathf.PerlinNoise(x * 0.030f + 500f, z * 0.030f + 500f); // 숲 덩어리
+            float kind = Mathf.PerlinNoise(x * 0.022f + 900f, z * 0.022f + 900f);  // 소나무 숲인가 활엽수 숲인가
+            string name; float density;
+
             switch (zone)
             {
-                case Zone.Forest: pool = forest; prob = 0.7f; break;
-                case Zone.Meadow: pool = meadow; prob = 0.12f; if (Vector2.Distance(new Vector2(x, z), HutPlateau) < 48f) return; break;
-                case Zone.Hill: pool = hill; prob = 0.05f; break;
-                case Zone.Beach: pool = palm; prob = (h > 1.4f && h < 3.4f) ? 0.2f : 0f; break;
+                case Zone.Forest:
+                    if (Vector2.Distance(pos, HutPlateau) < 44f) return; // 오두막 주변은 트이게
+                    density = Smooth(0.32f, 0.52f, grove) * 1.0f;
+                    bool pineGrove = kind > 0.5f;
+                    name = Rand() < (pineGrove ? 0.9f : 0.1f) ? pines[rng.Next(pines.Length)] : woods[rng.Next(woods.Length)];
+                    break;
+                case Zone.Meadow:
+                    if (Vector2.Distance(pos, HutPlateau) < 48f) return;
+                    density = Smooth(0.56f, 0.74f, grove) * 0.5f;
+                    name = woods[rng.Next(woods.Length)];
+                    break;
+                case Zone.Hill:
+                    density = Smooth(0.62f, 0.80f, grove) * 0.3f;
+                    name = hillWoods[rng.Next(hillWoods.Length)];
+                    break;
+                case Zone.Beach:
+                    if (h < 1.4f || h > 3.4f) return;
+                    density = Smooth(0.5f, 0.7f, Mathf.PerlinNoise(x * 0.05f + 300f, z * 0.05f + 300f)) * 0.55f; // 몇 그루씩 모여서
+                    name = palms[rng.Next(palms.Length)];
+                    break;
                 default: return;
             }
-            if (zone == Zone.Forest && Vector2.Distance(new Vector2(x, z), HutPlateau) < 44f) return; // 오두막 주변은 트이게
-            if (Rand() > prob) return;
-            string name = pool[rng.Next(pool.Length)];
-            // 소나무는 원래 키가 커서(7~12m) 조금 줄이고, 활엽수와 야자는 비슷하게 키운다
-            float scale = name.StartsWith("Pine ") ? Range(0.8f, 1.1f) : zone == Zone.Beach ? Range(0.9f, 1.2f) : Range(0.9f, 1.3f);
+            if (Rand() > density) return;
+
+            bool isPine = name.StartsWith("Pine ");
+            bool isPalm = name.StartsWith("Palm ");
+            float radius = isPine ? PineRadius : isPalm ? PalmRadius : WoodRadius;
+            // 소나무는 원래 키가 커서(7~12m) 조금 줄이고, 활엽수와 야자는 비슷하게 키운다. 숲 가장자리는 조금 작게.
+            float edge = Mathf.Lerp(0.8f, 1.05f, Smooth(0.4f, 0.7f, grove));
+            float scale = (isPine ? Range(0.8f, 1.1f) : isPalm ? Range(0.9f, 1.2f) : Range(0.9f, 1.3f)) * edge;
+            if (!isFree(pos, radius * scale)) return;
+
             GameObject go = Spawn(group.transform, "Trees", name, x, z, scale);
             if (go == null) return;
             AddTrunkCollider(go, scale);
             AddHarvestable(go, AcquireMethod.Axe, zone);
+            placed.Add(new KeyValuePair<Vector2, float>(pos, radius * scale));
             count++;
         });
         return count;
