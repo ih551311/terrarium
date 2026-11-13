@@ -20,6 +20,24 @@ public static class GameState
     /// <summary>1일째부터 시작한다.</summary>
     public static int Day { get; private set; } = 1;
 
+    /// <summary>하루의 길이(초). 실제 시간으로 약 10분이다. (기획서 6.4)</summary>
+    public const float DayLengthSeconds = 600f;
+
+    /// <summary>하루 중의 시간. 0이 아침, 1이 밤 끝이다. 밤에서 멈추고, 침대에서 자야 다음 날 아침(0)이 된다.</summary>
+    public static float TimeOfDay { get; private set; }
+
+    /// <summary>시간을 흘려보낸다. (GameRoot가 매 프레임 부른다) 밤 끝(1)에서 멈춘다.</summary>
+    public static void Tick(float deltaSeconds)
+    {
+        TimeOfDay = Mathf.Min(1f, TimeOfDay + deltaSeconds / DayLengthSeconds);
+    }
+
+    /// <summary>시간을 직접 정한다. (시험용)</summary>
+    public static void SetTimeOfDay(float t)
+    {
+        TimeOfDay = Mathf.Clamp01(t);
+    }
+
     /// <summary>도끼의 강화 단계 (0이 기본, 3이 최대). 강화 주문은 13단계에서 붙인다.</summary>
     public static int AxeLevel { get; private set; }
 
@@ -107,6 +125,7 @@ public static class GameState
         Day++;
 
         taken.Clear(); // 주운 자리와 캔 자리가 다시 채워진다
+        TimeOfDay = 0f; // 아침이 된다
         DayStarted?.Invoke();
         Changed?.Invoke();
         return anything;
@@ -178,6 +197,7 @@ public static class GameState
         orders.Clear();
         arrivedItems.Clear();
         taken.Clear();
+        TimeOfDay = 0f;
         AxeLevel = 0;
         PickaxeLevel = 0;
         DayStarted = null;

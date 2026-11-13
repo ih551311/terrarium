@@ -39,6 +39,12 @@ public class GameRoot : MonoBehaviour
         if (player != null) SaveSystem.ApplyBag(player.GetComponent<Bag>());
     }
 
+    private void Update()
+    {
+        // 하루의 시간이 흐른다 (집 안에서도 흐르고, 밤 끝에서 멈춘다)
+        GameState.Tick(Time.deltaTime);
+    }
+
     private void OnDestroy()
     {
         if (Instance != this) return;
