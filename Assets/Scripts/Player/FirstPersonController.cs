@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// 1인칭 걷기와 마우스 둘러보기.
-/// 달리기와 점프는 기획서에 따라 넣지 않았다.
+/// 1인칭 걷기, 왼쪽 Shift 달리기, 마우스 둘러보기.
+/// 점프는 기획서에 따라 넣지 않았다. (달리기는 섬이 넓어서 사용자 요청으로 넣었다)
 /// Player 오브젝트(CharacterController 포함)에 붙인다.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
@@ -15,6 +15,8 @@ public class FirstPersonController : MonoBehaviour
 
     [Header("이동")]
     [SerializeField] private float walkSpeed = 3.5f;
+    [Tooltip("왼쪽 Shift를 누른 채 걸을 때의 속도")]
+    [SerializeField] private float runSpeed = 7f;
     [SerializeField] private float gravity = -20f;
 
     [Header("시선")]
@@ -76,7 +78,7 @@ public class FirstPersonController : MonoBehaviour
 
         Vector3 move = (transform.right * x + transform.forward * z);
         if (move.sqrMagnitude > 1f) move.Normalize(); // 대각선이 더 빠르지 않게
-        move *= walkSpeed;
+        move *= keyboard.leftShiftKey.isPressed ? runSpeed : walkSpeed;
 
         // 땅에 붙어 있게 하는 중력
         if (controller.isGrounded && verticalVelocity < 0f) verticalVelocity = -2f;
