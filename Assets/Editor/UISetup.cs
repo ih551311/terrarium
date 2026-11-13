@@ -108,6 +108,22 @@ public static class UISetup
         miniSo.FindProperty("mapHalfExtent").floatValue = MapBake.HalfExtent;
         miniSo.ApplyModifiedPropertiesWithoutUndo();
 
+        // 코인 표시: 항상 떠 있다. 오른쪽 위, 작은 지도 바로 아래 (지도가 꺼져도 같은 자리)
+        GameObject coinBox = Rect(hudRoot.transform, "CoinHud");
+        Anchor(coinBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -366f), new Vector2(240f, 64f));
+        Image coinBg = coinBox.AddComponent<Image>(); coinBg.color = new Color(0.05f, 0.04f, 0.03f, 0.85f); coinBg.raycastTarget = false;
+        GameObject coinIcon = Rect(coinBox.transform, "CoinIcon");
+        Anchor(coinIcon, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(14f, 0f), new Vector2(40f, 40f));
+        Sprite circle = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd"); // 동그란 모양
+        Image coinIconImg = coinIcon.AddComponent<Image>(); coinIconImg.sprite = circle; coinIconImg.color = new Color(0.98f, 0.8f, 0.25f, 1f); coinIconImg.raycastTarget = false;
+        GameObject coinShine = Rect(coinIcon.transform, "Shine");
+        Anchor(coinShine, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(24f, 24f));
+        Image coinShineImg = coinShine.AddComponent<Image>(); coinShineImg.sprite = circle; coinShineImg.color = new Color(1f, 0.93f, 0.55f, 1f); coinShineImg.raycastTarget = false;
+        TextMeshProUGUI coinText = Label(coinBox.transform, "Amount", "0", 38, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-18f, 0f), new Vector2(160f, 56f), TextAlignmentOptions.MidlineRight);
+        coinText.color = Color.white;
+        CoinHud coinHud = coinBox.AddComponent<CoinHud>();
+        SetRef(coinHud, "amountText", coinText); SetRef(coinHud, "pulseTarget", coinBox.GetComponent<RectTransform>());
+
         // ── 병 꾸미기 패널 (먼저 만들어 가방보다 아래에 그려지게 한다)
         GameObject bottleRoot = Rect(ui.transform, "BottlePanel");
         Stretch(bottleRoot);
