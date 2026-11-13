@@ -34,6 +34,10 @@ public class MailboxPanel : MonoBehaviour
     [SerializeField] private Button[] orderButtons;
     [SerializeField] private TMP_Text[] orderLabels;
 
+    [Header("도구 강화: 0 도끼, 1 곡괭이")]
+    [SerializeField] private Button[] upgradeButtons;
+    [SerializeField] private TMP_Text[] upgradeLabels;
+
     [Header("받기")]
     [SerializeField] private Button collectButton;
     [SerializeField] private TMP_Text collectLabel;
@@ -57,6 +61,11 @@ public class MailboxPanel : MonoBehaviour
         {
             int index = i;
             orderButtons[i].onClick.AddListener(() => Order(index));
+        }
+        for (int i = 0; i < upgradeButtons.Length; i++)
+        {
+            int index = i;
+            upgradeButtons[i].onClick.AddListener(() => Upgrade(index));
         }
     }
 
@@ -126,6 +135,27 @@ public class MailboxPanel : MonoBehaviour
             Say("코인이 모자라요 (" + material.buyPrice + "코인 필요)");
     }
 
+    private void Upgrade(int toolIndex)
+    {
+        AcquireMethod tool = toolIndex == 0 ? AcquireMethod.Axe : AcquireMethod.Pickaxe;
+        string name = toolIndex == 0 ? "도끼" : "곡괭이";
+        int cost = GameState.NextUpgradeCost(tool);
+        if (cost < 0) { Say(name + "는 이미 최대 단계예요"); return; }
+        if (GameState.UpgradePending(tool)) { Say(name + " 강화를 이미 주문했어요"); return; }
+        if (GameState.TryOrderUpgrade(tool)) Say(name + " 강화를 주문했어요. 내일 아침 도착해요");
+        else Say("코인이 모자라요 (" + cost + "코인 필요)");
+    }
+
+    private static string UpgradeText(string name, AcquireMethod tool)
+    {
+        int level = GameState.LevelOf(tool);
+        int cost = GameState.NextUpgradeCost(tool);
+        if (cost < 0) return name + " 최대 단계";
+        if (GameState.UpgradePending(tool)) return name + " " + (level + 1) + "단계 주문함";
+        ToolSettings.Level next = ToolSettings.Instance.Get(tool, level + 1);
+        return name + " " + level + "→" + (level + 1) + "단계 (" + cost + "코인)\n" + next.hits + "번 치기, " + next.amount + "개, 희귀 " + Mathf.RoundToInt(next.rareChance * 100f) + "%";
+    }
+
     private void Collect()
     {
         if (!GameState.HasMail) return;
@@ -134,6 +164,7 @@ public class MailboxPanel : MonoBehaviour
         string text = string.Empty;
         if (coins > 0) text += "코인 " + coins + "개 ";
         if (items > 0) text += "물건 " + items + "개 ";
+        if (GameState.LastUpgradeCount > 0) text += "강화된 도구 (도끼 " + GameState.AxeLevel + "단계, 곡괭이 " + GameState.PickaxeLevel + "단계) ";
         text += "받았어요";
         if (left > 0) text += " (가방이 가득 차서 " + left + "개는 우체통에 남았어요)";
         Say(text);
@@ -167,6 +198,14 @@ public class MailboxPanel : MonoBehaviour
             MaterialData m = orderables[i];
             orderButtons[i].interactable = GameState.Coins >= m.buyPrice;
             orderLabels[i].text = m.displayName + "\n" + m.buyPrice + "코인";
+        }
+
+        for (int i = 0; i < upgradeButtons.Length; i++)
+        {
+            AcquireMethod tool = i == 0 ? AcquireMethod.Axe : AcquireMethod.Pickaxe;
+            int cost = GameState.NextUpgradeCost(tool);
+            upgradeButtons[i].interactable = cost >= 0 && !GameState.UpgradePending(tool) && GameState.Coins >= cost;
+            upgradeLabels[i].text = UpgradeText(i == 0 ? "도끼" : "곡괭이", tool);
         }
 
         string summary = "보낸 재료 " + GameState.Outbox.Count + "개 → 내일 아침 " + GameState.PendingSellCoins + "코인";

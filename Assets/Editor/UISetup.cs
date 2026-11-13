@@ -326,9 +326,22 @@ public static class UISetup
         TextMeshProUGUI mailSummary = Label(mailWindow.transform, "Summary", string.Empty, 34, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -500f), new Vector2(700f, 200f), TextAlignmentOptions.TopLeft);
 
         // 오른쪽: 주문하기 (코인을 내고 사는 물건. 가격이 있는 재료를 모두 보여 준다)
-        Label(mailWindow.transform, "OrderTitle", "주문하기  (내일 아침 도착해요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -125f), new Vector2(700f, 60f), TextAlignmentOptions.TopLeft);
+        // 도구 강화 (도끼, 곡괭이): 코인을 내고 주문하면 다음 날 도착하고, 받으면 도구 단계가 오른다
+        Label(mailWindow.transform, "UpgradeTitle", "도구 강화  (내일 아침 도착해요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -115f), new Vector2(700f, 50f), TextAlignmentOptions.TopLeft);
+        Button[] upgradeButtons = new Button[2];
+        TMP_Text[] upgradeLabels = new TMP_Text[2];
+        for (int i = 0; i < 2; i++)
+        {
+            Button b = MakeButton(mailWindow.transform, "Upgrade" + i, string.Empty, new Vector2(0f, 1f), new Vector2(810f + i * 355f, -170f), new Vector2(345f, 100f));
+            TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
+            t.fontSize = 22;
+            b.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
+            upgradeButtons[i] = b; upgradeLabels[i] = t;
+        }
+
+        Label(mailWindow.transform, "OrderTitle", "주문하기  (내일 아침 도착해요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -285f), new Vector2(700f, 50f), TextAlignmentOptions.TopLeft);
         GameObject orderGrid = Rect(mailWindow.transform, "OrderGrid");
-        Anchor(orderGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -195f), new Vector2(700f, 440f));
+        Anchor(orderGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -340f), new Vector2(700f, 350f));
         GridLayoutGroup orderLayout = orderGrid.AddComponent<GridLayoutGroup>();
         orderLayout.cellSize = new Vector2(167f, 80f); orderLayout.spacing = new Vector2(10f, 8f);
         orderLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; orderLayout.constraintCount = 4; // 16개가 4줄에 들어간다
@@ -421,6 +434,7 @@ public static class UISetup
         SetArray(mailPanel, "sendButtons", sendButtons); SetArray(mailPanel, "sendLabels", sendLabels);
         SetArray(mailPanel, "orderables", orderableList.ToArray());
         SetArray(mailPanel, "orderButtons", orderButtons); SetArray(mailPanel, "orderLabels", orderLabels);
+        SetArray(mailPanel, "upgradeButtons", upgradeButtons); SetArray(mailPanel, "upgradeLabels", upgradeLabels);
         SetRef(mailPanel, "collectButton", collectButton); SetRef(mailPanel, "collectLabel", collectLabel);
 
         // GameRoot가 새 병 패널과 우체통 패널을 가리키도록 다시 연결한다

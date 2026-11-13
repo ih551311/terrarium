@@ -19,6 +19,8 @@ public class SaveData
     public List<string> outbox = new List<string>();
     public List<string> orders = new List<string>();
     public List<string> arrivedItems = new List<string>();
+    public List<int> upgradeOrders = new List<int>();    // 주문한 도구 강화 (AcquireMethod 번호)
+    public List<int> arrivedUpgrades = new List<int>();  // 도착한 도구 강화
 
     // 가방
     public List<BagEntrySave> bag = new List<BagEntrySave>();

@@ -44,6 +44,43 @@ public static class GameState
     /// <summary>곡괭이의 강화 단계 (0이 기본, 3이 최대)</summary>
     public static int PickaxeLevel { get; private set; }
 
+    public const int MaxToolLevel = 3;
+
+    /// <summary>방금 받은 도구 강화의 수 (우체통 안내 글자용)</summary>
+    public static int LastUpgradeCount { get; private set; }
+
+    private static readonly List<AcquireMethod> upgradeOrders = new List<AcquireMethod>();   // 주문한 강화 (자고 나면 도착)
+    private static readonly List<AcquireMethod> arrivedUpgrades = new List<AcquireMethod>(); // 도착해서 받기를 기다리는 강화
+
+    public static IReadOnlyList<AcquireMethod> UpgradeOrders => upgradeOrders;
+    public static IReadOnlyList<AcquireMethod> ArrivedUpgrades => arrivedUpgrades;
+
+    /// <summary>이 도구의 다음 강화 비용(코인). 최대 단계면 -1.</summary>
+    public static int NextUpgradeCost(AcquireMethod tool)
+    {
+        int next = LevelOf(tool) + 1;
+        ToolSettings settings = ToolSettings.Instance;
+        if (next > MaxToolLevel || settings == null) return -1;
+        return settings.Get(tool, next).upgradeCost;
+    }
+
+    /// <summary>이 도구의 강화를 이미 주문했거나 도착해서 받기를 기다리고 있는가</summary>
+    public static bool UpgradePending(AcquireMethod tool)
+    {
+        return upgradeOrders.Contains(tool) || arrivedUpgrades.Contains(tool);
+    }
+
+    /// <summary>코인을 내고 도구 강화를 주문한다. 최대 단계이거나 이미 주문했거나 코인이 모자라면 false.</summary>
+    public static bool TryOrderUpgrade(AcquireMethod tool)
+    {
+        int cost = NextUpgradeCost(tool);
+        if (cost < 0 || UpgradePending(tool) || Coins < cost) return false;
+        Coins -= cost;
+        upgradeOrders.Add(tool);
+        Changed?.Invoke();
+        return true;
+    }
+
     /// <summary>도구(Axe 또는 Pickaxe)의 강화 단계</summary>
     public static int LevelOf(AcquireMethod tool)
     {
@@ -76,7 +113,7 @@ public static class GameState
     public static IReadOnlyList<MaterialData> ArrivedItems => arrivedItems;
 
     /// <summary>도착해서 받을 것이 있는가</summary>
-    public static bool HasMail => ArrivedCoins > 0 || arrivedItems.Count > 0;
+    public static bool HasMail => ArrivedCoins > 0 || arrivedItems.Count > 0 || arrivedUpgrades.Count > 0;
 
     /// <summary>보낸 재료가 내일 아침 가져다줄 코인</summary>
     public static int PendingSellCoins
@@ -116,12 +153,14 @@ public static class GameState
     /// </summary>
     public static bool Sleep()
     {
-        bool anything = outbox.Count > 0 || orders.Count > 0;
+        bool anything = outbox.Count > 0 || orders.Count > 0 || upgradeOrders.Count > 0;
 
         ArrivedCoins += PendingSellCoins;
         arrivedItems.AddRange(orders);
+        arrivedUpgrades.AddRange(upgradeOrders);
         outbox.Clear();
         orders.Clear();
+        upgradeOrders.Clear();
         Day++;
 
         taken.Clear(); // 주운 자리와 캔 자리가 다시 채워진다
@@ -137,6 +176,15 @@ public static class GameState
     /// </summary>
     public static void Collect(Bag bag, out int coins, out int items, out int left)
     {
+        // 도착한 강화: 도구 단계가 오른다
+        LastUpgradeCount = arrivedUpgrades.Count;
+        foreach (AcquireMethod tool in arrivedUpgrades)
+        {
+            if (tool == AcquireMethod.Axe) AxeLevel = Mathf.Min(MaxToolLevel, AxeLevel + 1);
+            else PickaxeLevel = Mathf.Min(MaxToolLevel, PickaxeLevel + 1);
+        }
+        arrivedUpgrades.Clear();
+
         coins = ArrivedCoins;
         Coins += ArrivedCoins;
         ArrivedCoins = 0;
@@ -172,6 +220,8 @@ public static class GameState
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
         foreach (MaterialData m in arrivedItems) data.arrivedItems.Add(m.id);
+        foreach (AcquireMethod t in upgradeOrders) data.upgradeOrders.Add((int)t);
+        foreach (AcquireMethod t in arrivedUpgrades) data.arrivedUpgrades.Add((int)t);
     }
 
     /// <summary>저장 내용으로 상태를 되살린다. (게임을 켤 때 한 번)</summary>
@@ -187,6 +237,9 @@ public static class GameState
         foreach (string id in data.outbox) { MaterialData m = db.Find(id); if (m != null) outbox.Add(m); }
         foreach (string id in data.orders) { MaterialData m = db.Find(id); if (m != null) orders.Add(m); }
         foreach (string id in data.arrivedItems) { MaterialData m = db.Find(id); if (m != null) arrivedItems.Add(m); }
+        upgradeOrders.Clear(); arrivedUpgrades.Clear();
+        foreach (int t in data.upgradeOrders) upgradeOrders.Add((AcquireMethod)t);
+        foreach (int t in data.arrivedUpgrades) arrivedUpgrades.Add((AcquireMethod)t);
     }
 
     // Play를 껐다 켤 때 값이 남아 있지 않도록 초기화한다.
@@ -196,6 +249,8 @@ public static class GameState
         outbox.Clear();
         orders.Clear();
         arrivedItems.Clear();
+        upgradeOrders.Clear();
+        arrivedUpgrades.Clear();
         taken.Clear();
         TimeOfDay = 0f;
         AxeLevel = 0;
