@@ -387,6 +387,17 @@ public static class JarSetup
             }
         }
 
+        // 바닥면: 병을 뒤집어 돌려도 흙이 사라지지 않게 아래도 막는다 (뒷면은 그려지지 않아서, 막지 않으면 아래에서 볼 때 텅 비어 보인다)
+        int bottomCenter = vertices.Count;
+        vertices.Add(new Vector3(0f, floorY * scale, 0f));
+        int bottomRing = vertices.Count;
+        for (int s = 0; s < SoilSegments; s++) vertices.Add(vertices[s]); // 첫 고리와 같은 자리
+        for (int s = 0; s < SoilSegments; s++)
+        {
+            int s1 = (s + 1) % SoilSegments;
+            triangles.Add(bottomCenter); triangles.Add(bottomRing + s1); triangles.Add(bottomRing + s);
+        }
+
         Mesh mesh = new Mesh { name = "SoilMesh" };
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangles, 0);
