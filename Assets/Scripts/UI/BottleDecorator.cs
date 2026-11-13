@@ -38,6 +38,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     /// <summary>다룰 병과, 그 병을 비추는 카메라를 받는다. 닫을 때는 (null, null).</summary>
     public void SetTarget(BottleContents bottleContents, Camera camera)
     {
+        if (contents != null) contents.HideGhost(); // 닫을 때 미리보기가 남지 않게
         contents = bottleContents;
         bottleCamera = camera;
         if (messageText != null) messageText.text = string.Empty;
@@ -53,6 +54,9 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
         if (contents == null) return;
 
+        Mouse mouse = Mouse.current;
+        UpdateGhost(mouse != null ? mouse.position.ReadValue() : (Vector2?)null);
+
         // Q / R: 마우스를 올린 재료를 작게 / 크게
         Keyboard keyboard = Keyboard.current;
         if (keyboard == null) return;
@@ -64,6 +68,25 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         if (hovered == null) return;
         hovered.ScaleBy(bigger ? scaleStep : 1f / scaleStep);
         contents.SaveState();
+    }
+
+    /// <summary>
+    /// 고른 재료를 지금 클릭하면 놓일 자리에 반투명한 그림자를 보여 준다.
+    /// 재료를 안 골랐거나, 병이 가득 찼거나, 마우스가 흙 위가 아니면 숨긴다.
+    /// </summary>
+    private void UpdateGhost(Vector2? screenPosition)
+    {
+        MaterialData selected = strip != null ? strip.Selected : null;
+        if (selected != null && !contents.IsFull && screenPosition.HasValue &&
+            TryGetRay(screenPosition.Value, out Ray ray) &&
+            contents.TryGetSurfacePoint(ray, out Vector3 localPoint))
+        {
+            contents.ShowGhost(selected, localPoint);
+        }
+        else
+        {
+            contents.HideGhost();
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)

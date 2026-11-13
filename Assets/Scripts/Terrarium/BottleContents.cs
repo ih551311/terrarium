@@ -19,7 +19,15 @@ public class BottleContents : MonoBehaviour
 
     [SerializeField] private int maxItems = 12;
 
+    [Tooltip("놓을 자리를 미리 보여 주는 반투명 재질 (Transparent). 비워 두면 미리보기가 나오지 않는다.")]
+    [SerializeField] private Material ghostMaterial;
+
     private readonly List<PlacedMaterial> items = new List<PlacedMaterial>();
+
+    // 미리보기(그림자) 상태
+    private GameObject ghost;
+    private MaterialData ghostOf;
+    private readonly List<Material> ghostMaterials = new List<Material>();
 
     public bool IsFull => items.Count >= maxItems;
 
@@ -63,6 +71,65 @@ public class BottleContents : MonoBehaviour
         SaveState();
     }
 
+    /// <summary>놓을 자리에 반투명한 재료를 미리 보여 준다. (기록에는 들어가지 않는다)</summary>
+    public void ShowGhost(MaterialData material, Vector3 localPosition)
+    {
+        if (ghostMaterial == null || material == null) return;
+
+        // 고른 재료가 바뀌었을 때만 새로 만든다.
+        if (ghost == null || ghostOf != material)
+        {
+            DestroyGhost();
+            ghost = BuildGhost(material);
+            ghostOf = material;
+        }
+
+        ghost.transform.localPosition = localPosition;
+        ghost.SetActive(true);
+    }
+
+    /// <summary>미리보기를 숨긴다.</summary>
+    public void HideGhost()
+    {
+        if (ghost != null) ghost.SetActive(false);
+    }
+
+    private GameObject BuildGhost(MaterialData material)
+    {
+        GameObject root = new GameObject("Ghost_" + material.id);
+        root.transform.SetParent(transform, false);
+        root.layer = gameObject.layer;
+
+        GameObject visual = CreateVisual(material, root.transform);
+
+        // 만질 수 없게 Collider를 없애고, 반투명 재질로 바꾼다. (색은 재료 색을 따른다)
+        foreach (Collider col in visual.GetComponentsInChildren<Collider>())
+            Destroy(col);
+        foreach (Renderer r in visual.GetComponentsInChildren<Renderer>())
+        {
+            Material tinted = new Material(ghostMaterial);
+            Color c = material.placeholderColor;
+            tinted.color = new Color(c.r, c.g, c.b, 0.5f);
+            ghostMaterials.Add(tinted);
+            r.sharedMaterial = tinted;
+        }
+        return root;
+    }
+
+    private void DestroyGhost()
+    {
+        if (ghost != null) Destroy(ghost);
+        foreach (Material m in ghostMaterials) Destroy(m);
+        ghostMaterials.Clear();
+        ghost = null;
+        ghostOf = null;
+    }
+
+    private void OnDestroy()
+    {
+        DestroyGhost();
+    }
+
     /// <summary>돌리거나 키운 뒤에 불러서 기록을 새로 한다.</summary>
     public void SaveState()
     {
@@ -96,7 +163,7 @@ public class BottleContents : MonoBehaviour
     }
 
     /// <summary>모습을 만든다. 모델(프리팹)이 있으면 그것을, 없으면 기본 도형을 쓴다.</summary>
-    private void CreateVisual(MaterialData material, Transform parent)
+    private GameObject CreateVisual(MaterialData material, Transform parent)
     {
         GameObject visual;
         if (material.placedPrefab != null)
@@ -129,6 +196,7 @@ public class BottleContents : MonoBehaviour
             float lift = parent.position.y - bounds.min.y;
             visual.transform.position += Vector3.up * lift;
         }
+        return visual;
     }
 
     private static void SetLayerRecursive(GameObject go, int layer)

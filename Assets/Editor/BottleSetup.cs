@@ -22,7 +22,9 @@ public static class BottleSetup
 
         GameObject bottle = GameObject.Find("Bottle");
         if (bottle == null) return "집 안 씬에서 Bottle을 찾을 수 없어요.";
-        if (bottle.GetComponent<BottleContents>() == null) bottle.AddComponent<BottleContents>();
+        BottleContents contents = bottle.GetComponent<BottleContents>();
+        if (contents == null) contents = bottle.AddComponent<BottleContents>();
+        UISetup.SetRef(contents, "ghostMaterial", GetOrCreateGhostMaterial());
 
         // 코드로 컴포넌트를 붙이면 씬이 "변경됨"으로 표시되지 않아서, 직접 표시해야 저장된다.
         EditorSceneManager.MarkSceneDirty(bottle.scene);
@@ -30,6 +32,27 @@ public static class BottleSetup
         EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
         AssetDatabase.SaveAssets();
         return "병 설정 완료";
+    }
+
+    /// <summary>놓을 자리 미리보기에 쓰는 반투명(Transparent) 재질</summary>
+    private static Material GetOrCreateGhostMaterial()
+    {
+        const string path = "Assets/Data/Placeholder/GhostPreview.mat";
+        Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (m != null) return m;
+
+        m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        m.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0.5f));
+        m.SetFloat("_Surface", 1f);    // Transparent
+        m.SetFloat("_Blend", 0f);      // Alpha
+        m.SetFloat("_SrcBlend", 5f);   // SrcAlpha
+        m.SetFloat("_DstBlend", 10f);  // OneMinusSrcAlpha
+        m.SetFloat("_ZWrite", 0f);
+        m.SetOverrideTag("RenderType", "Transparent");
+        m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        m.renderQueue = 3000;
+        AssetDatabase.CreateAsset(m, path);
+        return m;
     }
 
     private static void SetPlaceholder(string id, PlaceholderShape shape, Color color, Vector3 size)

@@ -311,6 +311,7 @@ MonoBehaviour:
   surfaceLocalY: 0.07
   soilRadius: 0.17
   maxItems: 12
+  ghostMaterial: {fileID: 2100000, guid: d5cf84ff824b63b4cbd8317bdb4e0058, type: 2}
 --- !u!1 &273635902
 GameObject:
   m_ObjectHideFlags: 0
