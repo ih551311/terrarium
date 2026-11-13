@@ -35,7 +35,18 @@ public class BottleStation : MonoBehaviour, IInteractable
 
     private void Awake()
     {
-        Select(selectedIndex);
+        ShowOnlyInProgress();
+    }
+
+    /// <summary>
+    /// 작업대 위에는 지금 꾸미는 중인 병만 놓는다. (완성한 병은 선반에 있고, 아직 안 만든 병은 보이지 않는다)
+    /// 꾸미는 중인 병이 없으면 작업대 위가 비어 있다.
+    /// </summary>
+    public void ShowOnlyInProgress()
+    {
+        int inProgress = InProgressIndex;
+        for (int i = 0; i < bottles.Length; i++)
+            bottles[i].gameObject.SetActive(i == inProgress);
     }
 
     public void Interact(Interactor who)

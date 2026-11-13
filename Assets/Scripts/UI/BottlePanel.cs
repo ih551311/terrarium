@@ -84,6 +84,7 @@ public class BottlePanel : MonoBehaviour
         isOpen = false;
 
         ReleaseBottle();
+        if (station != null) station.ShowOnlyInProgress(); // 닫으면 작업대에는 꾸미는 중인 병만 남는다
         station = null;
 
         root.SetActive(false);

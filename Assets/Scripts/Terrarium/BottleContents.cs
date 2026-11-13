@@ -96,6 +96,13 @@ public class BottleContents : MonoBehaviour
     public Vector3 ZoomLookPoint => zoomLookPoint;
     public Camera ViewCamera => viewCamera;
     public string DisplayName => data != null ? data.displayName : bottleId;
+    public string BottleId => bottleId;
+
+    /// <summary>이 병의 프리팹 (선반에 올릴 복사본을 만들 때 쓴다)</summary>
+    public GameObject Prefab => data != null ? data.prefab : null;
+
+    /// <summary>누워 있는 병인가</summary>
+    public bool IsSideways => axisAlongX;
     public int ItemCount => items.Count;
 
     /// <summary>바닥재. null이면 흙(기본).</summary>
@@ -140,7 +147,7 @@ public class BottleContents : MonoBehaviour
         // 씬을 옮겼다 돌아왔을 때 기억해 둔 상태를 다시 만든다.
         BottleRecord record = BottleStore.Get(bottleId);
         foreach (PlacedData placed in record.items)
-            Spawn(placed.material, placed.localPosition, placed.yaw, placed.scaleFactor);
+            Spawn(placed.material, placed.localPosition, placed.yaw, placed.scaleFactor, placed.growth);
 
         Ground = record.ground;
         ApplyGround();
@@ -373,7 +380,8 @@ public class BottleContents : MonoBehaviour
                 material = placed.Material,
                 localPosition = placed.transform.localPosition,
                 yaw = placed.Yaw,
-                scaleFactor = placed.ScaleFactor
+                scaleFactor = placed.ScaleFactor,
+                growth = placed.Growth
             });
         }
         BottleStore.Set(bottleId, record);
@@ -421,7 +429,7 @@ public class BottleContents : MonoBehaviour
         DestroyGhost();
     }
 
-    private PlacedMaterial Spawn(MaterialData material, Vector3 localPosition, float yaw, float scaleFactor)
+    private PlacedMaterial Spawn(MaterialData material, Vector3 localPosition, float yaw, float scaleFactor, int growth = 0)
     {
         GameObject root = new GameObject("Placed_" + material.id);
         root.transform.SetParent(transform, false);
@@ -431,7 +439,7 @@ public class BottleContents : MonoBehaviour
         CreateVisual(material, root.transform);
 
         PlacedMaterial placed = root.AddComponent<PlacedMaterial>();
-        placed.Init(material, yaw, scaleFactor);
+        placed.Init(material, yaw, scaleFactor, growth);
         items.Add(placed);
         return placed;
     }

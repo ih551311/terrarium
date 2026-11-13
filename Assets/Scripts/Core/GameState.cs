@@ -165,6 +165,7 @@ public static class GameState
 
         taken.Clear(); // 주운 자리와 캔 자리가 다시 채워진다
         TimeOfDay = 0f; // 아침이 된다
+        BottleStore.AdvanceDay(); // 물을 준 병의 식물이 한 단계 자란다
         DayStarted?.Invoke();
         Changed?.Invoke();
         return anything;

@@ -1,0 +1,95 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// 집 안 선반. 완성한 병이 생기면 비어 있는 가장 앞 칸에 자동으로 올라가고, 병 속(재료와 식물)이 그대로 보인다.
+/// 선반 병을 바라보고 E를 누르면 물을 준다. (ShelfBottle)
+/// 칸 자리(slots)는 InteriorSetup이 선반 위에 놓아 둔다. 병은 작업대의 병과 같은 병 프리팹을 작게 줄여 복사해서 올린다.
+/// 자고 일어나면(식물이 자라면) 병을 새로 만들어 자란 모습으로 바꾼다.
+/// </summary>
+public class BottleShelf : MonoBehaviour
+{
+    [Tooltip("칸마다 하나씩, 앞 칸부터. 위치는 병 바닥이 닿는 자리다.")]
+    [SerializeField] private Transform[] slots;
+
+    [Tooltip("병 프리팹을 선반 크기로 줄이는 비율 (병 크기 2배인 병을 0.55배로)")]
+    [SerializeField] private float bottleScale = 0.55f;
+
+    [Tooltip("이 병 종류들. 병 번호(bottleId)로 프리팹을 찾는다. 작업대의 BottleStation에서 받는다.")]
+    [SerializeField] private BottleStation station;
+
+    private readonly Dictionary<string, GameObject> shown = new Dictionary<string, GameObject>();
+
+    private void Start()
+    {
+        Refresh();
+    }
+
+    private void OnEnable()
+    {
+        BottleStore.Changed += Refresh;
+        GameState.DayStarted += Rebuild;
+    }
+
+    private void OnDisable()
+    {
+        BottleStore.Changed -= Refresh;
+        GameState.DayStarted -= Rebuild;
+    }
+
+    /// <summary>완성한 병 중 아직 선반에 없는 것을 올린다.</summary>
+    private void Refresh()
+    {
+        if (station == null) return;
+        for (int i = 0; i < station.Count; i++)
+        {
+            BottleContents bottle = station.Get(i);
+            string id = bottle.BottleId;
+            BottleRecord record = BottleStore.Get(id);
+            if (!record.completed || shown.ContainsKey(id)) continue;
+
+            if (record.shelfSlot < 0) record.shelfSlot = BottleStore.FirstFreeShelfSlot();
+            if (record.shelfSlot < 0 || record.shelfSlot >= slots.Length) continue; // 선반이 가득 참
+
+            shown[id] = Place(bottle, record.shelfSlot);
+        }
+    }
+
+    /// <summary>선반의 병을 모두 지우고 다시 올린다. (식물이 자란 모습을 보이려고 아침마다)</summary>
+    private void Rebuild()
+    {
+        foreach (GameObject go in shown.Values)
+        {
+            if (go == null) continue;
+            go.SetActive(false);
+            Destroy(go);
+        }
+        shown.Clear();
+        Refresh();
+    }
+
+    private GameObject Place(BottleContents source, int slotIndex)
+    {
+        // 작업대의 병과 같은 병 프리팹을 복사한다. (병 번호가 같아서 병 속은 기록에서 저절로 되살아난다)
+        GameObject prefab = source.Prefab;
+        Transform slot = slots[slotIndex];
+        GameObject copy = Instantiate(prefab, slot.position, slot.rotation, transform);
+        copy.name = "ShelfBottle_" + source.BottleId;
+
+        // 선반에서는 돌리거나 카메라로 보지 않는다
+        BottleViewer viewer = copy.GetComponent<BottleViewer>();
+        if (viewer != null) Destroy(viewer);
+        Camera cam = copy.GetComponentInChildren<Camera>(true);
+        if (cam != null) Destroy(cam.gameObject);
+
+        // 크기를 줄이고, 병 바닥(원점)이 칸 자리에 닿게 한다. 누운 병은 옆으로 길어서 선반 안쪽을 향하게 돌린다.
+        copy.transform.SetPositionAndRotation(slot.position, slot.rotation);
+        copy.transform.localScale = Vector3.one * bottleScale;
+        if (copy.GetComponent<BottleContents>().IsSideways)
+            copy.transform.rotation = slot.rotation * Quaternion.Euler(0f, 90f, 0f);
+
+        ShelfBottle water = copy.AddComponent<ShelfBottle>();
+        water.Init(source.BottleId, source.DisplayName);
+        return copy;
+    }
+}

@@ -207,6 +207,29 @@ public static class InteriorSetup
             Cube(root, "ShelfPost", shelf + new Vector3(0f, 1.07f, z), new Vector3(0.3f, 1.7f, 0.05f), darkWood);
         Cube(root, "ShelfBack", shelf + new Vector3(-0.13f, 1.07f, 0f), new Vector3(0.03f, 1.7f, 1.9f), darkWood, false);
 
+        // 선반 칸 자리 6곳(3단 x 2칸): 완성한 병이 앞 칸부터 올라간다 (BottleShelf)
+        GameObject shelfRoot = new GameObject("BottleShelf");
+        shelfRoot.transform.SetParent(root.transform, false);
+        var slotList = new System.Collections.Generic.List<Transform>();
+        float[] rowY = { 0.27f, 0.82f, 1.37f }; // 각 판 윗면
+        for (int row = 0; row < 3; row++)
+        {
+            for (int col = 0; col < 2; col++)
+            {
+                GameObject slot = new GameObject("Slot" + (row * 2 + col));
+                slot.transform.SetParent(shelfRoot.transform, false);
+                slot.transform.position = new Vector3(shelf.x + 0.02f, rowY[row], shelf.z + (col == 0 ? -0.45f : 0.45f));
+                slotList.Add(slot.transform);
+            }
+        }
+        BottleShelf bottleShelf = shelfRoot.AddComponent<BottleShelf>();
+        SerializedObject shelfSo = new SerializedObject(bottleShelf);
+        SerializedProperty slotsProp = shelfSo.FindProperty("slots");
+        slotsProp.arraySize = slotList.Count;
+        for (int i = 0; i < slotList.Count; i++) slotsProp.GetArrayElementAtIndex(i).objectReferenceValue = slotList[i];
+        shelfSo.FindProperty("station").objectReferenceValue = Object.FindFirstObjectByType<BottleStation>(FindObjectsInactive.Include);
+        shelfSo.ApplyModifiedPropertiesWithoutUndo();
+
         // 보관 상자와 통
         Kitpiece(root, "Crate", new Vector3(1.6f, 0f, 2.3f), 15f);
         Kitpiece(root, "Crate", new Vector3(1.6f, 0.8f, 2.3f), 40f);
