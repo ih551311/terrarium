@@ -14,6 +14,8 @@ public class BottlePanel : MonoBehaviour
     [SerializeField] private Button closeButton;
     [Tooltip("병 그림 위에서 끌어 돌리는 것을 받는 스크립트")]
     [SerializeField] private DragRotate dragRotate;
+    [Tooltip("병 그림 위에서 재료를 놓고 빼는 것을 받는 스크립트")]
+    [SerializeField] private BottleDecorator decorator;
 
     private bool isOpen;
     private Camera bottleCamera;
@@ -45,6 +47,7 @@ public class BottlePanel : MonoBehaviour
 
         bottleCamera = camera;
         dragRotate.SetTarget(bottle);
+        decorator.SetTarget(bottle.GetComponent<BottleContents>(), camera);
         if (bottleCamera != null) bottleCamera.enabled = true;
 
         root.SetActive(true);
@@ -58,6 +61,7 @@ public class BottlePanel : MonoBehaviour
 
         if (bottleCamera != null) bottleCamera.enabled = false;
         bottleCamera = null;
+        decorator.SetTarget(null, null);
 
         root.SetActive(false);
         UIFocus.Close();

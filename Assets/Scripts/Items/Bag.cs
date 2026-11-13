@@ -52,6 +52,21 @@ public class Bag : MonoBehaviour
         return false; // 가방이 가득 참
     }
 
+    /// <summary>재료 1개를 꺼낸다. 없으면 false. 맨 뒤 칸부터 줄어든다.</summary>
+    public bool TryRemove(MaterialData material)
+    {
+        for (int i = slots.Count - 1; i >= 0; i--)
+        {
+            if (slots[i].material != material) continue;
+
+            slots[i].count--;
+            if (slots[i].count <= 0) slots.RemoveAt(i);
+            Changed?.Invoke();
+            return true;
+        }
+        return false;
+    }
+
     /// <summary>이 재료를 넣을 자리가 있는지 (넣지는 않는다).</summary>
     public bool CanAdd(MaterialData material)
     {

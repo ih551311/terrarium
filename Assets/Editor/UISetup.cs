@@ -6,14 +6,20 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 /// <summary>
-/// 가방 패널과 병 꾸미기 패널(UI)을 씬에 만들고 연결한다.
+/// 가방 패널과 병 꾸미기 패널(UI)을 GameRoot 프리팹 안에 만들고 연결한다.
 /// 메뉴: 유리병 정원 > UI 만들기. 여러 번 눌러도 같은 결과가 나온다(UI를 지우고 다시 만든다).
-/// 병과 병 카메라는 여기서 다루지 않는다(집 안 씬의 BottleObject가 맡는다).
+/// 프리팹을 고치므로, 열려 있는 모든 씬의 GameRoot에 바로 반영된다.
+/// 병과 병 카메라는 여기서 다루지 않는다(집 안 씬의 병이 맡는다).
 /// </summary>
 public static class UISetup
 {
     public const string BottleLayerName = "BottleView";
+    private const string PrefabPath = "Assets/Prefabs/GameRoot.prefab";
     private const string FontAssetPath = "Assets/Resources/Fonts/Cafe24DongdongLight SDF.asset";
+    private const string RenderTexturePath = "Assets/Data/Placeholder/BottleView.renderTexture";
+    private const int SlotCount = 10;
+
+    private static readonly Color TextColor = new Color(0.2f, 0.25f, 0.2f, 1f);
 
     private static TMP_FontAsset font;
 
@@ -22,19 +28,36 @@ public static class UISetup
     {
         font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
         if (font == null) return "폰트 에셋이 없어요: " + FontAssetPath;
-
         SetDefaultTmpFont();
-        EnsureEventSystem();
 
-        GameObject player = GameObject.Find("Player");
-        if (player == null) return "Player를 찾을 수 없어요.";
+        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            string result = BuildInside(root);
+            PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            return result;
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    private static string BuildInside(GameObject root)
+    {
+        Transform player = root.transform.Find("Player");
+        if (player == null) return "프리팹 안에 Player가 없어요.";
         Bag bag = player.GetComponent<Bag>();
 
+        EnsureEventSystem(root);
+
         // UI 전체를 지우고 다시 만든다
-        GameObject old = GameObject.Find("UI");
-        if (old != null) Object.DestroyImmediate(old);
+        Transform old = root.transform.Find("UI");
+        if (old != null) Object.DestroyImmediate(old.gameObject);
 
         GameObject ui = new GameObject("UI", typeof(RectTransform));
+        ui.transform.SetParent(root.transform, false);
+        ui.layer = LayerMask.NameToLayer("UI");
         Canvas canvas = ui.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         CanvasScaler scaler = ui.AddComponent<CanvasScaler>();
@@ -50,18 +73,54 @@ public static class UISetup
         Image dim = bottleRoot.AddComponent<Image>(); dim.color = new Color(0f, 0f, 0f, 0.55f);
 
         GameObject bWindow = Rect(bottleRoot.transform, "Window");
-        Center(bWindow, 1200f, 860f);
+        Center(bWindow, 1300f, 960f);
         Image bBg = bWindow.AddComponent<Image>(); bBg.color = new Color(0.96f, 0.94f, 0.89f, 1f);
-        Label(bWindow.transform, "Title", "병 꾸미기", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(600f, 90f), TextAlignmentOptions.TopLeft);
+        Label(bWindow.transform, "Title", "병 꾸미기", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -25f), new Vector2(600f, 90f), TextAlignmentOptions.TopLeft);
+        TextMeshProUGUI message = Label(bWindow.transform, "Message", string.Empty, 44, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(700f, 70f), TextAlignmentOptions.Center);
+        message.color = new Color(0.72f, 0.3f, 0.2f, 1f);
+        Button closeButton = MakeButton(bWindow.transform, "CloseButton", "닫기", new Vector2(1f, 1f), new Vector2(-40f, -30f), new Vector2(220f, 80f));
 
         GameObject view = Rect(bWindow.transform, "BottleView");
-        Anchor(view, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -10f), new Vector2(640f, 640f));
+        Anchor(view, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -120f), new Vector2(620f, 620f));
         RawImage raw = view.AddComponent<RawImage>(); raw.color = Color.white;
-        raw.texture = AssetDatabase.LoadAssetAtPath<RenderTexture>("Assets/Data/Placeholder/BottleView.renderTexture");
+        raw.texture = AssetDatabase.LoadAssetAtPath<RenderTexture>(RenderTexturePath);
         DragRotate drag = view.AddComponent<DragRotate>();
 
-        Label(bWindow.transform, "Hint", "병을 끌어서 돌려 보세요", 44, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(900f, 70f), TextAlignmentOptions.Center);
-        Button closeButton = MakeButton(bWindow.transform, "CloseButton", "닫기", new Vector2(1f, 1f), new Vector2(-40f, -35f), new Vector2(220f, 80f));
+        Label(bWindow.transform, "Hint", "클릭: 놓기  ·  재료에 마우스 올리고  휠: 돌리기  ·  Q/R: 작게/크게  ·  우클릭: 빼기  ·  끌기: 병 돌리기",
+            32, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 175f), new Vector2(1240f, 50f), TextAlignmentOptions.Center);
+
+        // 재료 칸: 가방 칸을 가로로 늘어놓는다
+        GameObject strip = Rect(bWindow.transform, "MaterialStrip");
+        Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(1220f, 130f));
+        HorizontalLayoutGroup hlg = strip.AddComponent<HorizontalLayoutGroup>();
+        hlg.spacing = 8f; hlg.childAlignment = TextAnchor.MiddleCenter;
+        hlg.childControlWidth = true; hlg.childControlHeight = true;
+        hlg.childForceExpandWidth = true; hlg.childForceExpandHeight = true;
+
+        Button[] slotButtons = new Button[SlotCount];
+        TMP_Text[] slotLabels = new TMP_Text[SlotCount];
+        Image[] slotBackgrounds = new Image[SlotCount];
+        for (int i = 0; i < SlotCount; i++)
+        {
+            GameObject slot = Rect(strip.transform, "Slot" + i);
+            Image bg = slot.AddComponent<Image>(); bg.color = new Color(0.88f, 0.9f, 0.87f, 1f);
+            Button b = slot.AddComponent<Button>(); b.targetGraphic = bg;
+            GameObject t = Rect(slot.transform, "Text");
+            Stretch(t);
+            TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
+            tmp.font = font; tmp.fontSize = 28; tmp.color = TextColor; tmp.alignment = TextAlignmentOptions.Center;
+            tmp.raycastTarget = false; tmp.text = string.Empty;
+            slotButtons[i] = b; slotLabels[i] = tmp; slotBackgrounds[i] = bg;
+        }
+
+        MaterialStrip materialStrip = strip.AddComponent<MaterialStrip>();
+        SetRef(materialStrip, "bag", bag);
+        SetArray(materialStrip, "buttons", slotButtons);
+        SetArray(materialStrip, "labels", slotLabels);
+        SetArray(materialStrip, "backgrounds", slotBackgrounds);
+
+        BottleDecorator decorator = view.AddComponent<BottleDecorator>();
+        SetRef(decorator, "bag", bag); SetRef(decorator, "strip", materialStrip); SetRef(decorator, "messageText", message);
 
         // ── 가방 패널
         GameObject invRoot = Rect(ui.transform, "InventoryPanel");
@@ -81,30 +140,29 @@ public static class UISetup
         glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; glg.constraintCount = 5;
         glg.childAlignment = TextAnchor.UpperCenter;
 
-        int slotCount = 10;
-        TMP_Text[] slotTexts = new TMP_Text[slotCount];
-        for (int i = 0; i < slotCount; i++)
+        TMP_Text[] slotTexts = new TMP_Text[SlotCount];
+        for (int i = 0; i < SlotCount; i++)
         {
             GameObject slot = Rect(grid.transform, "Slot" + i);
             Image bg = slot.AddComponent<Image>(); bg.color = new Color(0.82f, 0.88f, 0.82f, 1f); bg.raycastTarget = false;
             GameObject t = Rect(slot.transform, "Text");
             Stretch(t);
             TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
-            tmp.font = font; tmp.fontSize = 38; tmp.color = new Color(0.2f, 0.25f, 0.2f, 1f);
+            tmp.font = font; tmp.fontSize = 38; tmp.color = TextColor;
             tmp.alignment = TextAlignmentOptions.Center; tmp.raycastTarget = false; tmp.text = string.Empty;
             slotTexts[i] = tmp;
         }
 
         // ── 제어 스크립트 (Canvas 오브젝트에 붙는다)
         BottlePanel bp = ui.AddComponent<BottlePanel>();
-        SetRef(bp, "root", bottleRoot); SetRef(bp, "closeButton", closeButton); SetRef(bp, "dragRotate", drag);
+        SetRef(bp, "root", bottleRoot); SetRef(bp, "closeButton", closeButton);
+        SetRef(bp, "dragRotate", drag); SetRef(bp, "decorator", decorator);
         InventoryPanel ip = ui.AddComponent<InventoryPanel>();
         SetRef(ip, "bag", bag); SetRef(ip, "root", invRoot);
-        SerializedObject so = new SerializedObject(ip);
-        SerializedProperty arr = so.FindProperty("slotTexts");
-        arr.arraySize = slotCount;
-        for (int i = 0; i < slotCount; i++) arr.GetArrayElementAtIndex(i).objectReferenceValue = slotTexts[i];
-        so.ApplyModifiedPropertiesWithoutUndo();
+        SetArray(ip, "slotTexts", slotTexts);
+
+        // GameRoot가 새 병 패널을 가리키도록 다시 연결한다
+        SetRef(root.GetComponent<GameRoot>(), "bottlePanel", bp);
 
         return "UI 만들기 완료";
     }
@@ -146,7 +204,7 @@ public static class UISetup
         Anchor(go, anchor, pivot, pos, box);
         TextMeshProUGUI t = go.AddComponent<TextMeshProUGUI>();
         t.font = font; t.text = text; t.fontSize = size; t.alignment = align;
-        t.color = new Color(0.2f, 0.25f, 0.2f, 1f); t.raycastTarget = false;
+        t.color = TextColor; t.raycastTarget = false;
         return t;
     }
 
@@ -167,8 +225,16 @@ public static class UISetup
     public static void SetRef(Object target, string field, Object value)
     {
         SerializedObject so = new SerializedObject(target);
-        SerializedProperty p = so.FindProperty(field);
-        p.objectReferenceValue = value;
+        so.FindProperty(field).objectReferenceValue = value;
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void SetArray(Object target, string field, Object[] values)
+    {
+        SerializedObject so = new SerializedObject(target);
+        SerializedProperty arr = so.FindProperty(field);
+        arr.arraySize = values.Length;
+        for (int i = 0; i < values.Length; i++) arr.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 
@@ -201,10 +267,15 @@ public static class UISetup
         if (p != null) { p.objectReferenceValue = font; so.ApplyModifiedPropertiesWithoutUndo(); }
     }
 
-    private static void EnsureEventSystem()
+    private static void EnsureEventSystem(GameObject root)
     {
-        EventSystem es = Object.FindFirstObjectByType<EventSystem>();
-        if (es == null) es = new GameObject("EventSystem", typeof(EventSystem)).GetComponent<EventSystem>();
+        EventSystem es = root.GetComponentInChildren<EventSystem>(true);
+        if (es == null)
+        {
+            GameObject go = new GameObject("EventSystem", typeof(EventSystem));
+            go.transform.SetParent(root.transform, false);
+            es = go.GetComponent<EventSystem>();
+        }
         // 새 Input System용 입력 모듈로 바꾼다.
         StandaloneInputModule old = es.GetComponent<StandaloneInputModule>();
         if (old != null) Object.DestroyImmediate(old);

@@ -221,6 +221,7 @@ GameObject:
   - component: {fileID: 250920486}
   - component: {fileID: 250920489}
   - component: {fileID: 250920488}
+  - component: {fileID: 250920490}
   m_Layer: 8
   m_Name: Bottle
   m_TagString: Untagged
@@ -294,6 +295,22 @@ CapsuleCollider:
   m_Height: 0.62
   m_Direction: 1
   m_Center: {x: 0, y: 0.3, z: 0}
+--- !u!114 &250920490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250920485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c921e6e8f2b65d64e8d591243a8f60d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BottleContents
+  bottleId: bottle0
+  surfaceLocalY: 0.07
+  soilRadius: 0.17
+  maxItems: 12
 --- !u!1 &273635902
 GameObject:
   m_ObjectHideFlags: 0
