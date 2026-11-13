@@ -84,9 +84,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleContents
   bottleId: bottle2
-  surfaceLocalY: 0.058000002
+  surfaceLocalY: 0.076000005
   maxItems: 12
-  zoomLookPoint: {x: 0, y: 0.105000004, z: 0}
+  zoomLookPoint: {x: 0, y: 0.123, z: 0}
   axisAlongX: 0
   axisOrigin: {x: 0, y: 0, z: 0}
   profileStart: 0.008

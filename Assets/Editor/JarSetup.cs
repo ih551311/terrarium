@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -45,9 +45,9 @@ public static class JarSetup
 
     private static readonly Jar[] Jars =
     {
-        new Jar("round", "둥근 병", "jar_round", "bottle0", 0.030f, false),
-        new Jar("tall",  "긴 병",   "jar_tall",  "bottle1", 0.020f, false),
-        new Jar("flask", "넓은 병", "jar_flask", "bottle2", 0.025f, false),
+        new Jar("round", "둥근 병", "jar_round", "bottle0", 0.036f, false),
+        new Jar("tall",  "긴 병",   "jar_tall",  "bottle1", 0.028f, false),
+        new Jar("flask", "넓은 병", "jar_flask", "bottle2", 0.034f, false),
         new Jar("side",  "누운 병", "jar_side",  "bottle3", 0f,     true),
     };
 
@@ -180,7 +180,7 @@ public static class JarSetup
         {
             GameObject floorModel = AssetDatabase.LoadAssetAtPath<GameObject>(ModelFolder + "/" + jar.model + "_floor.obj");
             floorMesh = floorModel.GetComponentInChildren<MeshFilter>().sharedMesh;
-            surfaceY = floorMesh.bounds.max.y;
+            surfaceY = floorMesh.bounds.max.y + 0.012f; // 둥근 안쪽을 따라 채우므로 예전 판판한 모래판보다 조금 더 두껍게
             surfaceCenter = new Vector2(floorMesh.bounds.center.x, floorMesh.bounds.center.z);
         }
         else
@@ -198,17 +198,18 @@ public static class JarSetup
         // 2) 흙 모양 (세운 병: 안쪽 단면에 맞춘 회전체 / 누운 병: 함께 온 모래 바닥 모델)
         Mesh soilMesh;
         float surfaceRadius = 0f;
+        float seed = jar.id[0] * 0.37f; // 병마다 굴곡 모양이 다르게
         if (alongX)
         {
-            soilMesh = floorMesh;
+            soilMesh = BuildSideSoilMesh(profile, axisOrigin, surfaceY, seed);
         }
         else
         {
-            soilMesh = BuildSoilMesh(profile, floorY, surfaceY, S, out surfaceRadius);
-            string meshPath = DataFolder + "/" + jar.id + "_soil.asset";
-            AssetDatabase.DeleteAsset(meshPath);
-            AssetDatabase.CreateAsset(soilMesh, meshPath);
+            soilMesh = BuildSoilMesh(profile, floorY, surfaceY, S, seed, out surfaceRadius);
         }
+        string meshPath = DataFolder + "/" + jar.id + "_soil.asset";
+        AssetDatabase.DeleteAsset(meshPath);
+        AssetDatabase.CreateAsset(soilMesh, meshPath);
         Debug.Log("[JarSetup] " + jar.id + ": 바닥 " + (floorY * S * 100f).ToString("0.0") + "cm, 흙 표면 " + (surfaceY * S * 100f).ToString("0.0") +
                   "cm, 병 크기 " + (whole.size.x * S * 100f).ToString("0") + "x" + (whole.size.y * S * 100f).ToString("0") + "cm" +
                   (alongX ? "" : ", 표면 반지름 " + (surfaceRadius * 100f).ToString("0.0") + "cm") + ", 표 " + samples + "칸");
@@ -306,27 +307,46 @@ public static class JarSetup
         return floor == float.MaxValue ? 0.004f : floor;
     }
 
-    /// <summary>안쪽 바닥(floorY)에서 표면(surfaceY)까지, 단면에 맞는 흙 모양(회전체)을 scale배 크기로 만든다.</summary>
-    private static Mesh BuildSoilMesh(Profile profile, float floorY, float surfaceY, float scale, out float surfaceRadius)
+    /// <summary>흙 윗면의 굴곡(언덕과 골). 모델 크기 기준 좌표를 받아 높이 차(모델 크기 기준)를 돌려준다.</summary>
+    private static float Bump(float x, float z, float seed)
     {
-        int rings = Mathf.Max(3, Mathf.CeilToInt((surfaceY - floorY) / 0.004f) + 1);
+        const float Amp = 0.0028f;
+        return Amp * (Mathf.Sin(x * 85f + seed) * Mathf.Cos(z * 75f + seed * 1.7f) * 0.6f + Mathf.Sin(x * 47f - z * 61f + seed * 0.5f) * 0.4f);
+    }
+
+    /// <summary>
+    /// 세운 병의 흙: 안쪽 단면을 따라가는 회전체. 바닥 모서리는 둥글게, 윗면은 언덕과 골이 있고 가장자리는 살짝 솟는다.
+    /// 안쪽 바닥(floorY)에서 표면(surfaceY)까지, scale배 크기로 만든다. surfaceY는 굴곡의 평균 높이(재료를 놓는 기준)다.
+    /// </summary>
+    private static Mesh BuildSoilMesh(Profile profile, float floorY, float surfaceY, float scale, float seed, out float surfaceRadius)
+    {
+        const int CapRings = 6;
+        const float EdgeRise = 0.0035f;   // 가장자리가 유리를 타고 살짝 올라온 높이
+        const float RoundHeight = 0.012f; // 바닥 모서리를 둥글게 깎는 높이
+
+        int rings = Mathf.Max(4, Mathf.CeilToInt((surfaceY - floorY) / 0.003f) + 1);
 
         var vertices = new List<Vector3>();
-        var normals = new List<Vector3>();
         var triangles = new List<int>();
         surfaceRadius = 0f;
 
-        // 옆면: 아래에서 위로 반지름이 병 안쪽을 따라간다 (유리에 파묻히지 않게 4% 줄인다)
+        // 윗면 높이 (rf: 0 가운데 ~ 1 가장자리)
+        System.Func<float, float, float, float> top = (rf, px, pz) =>
+            surfaceY + Bump(px, pz, seed) * (1f - 0.5f * rf) + EdgeRise * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.7f, 1f, rf));
+
+        // 옆면: 아래에서 위로 반지름이 병 안쪽을 따라간다 (유리에 파묻히지 않게 2% 줄이고, 바닥 모서리는 둥글게)
         for (int i = 0; i < rings; i++)
         {
             float y = Mathf.Lerp(floorY, surfaceY, i / (float)(rings - 1));
-            float r = profile.Radius(y) * 0.96f * scale;
+            float round = Mathf.Clamp01((y - floorY) / RoundHeight);
+            float r = profile.Radius(y) * 0.98f * Mathf.Lerp(0.45f, 1f, Mathf.Sqrt(1f - (1f - round) * (1f - round)));
             if (i == rings - 1) surfaceRadius = r;
             for (int s = 0; s < SoilSegments; s++)
             {
                 float a = s * Mathf.PI * 2f / SoilSegments;
-                vertices.Add(new Vector3(Mathf.Cos(a) * r, y * scale, Mathf.Sin(a) * r));
-                normals.Add(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)));
+                float px = Mathf.Cos(a) * r, pz = Mathf.Sin(a) * r;
+                float vy = i == rings - 1 ? top(1f, px, pz) : y;
+                vertices.Add(new Vector3(px * scale, vy * scale, pz * scale));
             }
         }
         for (int i = 0; i < rings - 1; i++)
@@ -341,27 +361,86 @@ public static class JarSetup
             }
         }
 
-        // 윗면(평평, 위를 향함): 가운데 점에서 부채꼴로
-        int centerIndex = vertices.Count;
-        vertices.Add(new Vector3(0f, surfaceY * scale, 0f));
-        normals.Add(Vector3.up);
-        int capStart = vertices.Count;
-        for (int s = 0; s < SoilSegments; s++)
+        // 윗면: 바깥 고리에서 가운데로 겹겹이 (옆면과 따로 만들어 가장자리에 살짝 모서리가 생긴다)
+        int capBase = vertices.Count;
+        for (int c = 0; c <= CapRings; c++)
         {
-            float a = s * Mathf.PI * 2f / SoilSegments;
-            vertices.Add(new Vector3(Mathf.Cos(a) * surfaceRadius, surfaceY * scale, Mathf.Sin(a) * surfaceRadius));
-            normals.Add(Vector3.up);
+            float rf = 1f - c / (float)CapRings;
+            for (int s = 0; s < SoilSegments; s++)
+            {
+                float a = s * Mathf.PI * 2f / SoilSegments;
+                float px = Mathf.Cos(a) * surfaceRadius * rf, pz = Mathf.Sin(a) * surfaceRadius * rf;
+                vertices.Add(new Vector3(px * scale, top(rf, px, pz) * scale, pz * scale));
+            }
         }
-        for (int s = 0; s < SoilSegments; s++)
+        for (int c = 0; c < CapRings; c++)
         {
-            int s1 = (s + 1) % SoilSegments;
-            triangles.Add(centerIndex); triangles.Add(capStart + s1); triangles.Add(capStart + s);
+            for (int s = 0; s < SoilSegments; s++)
+            {
+                int s1 = (s + 1) % SoilSegments;
+                int o00 = capBase + c * SoilSegments + s, o01 = capBase + c * SoilSegments + s1;
+                int i00 = capBase + (c + 1) * SoilSegments + s, i01 = capBase + (c + 1) * SoilSegments + s1;
+                triangles.Add(o00); triangles.Add(o01); triangles.Add(i00);
+                triangles.Add(o01); triangles.Add(i01); triangles.Add(i00);
+            }
         }
 
         Mesh mesh = new Mesh { name = "SoilMesh" };
         mesh.SetVertices(vertices);
-        mesh.SetNormals(normals);
         mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+
+    /// <summary>
+    /// 누운 병의 흙: 병 안쪽(원통)의 아래쪽을 윗면 높이(surfaceY)까지 채운 모양. 아래는 병의 둥근 안쪽을 따라가고
+    /// 윗면에는 굴곡이 있다. 모델 크기 기준으로 만든다 (놓을 때 scale을 곱한다).
+    /// </summary>
+    private static Mesh BuildSideSoilMesh(Profile profile, Vector3 origin, float surfaceY, float seed)
+    {
+        const int ArcN = 18, TopN = 10;
+        float d = surfaceY - origin.y; // 병 축에서 흙 표면까지 (아래쪽이므로 음수)
+
+        var xs = new List<float>();
+        for (float x = profile.First; x <= profile.Last; x += 0.004f)
+            if (profile.Radius(x) * 0.98f > -d + 0.004f) xs.Add(x); // 표면 높이보다 넓은 몸통 구간에만 흙이 있다
+
+        int ring = ArcN + 1 + TopN;
+        var vertices = new List<Vector3>();
+        var triangles = new List<int>();
+        foreach (float x in xs)
+        {
+            float R = profile.Radius(x) * 0.98f;
+            float phi = Mathf.Asin(Mathf.Clamp(d / R, -1f, 1f));
+            float a0 = Mathf.PI - phi, a1 = 2f * Mathf.PI + phi, w = R * Mathf.Cos(phi);
+            for (int j = 0; j <= ArcN; j++) // 왼쪽 끝에서 바닥을 지나 오른쪽 끝까지
+            {
+                float t = Mathf.Lerp(a0, a1, j / (float)ArcN);
+                vertices.Add(new Vector3(x, origin.y + R * Mathf.Sin(t), origin.z + R * Mathf.Cos(t)));
+            }
+            for (int j = 1; j <= TopN; j++) // 윗면: 오른쪽에서 왼쪽으로
+            {
+                float z = Mathf.Lerp(origin.z + w, origin.z - w, j / (float)(TopN + 1));
+                float edge = 1f - Mathf.Pow(Mathf.Abs(z - origin.z) / Mathf.Max(w, 0.0001f), 2f);
+                vertices.Add(new Vector3(x, surfaceY + Bump(x, z, seed) * edge, z));
+            }
+        }
+        for (int i = 0; i < xs.Count - 1; i++)
+        {
+            for (int k = 0; k < ring; k++)
+            {
+                int k1 = (k + 1) % ring;
+                int a = i * ring + k, b = i * ring + k1, c = (i + 1) * ring + k, dd = (i + 1) * ring + k1;
+                triangles.Add(a); triangles.Add(c); triangles.Add(b);
+                triangles.Add(b); triangles.Add(c); triangles.Add(dd);
+            }
+        }
+
+        Mesh mesh = new Mesh { name = "SideSoilMesh" };
+        mesh.SetVertices(vertices);
+        mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateNormals();
         mesh.RecalculateBounds();
         return mesh;
     }
