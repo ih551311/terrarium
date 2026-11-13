@@ -25,9 +25,13 @@ public class Interactor : MonoBehaviour
     public Bag Bag { get; private set; }
     public Transform CameraTransform => cameraTransform;
 
+    /// <summary>화면 오른쪽 아래에서 휘둘러지는 도끼와 곡괭이</summary>
+    public ToolView ToolView { get; private set; }
+
     private void Awake()
     {
         Bag = GetComponent<Bag>();
+        if (cameraTransform != null) ToolView = ToolView.Create(cameraTransform);
     }
 
     private void Update()
@@ -46,6 +50,11 @@ public class Interactor : MonoBehaviour
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && target != null && keyboard.eKey.wasPressedThisFrame)
             target.Interact(this);
+
+        // 나무나 돌을 보고 좌클릭하면, 대상에 맞는 도구를 저절로 골라 휘두른다.
+        Mouse mouse = Mouse.current;
+        if (mouse != null && mouse.leftButton.wasPressedThisFrame && target is Harvestable harvestable)
+            harvestable.Hit(this);
     }
 
     /// <summary>화면 아래쪽에 알림 글자를 잠깐 보여 준다.</summary>

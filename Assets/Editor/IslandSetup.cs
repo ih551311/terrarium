@@ -419,6 +419,7 @@ public static class IslandSetup
             GameObject go = Spawn(group.transform, "Trees", name, x, z, scale);
             if (go == null) return;
             AddTrunkCollider(go, scale);
+            AddHarvestable(go, AcquireMethod.Axe, zone);
             count++;
         });
         return count;
@@ -443,6 +444,7 @@ public static class IslandSetup
             GameObject go = Spawn(group.transform, "Boulders", boulders[rng.Next(boulders.Length)], x, z, scale);
             if (go == null) return;
             AddBoxCollider(go);
+            AddHarvestable(go, AcquireMethod.Pickaxe, zone);
             count++;
         });
 
@@ -454,6 +456,7 @@ public static class IslandSetup
             GameObject go = Spawn(group.transform, "Rocks", rocks[rng.Next(rocks.Length)], x, z, Range(0.8f, 1.3f));
             if (go == null) return;
             AddBoxCollider(go);
+            AddHarvestable(go, AcquireMethod.Pickaxe, zone);
             count++;
         });
 
@@ -534,9 +537,11 @@ public static class IslandSetup
             MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(AssetDatabase.GUIDToAssetPath(guid));
             // 상점 품목과 희귀 재료는 섬에 놓지 않는다 (희귀 재료는 도끼와 곡괭이로 칠 때 나온다)
             if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Anywhere || data.isRare) continue;
+            // 도끼와 곡괭이로 얻는 재료는 바닥에 놓지 않고, 나무와 돌(Harvestable)에서 나온다
+            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe) continue;
 
             Zone target = data.zone == MaterialZone.Forest ? Zone.Forest : data.zone == MaterialZone.Beach ? Zone.Beach : Zone.Hill;
-            int want = data.acquire == AcquireMethod.Hand ? 9 : 6; // 도끼, 곡괭이 재료는 11단계 전까지 줍는 임시 자리
+            int want = 9;
             int placed = 0, tries = 0;
             while (placed < want && tries++ < 4000)
             {
@@ -609,6 +614,21 @@ public static class IslandSetup
         box.center = go.transform.InverseTransformPoint(b.center);
         Vector3 size = b.size;
         box.size = new Vector3(Mathf.Max(size.x, 0.4f), Mathf.Max(size.y, 0.4f), Mathf.Max(size.z, 0.4f));
+    }
+
+    // ───────── 캘 수 있는 나무와 돌 ─────────
+
+    /// <summary>나무나 돌을 도끼나 곡괭이로 캘 수 있게 한다. 구역에 맞는 재료가 먼저 나온다.</summary>
+    private static void AddHarvestable(GameObject go, AcquireMethod tool, Zone zone)
+    {
+        Harvestable h = go.AddComponent<Harvestable>();
+        SerializedObject so = new SerializedObject(h);
+        so.FindProperty("tool").enumValueIndex = (int)tool;
+        MaterialZone mz = zone == Zone.Forest ? MaterialZone.Forest
+                        : zone == Zone.Beach ? MaterialZone.Beach
+                        : zone == Zone.Hill ? MaterialZone.FlowerHill : MaterialZone.Anywhere;
+        so.FindProperty("zone").enumValueIndex = (int)mz;
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     // ───────── Collider 도우미 ─────────

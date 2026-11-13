@@ -1,0 +1,42 @@
+using UnityEngine;
+
+/// <summary>
+/// 도구로 칠 때 나는 "툭" 소리. 소리 파일이 아직 없어서 코드로 짧은 소리를 만들어 쓴다.
+/// 나중에 진짜 소리 파일을 구하면 이 스크립트만 바꾸면 된다.
+/// </summary>
+public static class ToolSound
+{
+    private static AudioClip clip;
+
+    public static void Play(Vector3 position, float pitchScale = 1f)
+    {
+        if (clip == null) clip = MakeClip();
+        AudioSource.PlayClipAtPoint(clip, position, 0.7f);
+    }
+
+    private static AudioClip MakeClip()
+    {
+        const int Rate = 22050;
+        int samples = (int)(Rate * 0.16f);
+        float[] data = new float[samples];
+        var random = new System.Random(7);
+        for (int i = 0; i < samples; i++)
+        {
+            float t = i / (float)Rate;
+            float decay = Mathf.Exp(-t * 28f);
+            float thump = Mathf.Sin(2f * Mathf.PI * 150f * t);
+            float noise = (float)(random.NextDouble() * 2.0 - 1.0);
+            data[i] = (thump * 0.7f + noise * 0.3f) * decay;
+        }
+        AudioClip c = AudioClip.Create("ToolHit", samples, 1, Rate, false);
+        c.SetData(data, 0);
+        return c;
+    }
+
+    // Play를 껐다 켤 때 만든 소리를 버린다.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void Reset()
+    {
+        clip = null;
+    }
+}

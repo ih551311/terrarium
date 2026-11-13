@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532c2f6a784165840bc6314107384e4a, type: 3}
+  m_Name: ToolSettings
+  m_EditorClassIdentifier: Assembly-CSharp::ToolSettings
+  axeLevels:
+  - hits: 4
+    amount: 1
+    rareChance: 0.03
+    upgradeCost: 0
+  - hits: 3
+    amount: 1
+    rareChance: 0.06
+    upgradeCost: 30
+  - hits: 2
+    amount: 2
+    rareChance: 0.1
+    upgradeCost: 80
+  - hits: 2
+    amount: 3
+    rareChance: 0.15
+    upgradeCost: 150
+  pickaxeLevels:
+  - hits: 4
+    amount: 1
+    rareChance: 0.03
+    upgradeCost: 0
+  - hits: 3
+    amount: 1
+    rareChance: 0.06
+    upgradeCost: 30
+  - hits: 2
+    amount: 2
+    rareChance: 0.1
+    upgradeCost: 80
+  - hits: 2
+    amount: 3
+    rareChance: 0.15
+    upgradeCost: 150
+  harvestMaterials:
+  - {fileID: 11400000, guid: 415c01bfa3b4c92428b192accc82f46b, type: 2}
+  - {fileID: 11400000, guid: 79e8fa40d5776ce4fab335fecf9a6f1b, type: 2}
+  - {fileID: 11400000, guid: c6e94a7b183fe6646aa2ab1be6c88bb5, type: 2}
+  - {fileID: 11400000, guid: fa1aa15b72796f040b08c10e7b0c2557, type: 2}
+  - {fileID: 11400000, guid: 64cd42347ccdd2c4b9a43aea253c9b75, type: 2}
+  - {fileID: 11400000, guid: aeb225b084016df4a9160a6481b86b20, type: 2}
+  - {fileID: 11400000, guid: b21ef976ab9168e46b945cc11a661193, type: 2}

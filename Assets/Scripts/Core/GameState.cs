@@ -14,8 +14,38 @@ public static class GameState
     private static readonly List<MaterialData> orders = new List<MaterialData>();       // 주문한 물건 (자고 나면 도착)
     private static readonly List<MaterialData> arrivedItems = new List<MaterialData>(); // 도착해서 우체통에 있는 물건
 
+    // 오늘 이미 주웠거나 캔 자리 (다음 날 아침에 비워진다). 집에 들어갔다 나와도 그대로 남아 있게 여기에 적어 둔다.
+    private static readonly HashSet<string> taken = new HashSet<string>();
+
     /// <summary>1일째부터 시작한다.</summary>
     public static int Day { get; private set; } = 1;
+
+    /// <summary>도끼의 강화 단계 (0이 기본, 3이 최대). 강화 주문은 13단계에서 붙인다.</summary>
+    public static int AxeLevel { get; private set; }
+
+    /// <summary>곡괭이의 강화 단계 (0이 기본, 3이 최대)</summary>
+    public static int PickaxeLevel { get; private set; }
+
+    /// <summary>도구(Axe 또는 Pickaxe)의 강화 단계</summary>
+    public static int LevelOf(AcquireMethod tool)
+    {
+        return tool == AcquireMethod.Axe ? AxeLevel : PickaxeLevel;
+    }
+
+    /// <summary>아침이 되어 주운 자리와 캔 자리가 다시 채워질 때 호출된다.</summary>
+    public static event Action DayStarted;
+
+    /// <summary>오늘 이 자리(id)의 재료를 가져갔다고 적는다.</summary>
+    public static void MarkTaken(string id)
+    {
+        taken.Add(id);
+    }
+
+    /// <summary>오늘 이 자리(id)의 재료를 이미 가져갔는가</summary>
+    public static bool IsTaken(string id)
+    {
+        return taken.Contains(id);
+    }
 
     /// <summary>지갑의 코인</summary>
     public static int Coins { get; private set; }
@@ -76,6 +106,8 @@ public static class GameState
         orders.Clear();
         Day++;
 
+        taken.Clear(); // 주운 자리와 캔 자리가 다시 채워진다
+        DayStarted?.Invoke();
         Changed?.Invoke();
         return anything;
     }
@@ -115,6 +147,10 @@ public static class GameState
         outbox.Clear();
         orders.Clear();
         arrivedItems.Clear();
+        taken.Clear();
+        AxeLevel = 0;
+        PickaxeLevel = 0;
+        DayStarted = null;
         Day = 1;
         Coins = 0;
         ArrivedCoins = 0;
