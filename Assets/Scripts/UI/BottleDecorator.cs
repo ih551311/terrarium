@@ -23,11 +23,24 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     [SerializeField] private float scaleStep = 1.1f;
     [SerializeField] private float messageSeconds = 2f;
 
+    [Header("확대 / 축소 (재료가 없는 곳에서 휠)")]
+    [Tooltip("휠 한 칸에 바뀌는 시야각(도). 시야각이 작을수록 크게 보인다.")]
+    [SerializeField] private float zoomStepDegrees = 6f;
+    [SerializeField] private float minFieldOfView = 20f;
+    [SerializeField] private float maxFieldOfView = 75f;
+    [Tooltip("클수록 빨리 따라간다")]
+    [SerializeField] private float zoomSmoothing = 14f;
+    [Tooltip("가장 크게 확대했을 때 바라보는 높이(병 기준). 확대할수록 시선이 이 높이(흙 쪽)로 내려온다.")]
+    [SerializeField] private float zoomedLookHeight = 0.12f;
+
     private RectTransform rect;
     private BottleContents contents;
     private Camera bottleCamera;
     private Vector2 downPosition;
     private float messageUntil;
+    private float defaultFieldOfView;
+    private float targetFieldOfView;
+    private Quaternion defaultRotation;
 
     private void Awake()
     {
@@ -39,8 +52,21 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     public void SetTarget(BottleContents bottleContents, Camera camera)
     {
         if (contents != null) contents.HideGhost(); // 닫을 때 미리보기가 남지 않게
+        if (bottleCamera != null)
+        {
+            // 확대한 것을 원래대로
+            bottleCamera.fieldOfView = defaultFieldOfView;
+            bottleCamera.transform.rotation = defaultRotation;
+        }
+
         contents = bottleContents;
         bottleCamera = camera;
+        if (bottleCamera != null)
+        {
+            defaultFieldOfView = bottleCamera.fieldOfView;
+            defaultRotation = bottleCamera.transform.rotation;
+            targetFieldOfView = defaultFieldOfView; // 열 때마다 기본 크기로 시작
+        }
         if (messageText != null) messageText.text = string.Empty;
     }
 
@@ -50,6 +76,22 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         {
             messageText.text = string.Empty;
             messageUntil = 0f;
+        }
+
+        // 확대 / 축소: 목표 시야각으로 부드럽게 따라간다.
+        if (bottleCamera != null)
+        {
+            float t = 1f - Mathf.Exp(-zoomSmoothing * Time.unscaledDeltaTime);
+            bottleCamera.fieldOfView = Mathf.Lerp(bottleCamera.fieldOfView, targetFieldOfView, t);
+
+            // 확대할수록 시선을 흙 쪽으로 내려서, 재료를 놓는 바닥이 잘리지 않게 한다.
+            if (contents != null)
+            {
+                float zoomIn = Mathf.InverseLerp(defaultFieldOfView, minFieldOfView, bottleCamera.fieldOfView);
+                Vector3 lookAt = contents.transform.TransformPoint(0f, zoomedLookHeight, 0f);
+                Quaternion toGround = Quaternion.LookRotation(lookAt - bottleCamera.transform.position);
+                bottleCamera.transform.rotation = Quaternion.Slerp(defaultRotation, toGround, zoomIn);
+            }
         }
 
         if (contents == null) return;
@@ -108,12 +150,20 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     public void OnScroll(PointerEventData eventData)
     {
-        if (contents == null || contents.IsCompleted) return;
-        PlacedMaterial hovered = FindHovered();
-        if (hovered == null) return;
+        if (contents == null || Mathf.Approximately(eventData.scrollDelta.y, 0f)) return;
+        float direction = Mathf.Sign(eventData.scrollDelta.y);
 
-        hovered.Rotate(Mathf.Sign(eventData.scrollDelta.y) * rotateDegreesPerScroll);
-        contents.SaveState();
+        // 놓은 재료 위에서는 그 재료를 돌린다. (완성한 병은 고칠 수 없다)
+        PlacedMaterial hovered = contents.IsCompleted ? null : FindHovered(eventData.position);
+        if (hovered != null)
+        {
+            hovered.Rotate(direction * rotateDegreesPerScroll);
+            contents.SaveState();
+            return;
+        }
+
+        // 그 밖의 곳에서는 병 화면을 확대(휠 위로) / 축소(휠 아래로)한다.
+        targetFieldOfView = Mathf.Clamp(targetFieldOfView - direction * zoomStepDegrees, minFieldOfView, maxFieldOfView);
     }
 
     private void TryPlace(Vector2 screenPosition)

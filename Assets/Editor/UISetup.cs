@@ -90,11 +90,11 @@ public static class UISetup
         GameObject edit = Rect(bWindow.transform, "EditTools");
         Stretch(edit);
 
-        Label(edit.transform, "Hint", "클릭: 놓기  ·  재료에 마우스 올리고  휠: 돌리기  ·  Q/R: 작게/크게  ·  우클릭: 빼기  ·  끌기: 병 돌리기",
-            32, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 175f), new Vector2(1240f, 50f), TextAlignmentOptions.Center);
+        Label(edit.transform, "Hint", "클릭: 놓기  ·  재료 위 휠: 돌리기  ·  그 밖의 휠: 확대/축소  ·  Q/R: 크기  ·  우클릭: 빼기  ·  끌기: 병 돌리기",
+            28, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 175f), new Vector2(1240f, 50f), TextAlignmentOptions.Center);
 
         // 완성한 병을 열었을 때 보이는 글자 (평소엔 꺼 둔다)
-        GameObject completedLabel = Label(bWindow.transform, "CompletedLabel", "완성한 병이에요\n끌어서 돌려 볼 수 있어요", 48,
+        GameObject completedLabel = Label(bWindow.transform, "CompletedLabel", "완성한 병이에요\n끌어서 돌리고, 휠로 확대/축소할 수 있어요", 48,
             new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(1000f, 160f), TextAlignmentOptions.Center).gameObject;
         completedLabel.SetActive(false);
 
