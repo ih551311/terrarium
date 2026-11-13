@@ -17,8 +17,12 @@ public class Harvestable : MonoBehaviour, IInteractable
     [SerializeField] private MaterialZone zone = MaterialZone.Anywhere;
 
     // 비어 있을 때: 색을 살짝 줄이고 은은한 빛을 더해 "바랜" 느낌을 낸다. (곱하기만으로는 어두워지기만 해서)
-    private static readonly Color EmptyTint = new Color(0.88f, 0.88f, 0.88f, 1f);
-    private static readonly Color EmptyGlow = new Color(0.17f, 0.17f, 0.16f, 1f);
+    private static readonly Color EmptyTint = new Color(0.9f, 0.9f, 0.9f, 1f);
+    private static readonly Color EmptyGlow = new Color(0.05f, 0.05f, 0.045f, 1f);
+
+    // 잎 렌더러의 이름: 줄기 이름 뒤에 소문자 l이 붙고 _LOD 번호가 온다 (예: Tree10Bl_LOD0)
+    private static readonly System.Text.RegularExpressions.Regex LeafName =
+        new System.Text.RegularExpressions.Regex(@"[A-Z]l_LOD\d+$");
 
     private int hits;
     private bool depleted;
@@ -146,6 +150,10 @@ public class Harvestable : MonoBehaviour, IInteractable
     private void SetDepleted(bool value)
     {
         depleted = value;
+
+        // 나무는 잎을 숨기고 줄기만 남긴다. (잎 오브젝트 이름은 줄기 이름 뒤에 l이 붙는다. 예: Tree01A_LOD0 / Tree01Al_LOD0)
+        if (tool == AcquireMethod.Axe && SetLeavesVisible(!value)) return;
+
         if (originals == null)
         {
             originals = new Material[renderers.Length][];
@@ -176,6 +184,19 @@ public class Harvestable : MonoBehaviour, IInteractable
                 r.sharedMaterials = originals[i];
             }
         }
+    }
+
+    /// <summary>나무의 잎을 보이거나 숨긴다. 잎을 찾지 못하면 false를 돌려주고, 그때는 색으로 비어 있음을 보여 준다.</summary>
+    private bool SetLeavesVisible(bool visible)
+    {
+        bool found = false;
+        foreach (Renderer r in renderers)
+        {
+            if (r == null || !LeafName.IsMatch(r.name)) continue;
+            r.enabled = visible;
+            found = true;
+        }
+        return found;
     }
 
     // ───────── 흔들림 ─────────
