@@ -36,16 +36,14 @@ public class FirstPersonController : MonoBehaviour
         SetCursorLocked(true);
     }
 
-    private void OnDisable()
-    {
-        SetCursorLocked(false);
-    }
-
     private void Update()
     {
         Keyboard keyboard = Keyboard.current;
         Mouse mouse = Mouse.current;
         if (keyboard == null || mouse == null) return;
+
+        // 가방이나 병 패널이 열려 있으면 멈춘다. (커서는 UIFocus가 관리한다)
+        if (UIFocus.IsOpen) return;
 
         // Esc로 커서를 풀고, 화면을 클릭하면 다시 잠근다. (메뉴는 11단계에서 만든다)
         if (keyboard.escapeKey.wasPressedThisFrame) SetCursorLocked(false);

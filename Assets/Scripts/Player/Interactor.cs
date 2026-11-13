@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// 바라보는 물건과 E 키로 상호작용한다. 지금은 재료 줍기만 한다.
-/// (물 주기, 작업대, 자기는 이후 단계에서 여기에 더한다.)
+/// 바라보는 물건과 E 키로 상호작용한다. (줍기, 작업대 쓰기. 물 주기와 자기는 이후 단계)
+/// 바라보는 물건이 IInteractable이면 안내 글자를 보여 주고, E를 누르면 Interact를 부른다.
 /// Player 오브젝트에 붙인다. Bag과 같은 오브젝트여야 한다.
 /// </summary>
 [RequireComponent(typeof(Bag))]
@@ -17,47 +17,49 @@ public class Interactor : MonoBehaviour
     [SerializeField] private float reachDistance = 2.5f;
     [SerializeField] private float messageSeconds = 2f;
 
-    private Bag bag;
-    private Pickup target;
+    private IInteractable target;
     private string message;
     private float messageUntil;
 
+    public Bag Bag { get; private set; }
+    public Transform CameraTransform => cameraTransform;
+
     private void Awake()
     {
-        bag = GetComponent<Bag>();
+        Bag = GetComponent<Bag>();
     }
 
     private void Update()
     {
+        // 패널이 열려 있으면 바라보기도 E 키도 받지 않는다.
+        if (UIFocus.IsOpen)
+        {
+            target = null;
+            return;
+        }
+
         target = FindTarget();
 
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && target != null && keyboard.eKey.wasPressedThisFrame)
-            TryPickUp(target);
+            target.Interact(this);
     }
 
-    private Pickup FindTarget()
+    /// <summary>화면 가운데 글자로 안내 메시지를 잠깐 보여 준다.</summary>
+    public void ShowMessage(string text)
+    {
+        message = text;
+        messageUntil = Time.time + messageSeconds;
+    }
+
+    private IInteractable FindTarget()
     {
         if (cameraTransform == null) return null;
 
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         if (Physics.Raycast(ray, out RaycastHit hit, reachDistance, ~0, QueryTriggerInteraction.Collide))
-            return hit.collider.GetComponentInParent<Pickup>();
+            return hit.collider.GetComponentInParent<IInteractable>();
         return null;
-    }
-
-    private void TryPickUp(Pickup pickup)
-    {
-        if (bag.TryAdd(pickup.Material))
-        {
-            pickup.Collect();
-            target = null;
-        }
-        else
-        {
-            message = "가방이 가득 찼어요";
-            messageUntil = Time.time + messageSeconds;
-        }
     }
 
     // 임시 화면 표시. 정식 UI는 11단계에서 만든다.
@@ -66,17 +68,16 @@ public class Interactor : MonoBehaviour
         GUIStyle style = new GUIStyle(GUI.skin.label)
         {
             font = GameFont.Main,
-            fontSize = 44, // 이 글꼴은 같은 값에서도 작게 그려져서 크게 잡는다
+            fontSize = 36,
             alignment = TextAnchor.MiddleCenter
         };
-        float w = 400f, h = 40f;
+        float w = 600f, h = 60f;
         float x = (Screen.width - w) / 2f;
 
-        if (target != null && target.Material != null)
-            GUI.Label(new Rect(x, Screen.height / 2f + 40f, w, h),
-                "[E] " + target.Material.displayName + " 줍기", style);
+        if (target != null && !string.IsNullOrEmpty(target.Prompt))
+            GUI.Label(new Rect(x, Screen.height / 2f + 40f, w, h), target.Prompt, style);
 
         if (message != null && Time.time < messageUntil)
-            GUI.Label(new Rect(x, Screen.height / 2f + 80f, w, h), message, style);
+            GUI.Label(new Rect(x, Screen.height / 2f + 100f, w, h), message, style);
     }
 }

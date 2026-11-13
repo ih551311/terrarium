@@ -1,13 +1,13 @@
 using UnityEngine;
 
 /// <summary>
-/// 게임 전체에서 쓰는 글꼴을 한 곳에서 관리한다.
+/// 게임 전체에서 쓰는 글꼴을 한 곳에서 관리한다. (임시 OnGUI 글자용. 정식 UI는 TMP 기본 폰트를 쓴다)
 /// 글꼴을 바꾸려면 Assets/Resources/Fonts/ 의 파일을 바꾸고 아래 FontPath만 고치면 된다.
-/// 글꼴: Terrarum Sans Bitmap (SIL OFL 1.1, 같은 폴더의 LICENSE 파일 참고)
+/// 글꼴: Cafe24 Dongdong Light (SIL OFL 1.1, 같은 폴더의 License PDF 참고)
 /// </summary>
 public static class GameFont
 {
-    private const string FontPath = "Fonts/TerrarumSansBitmap"; // 확장자(.otf)는 적지 않는다
+    private const string FontPath = "Fonts/Cafe24DongdongLight"; // 확장자(.otf)는 적지 않는다
 
     private static Font main;
 
