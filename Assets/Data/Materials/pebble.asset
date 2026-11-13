@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: pebble
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: pebble
+  displayName: "\uC870\uC57D\uB3CC"
+  kind: 1
+  icon: {fileID: 0}
+  placedPrefab: {fileID: 919132149155446097, guid: 6f198793e8914c64d9134e08667d7087, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.62, g: 0.62, b: 0.65, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

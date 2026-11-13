@@ -46,4 +46,8 @@ public class MaterialData : ScriptableObject
 
     [Tooltip("기본 도형의 크기(미터). 병 안이 작아서 0.05~0.1 정도가 알맞다.")]
     public Vector3 placeholderSize = new Vector3(0.07f, 0.07f, 0.07f);
+
+    [Header("섬 바닥에 놓였을 때 모습")]
+    [Tooltip("섬에 놓을 때 모델을 몇 배로 키울지. 모델이 4~12cm로 작아서 병 밖에서는 크게 보여야 주울 수 있다.")]
+    public float pickupScale = 4f;
 }

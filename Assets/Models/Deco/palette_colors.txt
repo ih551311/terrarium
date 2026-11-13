@@ -31,3 +31,4 @@
 30  wall        #F6ECD8
 31  lampglow    #FFECA4
 32  metal       #7C828C
+33  glass       #CEEAF2

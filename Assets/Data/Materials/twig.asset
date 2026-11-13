@@ -16,7 +16,8 @@ MonoBehaviour:
   displayName: "\uB098\uBB47\uAC00\uC9C0"
   kind: 1
   icon: {fileID: 0}
-  placedPrefab: {fileID: 0}
+  placedPrefab: {fileID: 919132149155446097, guid: af05ded2a1cc3ce4a9db13521da90726, type: 3}
   placeholderShape: 1
   placeholderColor: {r: 0.7, g: 0.55, b: 0.35, a: 1}
   placeholderSize: {x: 0.025, y: 0.05, z: 0.025}
+  pickupScale: 4
