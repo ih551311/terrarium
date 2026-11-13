@@ -1,0 +1,213 @@
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.Rendering;
+
+/// <summary>
+/// 집 안(HutInterior) 씬을 에셋 팩의 통나무 오두막(6m x 6m)으로 꾸민다.
+/// 바닥, 벽, 창, 문, 지붕과 가구(침대, 책상과 편지, 선반, 보관 상자, 통, 러그, 촛불)를 놓고 따뜻한 조명을 켠다.
+/// 작업대(Workbench)와 그 위의 병들은 그대로 두고, 문(SceneDoor)과 도착 지점은 다시 만든다.
+/// 메뉴: 유리병 정원 > 집 안 꾸미기. 여러 번 눌러도 같은 결과가 나온다.
+/// </summary>
+public static class InteriorSetup
+{
+    private const string InteriorPath = "Assets/Scenes/HutInterior.unity";
+    private const string IslandPath = "Assets/Scenes/Island.unity";
+    private const string Kit = "Assets/Low Poly Nature Pack/Prefabs/Cabin/";
+    private const string DecoFolder = "Assets/Models/Deco/";
+
+    [MenuItem("유리병 정원/집 안 꾸미기")]
+    public static string Build()
+    {
+        EditorSceneManager.SaveOpenScenes();
+        EditorSceneManager.OpenScene(InteriorPath, OpenSceneMode.Single);
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+
+        // 예전에 만든 것(큐브 바닥과 벽, 문, 도착 지점, 가구)을 지운다
+        foreach (string n in new[] { "Floor", "WallNorth", "WallSouth", "WallEast", "WallWest", "Door", "Spawn_FromIsland", "Cabin", "Furniture" })
+        {
+            GameObject old = GameObject.Find(n);
+            while (old != null) { Object.DestroyImmediate(old); old = GameObject.Find(n); }
+        }
+
+        // 오두막 (바닥 윗면이 높이 0, 문은 남쪽)
+        CabinBuilder.Cabin cabin = CabinBuilder.Build(null, Vector3.zero, 0f, false);
+
+        // 문: 바라보고 E를 누르면 섬으로 나간다
+        if (cabin.door != null)
+        {
+            cabin.door.name = "Door";
+            SceneDoor door = cabin.door.AddComponent<SceneDoor>();
+            SerializedObject so = new SerializedObject(door);
+            so.FindProperty("targetScene").stringValue = "Island";
+            so.FindProperty("spawnId").stringValue = "FromHut";
+            so.FindProperty("label").stringValue = "밖으로 나가기";
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // 도착 지점: 문 안쪽, 방 안을 바라본다
+        GameObject spawn = new GameObject("Spawn_FromIsland");
+        spawn.transform.SetPositionAndRotation(new Vector3(0f, 1f, -1.9f), Quaternion.identity);
+        SpawnPoint sp = spawn.AddComponent<SpawnPoint>();
+        SerializedObject sps = new SerializedObject(sp);
+        sps.FindProperty("id").stringValue = "FromIsland";
+        sps.ApplyModifiedPropertiesWithoutUndo();
+
+        // 작업대는 북쪽 벽 앞에 둔다
+        GameObject bench = GameObject.Find("Workbench");
+        if (bench != null) bench.transform.position = new Vector3(0f, 0f, 2.0f);
+
+        BuildFurniture(bench != null ? bench.transform.position : Vector3.zero);
+        BuildLighting();
+
+        // 이미 서 있는 플레이어(이 씬의 GameRoot)를 도착 지점으로 옮긴다
+        foreach (GameRoot root in Object.FindObjectsByType<GameRoot>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            Transform player = root.transform.Find("Player");
+            if (player != null) player.position = spawn.transform.position;
+        }
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
+        AssetDatabase.SaveAssets();
+        return "집 안 꾸미기 완료";
+    }
+
+    // ───────── 가구 ─────────
+
+    private static void BuildFurniture(Vector3 benchPosition)
+    {
+        GameObject root = new GameObject("Furniture");
+
+        Material wood = Mat("FurnitureWood", new Color(0.69f, 0.51f, 0.35f));
+        Material darkWood = Mat("FurnitureDarkWood", new Color(0.47f, 0.33f, 0.23f));
+        Material cream = Mat("FurnitureCream", new Color(0.96f, 0.93f, 0.85f));
+        Material blanket = Mat("FurnitureBlanket", new Color(0.55f, 0.72f, 0.88f));
+        Material pillow = Mat("FurniturePillow", new Color(0.99f, 0.97f, 0.94f));
+        Material rugMat = Mat("FurnitureRug", new Color(0.96f, 0.76f, 0.78f));
+        Material paper = Mat("FurniturePaper", new Color(1f, 0.99f, 0.95f));
+
+        // 러그: 방 가운데
+        Cylinder(root, "Rug", new Vector3(0f, 0.012f, -0.4f), new Vector3(2.6f, 0.012f, 2.6f), rugMat, false);
+
+        // 침대 (동쪽 벽, 남쪽 절반)
+        Cube(root, "BedFrame", new Vector3(2.15f, 0.18f, -1.1f), new Vector3(1.1f, 0.36f, 2.1f), darkWood);
+        Cube(root, "BedMattress", new Vector3(2.15f, 0.46f, -1.1f), new Vector3(1.0f, 0.2f, 2.0f), cream);
+        Cube(root, "BedBlanket", new Vector3(2.15f, 0.6f, -1.55f), new Vector3(1.04f, 0.1f, 1.2f), blanket);
+        Cube(root, "BedPillow", new Vector3(2.15f, 0.62f, -0.35f), new Vector3(0.8f, 0.12f, 0.4f), pillow);
+        Cube(root, "BedHeadboard", new Vector3(2.15f, 0.55f, 0.0f), new Vector3(1.1f, 0.9f, 0.08f), wood);
+
+        // 책상과 편지 (서쪽 벽, 남쪽)
+        Cube(root, "DeskTop", new Vector3(-2.3f, 0.76f, -1.7f), new Vector3(0.7f, 0.06f, 1.3f), wood);
+        foreach (Vector2 leg in new[] { new Vector2(-2.58f, -2.28f), new Vector2(-2.02f, -2.28f), new Vector2(-2.58f, -1.12f), new Vector2(-2.02f, -1.12f) })
+            Cube(root, "DeskLeg", new Vector3(leg.x, 0.37f, leg.y), new Vector3(0.06f, 0.74f, 0.06f), darkWood);
+        Cube(root, "Letter", new Vector3(-2.3f, 0.795f, -1.7f), new Vector3(0.3f, 0.006f, 0.21f), paper, false);
+
+        // 책상 위 촛불 (모델 + 불빛)
+        GameObject candle = Deco(root, "deco_candle", new Vector3(-2.3f, 0.79f, -2.1f), 6f);
+        PointLight(candle.transform, "CandleLight", new Vector3(0f, 0.25f, 0f), new Color(1f, 0.82f, 0.55f), 1.2f, 3.5f);
+
+        // 선반 (서쪽 벽, 북쪽): 3단 x 2칸 = 6칸. 4단계에서 완성한 병을 올린다.
+        Vector3 shelf = new Vector3(-2.58f, 0f, 1.3f);
+        foreach (float y in new[] { 0.25f, 0.8f, 1.35f, 1.9f })
+            Cube(root, "ShelfBoard", shelf + new Vector3(0f, y, 0f), new Vector3(0.3f, 0.04f, 1.9f), wood);
+        foreach (float z in new[] { -0.93f, 0.93f })
+            Cube(root, "ShelfPost", shelf + new Vector3(0f, 1.07f, z), new Vector3(0.3f, 1.7f, 0.05f), darkWood);
+        Cube(root, "ShelfBack", shelf + new Vector3(-0.13f, 1.07f, 0f), new Vector3(0.03f, 1.7f, 1.9f), darkWood, false);
+
+        // 보관 상자와 통
+        Kitpiece(root, "Box02", new Vector3(1.7f, 0f, 2.1f), 195f);
+        Kitpiece(root, "Barrel", new Vector3(2.35f, 0f, 2.3f), 0f);
+        Kitpiece(root, "Barrel", new Vector3(2.4f, 0f, 1.35f), 40f);
+        Kitpiece(root, "Box01", new Vector3(-2.2f, 0f, -0.2f), 80f);
+    }
+
+    private static void BuildLighting()
+    {
+        // 따뜻한 환경광 (지붕 때문에 해가 들어오는 창가 말고는 어두워서)
+        RenderSettings.ambientMode = AmbientMode.Flat;
+        RenderSettings.ambientLight = new Color(0.62f, 0.56f, 0.5f);
+
+        GameObject lights = new GameObject("Lights");
+        PointLight(lights.transform, "CeilingLight", new Vector3(0f, 3.1f, -0.2f), new Color(1f, 0.9f, 0.72f), 2.2f, 8f);
+        PointLight(lights.transform, "WorkbenchLight", new Vector3(0f, 2.2f, 1.6f), new Color(1f, 0.88f, 0.7f), 1.4f, 5f);
+    }
+
+    // ───────── 도우미 ─────────
+
+    private static Material Mat(string name, Color color)
+    {
+        return BottleSetup.GetOrCreateMaterial(name, color);
+    }
+
+    private static GameObject Cube(GameObject parent, string name, Vector3 pos, Vector3 scale, Material mat, bool collider = true)
+    {
+        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Setup(go, parent, name, pos, scale, mat, collider);
+        return go;
+    }
+
+    private static GameObject Cylinder(GameObject parent, string name, Vector3 pos, Vector3 scale, Material mat, bool collider = true)
+    {
+        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        Setup(go, parent, name, pos, scale, mat, collider);
+        return go;
+    }
+
+    private static void Setup(GameObject go, GameObject parent, string name, Vector3 pos, Vector3 scale, Material mat, bool collider)
+    {
+        go.name = name;
+        go.transform.SetParent(parent.transform, false);
+        go.transform.localPosition = pos;
+        go.transform.localScale = scale;
+        go.GetComponent<Renderer>().sharedMaterial = mat;
+        if (!collider) Object.DestroyImmediate(go.GetComponent<Collider>());
+    }
+
+    /// <summary>오두막 키트의 소품(통, 상자)을 놓는다.</summary>
+    private static void Kitpiece(GameObject parent, string prefabName, Vector3 pos, float yaw)
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Kit + prefabName + ".prefab");
+        GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+        go.transform.SetParent(parent.transform, false);
+        go.transform.localPosition = pos;
+        go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        Bounds b = new Bounds(go.transform.position, Vector3.zero);
+        bool first = true;
+        foreach (Renderer r in go.GetComponentsInChildren<Renderer>())
+        {
+            if (r.name.Contains("LOD1") || r.name.Contains("LOD2") || r.name.Contains("LOD3")) continue;
+            if (first) { b = r.bounds; first = false; } else b.Encapsulate(r.bounds);
+        }
+        BoxCollider box = go.AddComponent<BoxCollider>();
+        box.center = go.transform.InverseTransformPoint(b.center);
+        Vector3 size = go.transform.InverseTransformVector(b.size);
+        box.size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+    }
+
+    /// <summary>작은 장식 모델(deco_*)을 크게 키워 소품으로 놓는다.</summary>
+    private static GameObject Deco(GameObject parent, string model, Vector3 pos, float scale)
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DecoFolder + model + ".obj");
+        GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+        go.name = model;
+        go.transform.SetParent(parent.transform, false);
+        go.transform.localPosition = pos;
+        go.transform.localScale = Vector3.one * scale;
+        return go;
+    }
+
+    private static void PointLight(Transform parent, string name, Vector3 localPos, Color color, float intensity, float range)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = localPos;
+        Light l = go.AddComponent<Light>();
+        l.type = LightType.Point;
+        l.color = color;
+        l.intensity = intensity;
+        l.range = range;
+        l.shadows = LightShadows.None;
+    }
+}
