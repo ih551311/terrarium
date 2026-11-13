@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4690904425171280210}
   - component: {fileID: 3510472042594176935}
-  - component: {fileID: 4490692699757641054}
+  - component: {fileID: 8533390283570148417}
   - component: {fileID: 3555938336360407976}
   m_Layer: 8
   m_Name: Bottle_tall
@@ -50,8 +50,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed0bdb720c5280846844b98056d43fa3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleViewer
---- !u!136 &4490692699757641054
-CapsuleCollider:
+--- !u!65 &8533390283570148417
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -68,11 +68,9 @@ CapsuleCollider:
   m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.056
-  m_Height: 0.29499996
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.14749998, z: 0}
+  serializedVersion: 3
+  m_Size: {x: 0.224, y: 0.5899999, z: 0.224}
+  m_Center: {x: 0, y: 0.29499996, z: 0}
 --- !u!114 &3555938336360407976
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -86,10 +84,156 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleContents
   bottleId: bottle1
-  surfaceLocalY: 0.024
-  soilRadius: 0.045922555
+  surfaceLocalY: 0.048
   maxItems: 12
-  zoomLookHeight: 0.053499997
+  zoomLookPoint: {x: 0, y: 0.10699999, z: 0}
+  axisAlongX: 0
+  axisOrigin: {x: 0, y: 0, z: 0}
+  profileStart: 0.008
+  profileStep: 0.004
+  profileRadii:
+  - 0.07998791
+  - 0.10077686
+  - 0.1026019
+  - 0.10364802
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10399129
+  - 0.10357038
+  - 0.103149466
+  - 0.10264808
+  - 0.101422384
+  - 0.100196704
+  - 0.09883492
+  - 0.096928746
+  - 0.09502257
+  - 0.09296736
+  - 0.09056436
+  - 0.08816136
+  - 0.08565329
+  - 0.08298763
+  - 0.08032196
+  - 0.077657744
+  - 0.074994996
+  - 0.07233226
+  - 0.06982567
+  - 0.067423195
+  - 0.06502074
+  - 0.06296342
+  - 0.061054025
+  - 0.05914463
+  - 0.05778294
+  - 0.056558155
+  - 0.05533337
+  - 0.054833286
+  - 0.05441373
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  - 0.053994168
+  interiorMargin: 0.97
+  surfaceCenter: {x: 0, y: 0}
+  pointerTolerance: 0.06
   data: {fileID: 11400000, guid: 9c111a0827abf6b4fb3990ff0206ce52, type: 2}
   viewCamera: {fileID: 2727210268515827948}
   groundRenderer: {fileID: 1324692844781212189}
@@ -211,7 +355,7 @@ Transform:
   m_GameObject: {fileID: 7335837970109872918}
   serializedVersion: 2
   m_LocalRotation: {x: 0.03837652, y: -0, z: -0, w: 0.99926335}
-  m_LocalPosition: {x: 0, y: 0.17699997, z: -0.38349992}
+  m_LocalPosition: {x: 0, y: 0.35399994, z: -0.76699984}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -249,7 +393,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.01
-  far clip plane: 5
+  far clip plane: 8
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -276,6 +420,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4690904425171280210}
     m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: bb5c7228ca1075c438bdb40be92d53b1, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bb5c7228ca1075c438bdb40be92d53b1, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bb5c7228ca1075c438bdb40be92d53b1, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bb5c7228ca1075c438bdb40be92d53b1, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
@@ -346,6 +502,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4690904425171280210}
     m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 16d54dc1bf68a3e43a2d92fed6a84c84, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 16d54dc1bf68a3e43a2d92fed6a84c84, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 16d54dc1bf68a3e43a2d92fed6a84c84, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 16d54dc1bf68a3e43a2d92fed6a84c84, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0

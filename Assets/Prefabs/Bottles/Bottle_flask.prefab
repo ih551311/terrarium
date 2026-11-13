@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5712433508982957282}
   - component: {fileID: 5156729819147061059}
-  - component: {fileID: 752114229076848368}
+  - component: {fileID: 6608129949079857688}
   - component: {fileID: 5360161674917781108}
   m_Layer: 8
   m_Name: Bottle_flask
@@ -50,8 +50,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed0bdb720c5280846844b98056d43fa3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleViewer
---- !u!136 &752114229076848368
-CapsuleCollider:
+--- !u!65 &6608129949079857688
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -68,11 +68,9 @@ CapsuleCollider:
   m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.08
-  m_Height: 0.235
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.1175, z: 0}
+  serializedVersion: 3
+  m_Size: {x: 0.32, y: 0.47, z: 0.32}
+  m_Center: {x: 0, y: 0.235, z: 0}
 --- !u!114 &5360161674917781108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -86,10 +84,126 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleContents
   bottleId: bottle2
-  surfaceLocalY: 0.029000001
-  soilRadius: 0.06625033
+  surfaceLocalY: 0.058000002
   maxItems: 12
-  zoomLookHeight: 0.052500002
+  zoomLookPoint: {x: 0, y: 0.105000004, z: 0}
+  axisAlongX: 0
+  axisOrigin: {x: 0, y: 0, z: 0}
+  profileStart: 0.008
+  profileStep: 0.004
+  profileRadii:
+  - 0.132
+  - 0.15018326
+  - 0.15149863
+  - 0.15199178
+  - 0.15178458
+  - 0.15157738
+  - 0.15137018
+  - 0.15116298
+  - 0.15095578
+  - 0.15074858
+  - 0.15054138
+  - 0.15033418
+  - 0.15012698
+  - 0.14991978
+  - 0.14971258
+  - 0.14950538
+  - 0.14868872
+  - 0.14766893
+  - 0.14664912
+  - 0.14562932
+  - 0.14460951
+  - 0.1435897
+  - 0.1425699
+  - 0.14126655
+  - 0.13967966
+  - 0.13809276
+  - 0.13650586
+  - 0.13491897
+  - 0.13333207
+  - 0.13174517
+  - 0.13005514
+  - 0.12805569
+  - 0.12605624
+  - 0.12405679
+  - 0.122057326
+  - 0.12005787
+  - 0.11805842
+  - 0.11605897
+  - 0.11384266
+  - 0.11162635
+  - 0.10941004
+  - 0.10719374
+  - 0.10497743
+  - 0.10276112
+  - 0.10054481
+  - 0.09832819
+  - 0.09611146
+  - 0.09389473
+  - 0.09167799
+  - 0.08946126
+  - 0.08724453
+  - 0.0850278
+  - 0.082919985
+  - 0.08092108
+  - 0.0789222
+  - 0.076923296
+  - 0.0749244
+  - 0.07292551
+  - 0.070926614
+  - 0.06903084
+  - 0.067444466
+  - 0.06585809
+  - 0.0642717
+  - 0.062685326
+  - 0.06109895
+  - 0.059512567
+  - 0.057926185
+  - 0.056907397
+  - 0.05588862
+  - 0.054869834
+  - 0.053851046
+  - 0.05283226
+  - 0.05181348
+  - 0.050794695
+  - 0.05027617
+  - 0.049924407
+  - 0.04957264
+  - 0.04922087
+  - 0.048869107
+  - 0.04851734
+  - 0.04816557
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  - 0.04798969
+  interiorMargin: 0.97
+  surfaceCenter: {x: 0, y: 0}
+  pointerTolerance: 0.06
   data: {fileID: 11400000, guid: 91d2b2eac7125e64e8f943ebbffa03cb, type: 2}
   viewCamera: {fileID: 2024477448386339888}
   groundRenderer: {fileID: 4556745817755206854}
@@ -211,7 +325,7 @@ Transform:
   m_GameObject: {fileID: 8303713247533215157}
   serializedVersion: 2
   m_LocalRotation: {x: 0.038376525, y: -0, z: -0, w: 0.99926335}
-  m_LocalPosition: {x: 0, y: 0.141, z: -0.3055}
+  m_LocalPosition: {x: 0, y: 0.282, z: -0.611}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -249,7 +363,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.01
-  far clip plane: 5
+  far clip plane: 8
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -276,6 +390,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5712433508982957282}
     m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 520bc0fb085e61345a85713072f0188c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 520bc0fb085e61345a85713072f0188c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 520bc0fb085e61345a85713072f0188c, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 520bc0fb085e61345a85713072f0188c, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
@@ -355,6 +481,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5712433508982957282}
     m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 8f6c13457fb9e2b4189a442a592602bd, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8f6c13457fb9e2b4189a442a592602bd, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8f6c13457fb9e2b4189a442a592602bd, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8f6c13457fb9e2b4189a442a592602bd, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0

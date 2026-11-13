@@ -86,7 +86,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             if (contents != null)
             {
                 float zoomIn = Mathf.InverseLerp(defaultFieldOfView, minFieldOfView, bottleCamera.fieldOfView);
-                Vector3 lookAt = contents.transform.TransformPoint(0f, contents.ZoomLookHeight, 0f); // 병마다 다르다
+                Vector3 lookAt = contents.transform.TransformPoint(contents.ZoomLookPoint); // 병마다 다르다
                 Quaternion toGround = Quaternion.LookRotation(lookAt - bottleCamera.transform.position);
                 bottleCamera.transform.rotation = Quaternion.Slerp(defaultRotation, toGround, zoomIn);
             }
@@ -106,13 +106,15 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
         PlacedMaterial hovered = FindHovered();
         if (hovered == null) return;
-        hovered.ScaleBy(bigger ? scaleStep : 1f / scaleStep);
-        contents.SaveState();
+        // 병 밖으로 나가면 안쪽으로 밀어 보고, 그래도 안 되면 키우지 않는다.
+        if (!contents.TryScale(hovered, bigger ? scaleStep : 1f / scaleStep) && bigger)
+            ShowMessage("병 안에서 더 키울 수 없어요");
     }
 
     /// <summary>
     /// 고른 재료를 지금 클릭하면 놓일 자리에 반투명한 그림자를 보여 준다.
-    /// 재료를 안 골랐거나, 병이 가득 찼거나, 마우스가 흙 위가 아니면 숨긴다.
+    /// 재료를 안 골랐거나, 병이 가득 찼거나, 마우스가 병 안 바닥에서 멀거나, 이 병에 안 들어가면 숨긴다.
+    /// 재료가 병 밖으로 나가는 자리에서는 그림자가 안쪽으로 밀려 들어간 자리에 보인다(놓이는 자리와 같다).
     /// </summary>
     private void UpdateGhost(Vector2? screenPosition)
     {
@@ -120,7 +122,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         if (selected != null && selected.kind != MaterialKind.Ground &&
             !contents.IsFull && !contents.IsCompleted && screenPosition.HasValue &&
             TryGetRay(screenPosition.Value, out Ray ray) &&
-            contents.TryGetSurfacePoint(ray, out Vector3 localPoint))
+            contents.TryFindPlacement(selected, ray, out Vector3 localPoint) == PlacementResult.Ok)
         {
             contents.ShowGhost(selected, localPoint);
         }
@@ -155,8 +157,9 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         PlacedMaterial hovered = contents.IsCompleted ? null : FindHovered(eventData.position);
         if (hovered != null)
         {
-            hovered.Rotate(direction * rotateDegreesPerScroll);
-            contents.SaveState();
+            // 돌린 모습이 병 밖으로 나가면 안쪽으로 밀어 보고, 그래도 안 되면 돌리지 않는다.
+            if (!contents.TryRotate(hovered, direction * rotateDegreesPerScroll))
+                ShowMessage("병 안에서 더 돌릴 수 없어요");
             return;
         }
 
@@ -171,12 +174,13 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         if (selected.kind == MaterialKind.Ground) { ShowMessage("바닥재는 오른쪽 바닥재에서 골라 주세요"); return; }
         if (contents.IsFull) { ShowMessage("병이 가득 찼어요"); return; }
 
-        if (!TryGetRay(screenPosition, out Ray ray) ||
-            !contents.TryGetSurfacePoint(ray, out Vector3 localPoint))
-        {
-            ShowMessage("병 안 흙 위를 눌러 주세요");
-            return;
-        }
+        Vector3 localPoint = Vector3.zero;
+        PlacementResult result = TryGetRay(screenPosition, out Ray ray)
+            ? contents.TryFindPlacement(selected, ray, out localPoint)
+            : PlacementResult.Outside;
+
+        if (result == PlacementResult.Outside) { ShowMessage("병 안 흙 위를 눌러 주세요"); return; }
+        if (result == PlacementResult.TooBig) { ShowMessage("이 재료는 이 병에 들어가지 않아요"); return; }
 
         if (!bag.TryRemove(selected)) return; // 가방에 없으면 놓지 않는다
         contents.Place(selected, localPoint);

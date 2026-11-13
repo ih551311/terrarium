@@ -116,7 +116,7 @@ Transform:
   m_GameObject: {fileID: 6460315777741448530}
   serializedVersion: 2
   m_LocalRotation: {x: 0.038376518, y: -0, z: -0, w: 0.99926335}
-  m_LocalPosition: {x: 0, y: 0.122999996, z: -0.2665}
+  m_LocalPosition: {x: 0, y: 0.24599999, z: -0.533}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -154,7 +154,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.01
-  far clip plane: 5
+  far clip plane: 8
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -183,7 +183,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7655924765760689901}
   - component: {fileID: 6279174153205427043}
-  - component: {fileID: 2614521748788158647}
+  - component: {fileID: 8649199985688401515}
   - component: {fileID: 7566654347896902394}
   m_Layer: 8
   m_Name: Bottle_round
@@ -223,8 +223,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed0bdb720c5280846844b98056d43fa3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleViewer
---- !u!136 &2614521748788158647
-CapsuleCollider:
+--- !u!65 &8649199985688401515
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -241,11 +241,9 @@ CapsuleCollider:
   m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.085
-  m_Height: 0.205
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.1025, z: 0}
+  serializedVersion: 3
+  m_Size: {x: 0.34, y: 0.41, z: 0.34}
+  m_Center: {x: 0, y: 0.205, z: 0}
 --- !u!114 &7566654347896902394
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -259,10 +257,111 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleContents
   bottleId: bottle0
-  surfaceLocalY: 0.033999998
-  soilRadius: 0.05648521
+  surfaceLocalY: 0.067999996
   maxItems: 12
-  zoomLookHeight: 0.0545
+  zoomLookPoint: {x: 0, y: 0.109, z: 0}
+  axisAlongX: 0
+  axisOrigin: {x: 0, y: 0, z: 0}
+  profileStart: 0.008
+  profileStep: 0.004
+  profileRadii:
+  - 0.027337126
+  - 0.053867936
+  - 0.0635166
+  - 0.07144201
+  - 0.078855745
+  - 0.0850756
+  - 0.091295466
+  - 0.096364036
+  - 0.10130468
+  - 0.106150575
+  - 0.110143684
+  - 0.11413679
+  - 0.11812991
+  - 0.1214149
+  - 0.12466263
+  - 0.12791036
+  - 0.13082467
+  - 0.1334056
+  - 0.1359865
+  - 0.13856743
+  - 0.14074692
+  - 0.14279263
+  - 0.14483832
+  - 0.14688401
+  - 0.14852184
+  - 0.15005772
+  - 0.15159358
+  - 0.15312946
+  - 0.15436414
+  - 0.15543664
+  - 0.15650915
+  - 0.15758164
+  - 0.15850002
+  - 0.15913211
+  - 0.15976422
+  - 0.16039631
+  - 0.1610284
+  - 0.16125943
+  - 0.16146936
+  - 0.16167928
+  - 0.16188921
+  - 0.16188921
+  - 0.16167928
+  - 0.16146936
+  - 0.16125943
+  - 0.1610284
+  - 0.16039631
+  - 0.1597642
+  - 0.15913211
+  - 0.15850002
+  - 0.15758164
+  - 0.15650915
+  - 0.15543664
+  - 0.15436412
+  - 0.15312944
+  - 0.15159358
+  - 0.1500577
+  - 0.14852184
+  - 0.14688401
+  - 0.1448383
+  - 0.14279261
+  - 0.14074692
+  - 0.13856742
+  - 0.13598649
+  - 0.1334056
+  - 0.13082467
+  - 0.12888685
+  - 0.1275921
+  - 0.1252252
+  - 0.12154785
+  - 0.11719441
+  - 0.11182685
+  - 0.106120735
+  - 0.09962448
+  - 0.093130946
+  - 0.086645596
+  - 0.08035645
+  - 0.07485188
+  - 0.06963492
+  - 0.066047795
+  - 0.062575385
+  - 0.061283156
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  - 0.05999094
+  interiorMargin: 0.97
+  surfaceCenter: {x: 0, y: 0}
+  pointerTolerance: 0.06
   data: {fileID: 11400000, guid: 760b3b3c3fc692b469852ed4e2059bb8, type: 2}
   viewCamera: {fileID: 1974080043614780060}
   groundRenderer: {fileID: 2980636570489844883}
@@ -276,6 +375,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7655924765760689901}
     m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: db4a971b8b695f54aaf2c4715c594aff, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: db4a971b8b695f54aaf2c4715c594aff, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: db4a971b8b695f54aaf2c4715c594aff, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: db4a971b8b695f54aaf2c4715c594aff, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
@@ -346,6 +457,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7655924765760689901}
     m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 2200512ef9ebc07468e0d6af618d7de8, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2200512ef9ebc07468e0d6af618d7de8, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2200512ef9ebc07468e0d6af618d7de8, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2200512ef9ebc07468e0d6af618d7de8, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0

@@ -67,7 +67,8 @@ public static class DecoImportSetup
             if (!path.EndsWith(".obj")) continue;
 
             string name = System.IO.Path.GetFileNameWithoutExtension(path);
-            bool isGlass = name.StartsWith("jar_") && !name.EndsWith("_cork");
+            // 병 유리만 투명 재질. 뚜껑(_cork)과 모래 바닥(_floor)은 팔레트 재질을 쓴다.
+            bool isGlass = name.StartsWith("jar_") && !name.EndsWith("_cork") && !name.EndsWith("_floor");
 
             ModelImporter importer = (ModelImporter)AssetImporter.GetAtPath(path);
             importer.importNormals = ModelImporterNormals.Import;

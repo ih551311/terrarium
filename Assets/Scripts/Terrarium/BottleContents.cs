@@ -1,11 +1,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>재료를 놓을 자리를 찾은 결과</summary>
+public enum PlacementResult
+{
+    Ok,       // 놓을 수 있다 (병 밖으로 나가면 안쪽으로 밀어 넣은 자리)
+    Outside,  // 마우스가 병 안 바닥에서 너무 멀다
+    TooBig    // 이 병에는 어디에도 들어가지 않는다 (너무 크거나 높다)
+}
+
 /// <summary>
 /// 병 하나의 속(바닥재와, 그 표면 위에 놓인 재료들)을 관리한다.
 /// 병 뿌리 오브젝트(Bottle)에 붙인다. 놓은 재료는 병의 자식이라 병과 함께 돈다.
 /// 규칙: 재료는 바닥재 표면 위에만 놓이고, 물리 효과는 없고, 서로 겹쳐도 되고, 병 하나에 12개까지다.
+///       재료의 모든 부분이 병 안쪽 안에 있어야 한다(병 밖으로 나가지 않는다).
 /// 완성하면 뚜껑이 닫히고 더는 고칠 수 없다.
+///
+/// 병 안쪽 모양은 "축을 기준으로 한 안쪽 반지름" 표(profile)로 알고 있다.
+/// 세워 둔 병은 위(y)가 축이고, 누운 병은 가로(x)가 축이다. 표는 JarSetup이 병 모델에서 읽어 채운다.
 /// </summary>
 public class BottleContents : MonoBehaviour
 {
@@ -15,13 +27,28 @@ public class BottleContents : MonoBehaviour
     [Tooltip("바닥재 표면의 높이 (병 기준 위쪽 방향 거리)")]
     [SerializeField] private float surfaceLocalY = 0.07f;
 
-    [Tooltip("재료를 놓을 수 있는 바닥재의 반지름")]
-    [SerializeField] private float soilRadius = 0.17f;
-
     [SerializeField] private int maxItems = 12;
 
-    [Tooltip("병 화면을 가장 크게 확대했을 때 바라보는 높이(병 기준). 흙 위를 크게 볼 수 있는 높이.")]
-    [SerializeField] private float zoomLookHeight = 0.06f;
+    [Tooltip("병 화면을 가장 크게 확대했을 때 바라보는 곳(병 기준). 흙 위를 크게 볼 수 있는 곳.")]
+    [SerializeField] private Vector3 zoomLookPoint = new Vector3(0f, 0.06f, 0f);
+
+    [Header("병 안쪽 모양 (JarSetup이 채운다)")]
+    [Tooltip("켜면 병이 누워 있어 가로(x)가 축이다. 끄면 세워 둔 병이라 위(y)가 축이다.")]
+    [SerializeField] private bool axisAlongX;
+    [Tooltip("축이 지나는 점 (병 기준)")]
+    [SerializeField] private Vector3 axisOrigin;
+    [Tooltip("표의 시작 위치(축 방향 좌표)")]
+    [SerializeField] private float profileStart;
+    [Tooltip("표의 간격(미터)")]
+    [SerializeField] private float profileStep = 0.002f;
+    [Tooltip("축을 따라 간격마다의 안쪽 반지름")]
+    [SerializeField] private float[] profileRadii;
+    [Tooltip("재료가 유리에 너무 붙지 않도록, 안쪽 반지름의 이 비율까지만 쓴다")]
+    [SerializeField] private float interiorMargin = 0.97f;
+    [Tooltip("바닥재 표면의 가운데(가로, 세로). 병 밖으로 나가는 재료를 이쪽으로 밀어 넣는다.")]
+    [SerializeField] private Vector2 surfaceCenter;
+    [Tooltip("마우스가 병 안 바닥에서 이만큼(미터)보다 멀면 놓지 않는다")]
+    [SerializeField] private float pointerTolerance = 0.06f;
 
     [Header("연결")]
     [Tooltip("이 병의 종류 정보 (이름 등)")]
@@ -47,8 +74,11 @@ public class BottleContents : MonoBehaviour
     private MaterialData ghostOf;
     private readonly List<Material> ghostMaterials = new List<Material>();
 
+    // 재료 모양(꼭짓점) 기억: 병 안에 들어가는지 검사할 때 쓴다
+    private static readonly Dictionary<MaterialData, Vector3[]> footprints = new Dictionary<MaterialData, Vector3[]>();
+
     public bool IsFull => items.Count >= maxItems;
-    public float ZoomLookHeight => zoomLookHeight;
+    public Vector3 ZoomLookPoint => zoomLookPoint;
     public Camera ViewCamera => viewCamera;
     public string DisplayName => data != null ? data.displayName : bottleId;
     public int ItemCount => items.Count;
@@ -76,23 +106,29 @@ public class BottleContents : MonoBehaviour
         if (lid != null) lid.SetActive(IsCompleted);
     }
 
+    // ───────── 놓을 자리 찾기 (병 밖으로 나가지 않게) ─────────
+
     /// <summary>
-    /// 화면에서 쏜 광선(월드 기준)이 바닥재 표면의 놓을 수 있는 곳에 닿는지 본다.
-    /// 닿으면 true와 병 기준 위치를 돌려준다. 공중이나 병 바깥이면 false.
+    /// 화면에서 쏜 광선(월드 기준)이 닿은 바닥재 표면의 자리에, 이 재료를 놓을 수 있는지 본다.
+    /// 재료의 어느 부분이든 병 밖으로 나가면 가운데 쪽으로 밀어 넣고, 어디에도 안 들어가면 TooBig.
     /// </summary>
-    public bool TryGetSurfacePoint(Ray worldRay, out Vector3 localPoint)
+    public PlacementResult TryFindPlacement(MaterialData material, Ray worldRay, out Vector3 localPosition)
     {
-        localPoint = Vector3.zero;
+        localPosition = Vector3.zero;
 
         Plane surface = new Plane(transform.up, transform.TransformPoint(0f, surfaceLocalY, 0f));
-        if (!surface.Raycast(worldRay, out float distance)) return false;
+        if (!surface.Raycast(worldRay, out float distance)) return PlacementResult.Outside;
 
-        localPoint = transform.InverseTransformPoint(worldRay.GetPoint(distance));
-        localPoint.y = surfaceLocalY;
-        return new Vector2(localPoint.x, localPoint.z).magnitude <= soilRadius;
+        Vector3 hit = transform.InverseTransformPoint(worldRay.GetPoint(distance));
+        hit.y = surfaceLocalY;
+        if (Slack(hit) < -pointerTolerance) return PlacementResult.Outside; // 병 안 바닥에서 너무 멀다
+
+        return FitInside(GetFootprint(material), 0f, 1f, hit, out localPosition)
+            ? PlacementResult.Ok
+            : PlacementResult.TooBig;
     }
 
-    /// <summary>재료를 놓는다. 가득 찼거나 완성한 병이면 null.</summary>
+    /// <summary>재료를 놓는다. 가득 찼거나 완성한 병이면 null. (자리는 TryFindPlacement로 구한 것을 넣는다)</summary>
     public PlacedMaterial Place(MaterialData material, Vector3 localPosition)
     {
         if (IsFull || IsCompleted) return null;
@@ -109,6 +145,136 @@ public class BottleContents : MonoBehaviour
         Destroy(placed.gameObject);
         SaveState();
     }
+
+    /// <summary>놓은 재료를 돌린다. 돌린 모습이 병 밖으로 나가면 안쪽으로 밀어 보고, 그래도 안 되면 돌리지 않는다(false).</summary>
+    public bool TryRotate(PlacedMaterial placed, float degrees)
+    {
+        if (IsCompleted) return false;
+        return TryChangePose(placed, placed.Yaw + degrees, placed.ScaleFactor);
+    }
+
+    /// <summary>놓은 재료의 크기를 곱한다. 병 밖으로 나가면 안쪽으로 밀어 보고, 그래도 안 되면 바꾸지 않는다(false).</summary>
+    public bool TryScale(PlacedMaterial placed, float multiplier)
+    {
+        if (IsCompleted) return false;
+        float newScale = Mathf.Clamp(placed.ScaleFactor * multiplier, PlacedMaterial.MinScale, PlacedMaterial.MaxScale);
+        if (Mathf.Approximately(newScale, placed.ScaleFactor)) return false; // 이미 한계
+        return TryChangePose(placed, placed.Yaw, newScale);
+    }
+
+    private bool TryChangePose(PlacedMaterial placed, float yaw, float scaleFactor)
+    {
+        if (!FitInside(GetFootprint(placed.Material), yaw, scaleFactor, placed.transform.localPosition, out Vector3 fitted))
+            return false;
+
+        placed.transform.localPosition = fitted;
+        placed.SetPose(yaw, scaleFactor);
+        SaveState();
+        return true;
+    }
+
+    // ───────── 병 안쪽 판정 ─────────
+
+    /// <summary>
+    /// 한 점이 병 안쪽에서 얼마나 여유가 있는지. 0보다 크면 안쪽, 작으면 밖(유리 속이거나 병 바깥).
+    /// 축 방향 위치에서 안쪽 반지름을 표에서 읽고, 축에서 떨어진 거리와 비교한다.
+    /// </summary>
+    private float Slack(Vector3 p)
+    {
+        if (profileRadii == null || profileRadii.Length < 2) return 1f; // 표가 없으면 검사하지 않는다
+
+        float along = axisAlongX ? p.x : p.y;
+        float index = (along - profileStart) / profileStep;
+        if (index < 0f || index > profileRadii.Length - 1) return -1f; // 병 길이 밖 (병 입구 위쪽 포함)
+
+        int i0 = Mathf.FloorToInt(index);
+        int i1 = Mathf.Min(i0 + 1, profileRadii.Length - 1);
+        float radius = Mathf.Lerp(profileRadii[i0], profileRadii[i1], index - i0);
+
+        Vector3 d = p - axisOrigin;
+        float away = axisAlongX ? new Vector2(d.y, d.z).magnitude : new Vector2(d.x, d.z).magnitude;
+        return radius * interiorMargin - away;
+    }
+
+    /// <summary>이 자리·각도·크기에서 재료의 모든 꼭짓점이 병 안쪽에 있는가</summary>
+    private bool Fits(Vector3[] footprint, float yaw, float scale, Vector3 position)
+    {
+        Quaternion rotation = Quaternion.Euler(0f, yaw, 0f);
+        foreach (Vector3 v in footprint)
+            if (Slack(position + rotation * (v * scale)) < 0f) return false;
+        return true;
+    }
+
+    /// <summary>
+    /// 원하는 자리에 들어가면 그대로, 아니면 바닥 가운데 쪽으로 밀어서 들어가는 가장 먼 자리를 찾는다.
+    /// 가운데에서도 안 들어가면 false.
+    /// </summary>
+    private bool FitInside(Vector3[] footprint, float yaw, float scale, Vector3 desired, out Vector3 result)
+    {
+        result = desired;
+        if (Fits(footprint, yaw, scale, desired)) return true;
+
+        Vector3 center = new Vector3(surfaceCenter.x, surfaceLocalY, surfaceCenter.y);
+        if (!Fits(footprint, yaw, scale, center)) return false;
+
+        float inside = 0f, outside = 1f; // 가운데(0)는 들어가고, 원하는 자리(1)는 안 들어간다
+        for (int i = 0; i < 10; i++)
+        {
+            float mid = (inside + outside) * 0.5f;
+            if (Fits(footprint, yaw, scale, Vector3.Lerp(center, desired, mid))) inside = mid; else outside = mid;
+        }
+        result = Vector3.Lerp(center, desired, inside);
+        return true;
+    }
+
+    /// <summary>
+    /// 재료 모양의 꼭짓점들(바닥이 높이 0에 오도록 맞춘 것). 처음 한 번만 만들고 기억해 둔다.
+    /// 너무 많으면 일부만 쓰고, 가장 바깥 8개 모서리는 꼭 넣는다.
+    /// </summary>
+    private static Vector3[] GetFootprint(MaterialData material)
+    {
+        if (footprints.TryGetValue(material, out Vector3[] cached)) return cached;
+
+        var all = new List<Vector3>();
+        if (material.placedPrefab != null)
+        {
+            Transform root = material.placedPrefab.transform;
+            foreach (MeshFilter mf in material.placedPrefab.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (mf.sharedMesh == null) continue;
+                Matrix4x4 toRoot = root.worldToLocalMatrix * mf.transform.localToWorldMatrix;
+                foreach (Vector3 v in mf.sharedMesh.vertices) all.Add(toRoot.MultiplyPoint3x4(v));
+            }
+        }
+        else
+        {
+            PrimitiveType type = material.placeholderShape == PlaceholderShape.Capsule ? PrimitiveType.Capsule
+                               : material.placeholderShape == PlaceholderShape.Cube ? PrimitiveType.Cube
+                               : PrimitiveType.Sphere;
+            GameObject temp = GameObject.CreatePrimitive(type);
+            foreach (Vector3 v in temp.GetComponent<MeshFilter>().sharedMesh.vertices)
+                all.Add(Vector3.Scale(v, material.placeholderSize));
+            Destroy(temp);
+        }
+
+        if (all.Count == 0) { footprints[material] = new Vector3[0]; return footprints[material]; }
+
+        Bounds bounds = new Bounds(all[0], Vector3.zero);
+        foreach (Vector3 v in all) bounds.Encapsulate(v);
+        Vector3 shift = new Vector3(0f, -bounds.min.y, 0f); // 바닥이 표면에 닿도록 (BottleContents가 모습을 올리는 것과 같다)
+
+        var result = new List<Vector3>();
+        int stride = Mathf.Max(1, all.Count / 500);
+        for (int i = 0; i < all.Count; i += stride) result.Add(all[i] + shift);
+        Vector3 min = bounds.min + shift, max = bounds.max + shift;
+        for (int c = 0; c < 8; c++)
+            result.Add(new Vector3((c & 1) == 0 ? min.x : max.x, (c & 2) == 0 ? min.y : max.y, (c & 4) == 0 ? min.z : max.z));
+
+        footprints[material] = result.ToArray();
+        return footprints[material];
+    }
+
+    // ───────── 바닥재, 완성, 미리보기, 기록 ─────────
 
     /// <summary>바닥재를 바꾼다. null이면 흙. (가방의 모래를 쓰고 돌려주는 일은 부르는 쪽이 한다.)</summary>
     public void SetGround(MaterialData ground)
@@ -277,5 +443,12 @@ public class BottleContents : MonoBehaviour
     {
         go.layer = layer;
         foreach (Transform child in go.transform) SetLayerRecursive(child.gameObject, layer);
+    }
+
+    // Play를 껐다 켤 때 기억해 둔 모양이 남아 있지 않도록 초기화한다.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        footprints.Clear();
     }
 }

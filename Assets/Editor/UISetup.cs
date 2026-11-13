@@ -147,16 +147,16 @@ public static class UISetup
 
         // 병 고르기 (병 그림 왼쪽, 완성 버튼 아래). 완성한 병도 보러 갈 수 있게 꾸미기 도구 밖에 둔다.
         GameObject chooseBox = Rect(bWindow.transform, "BottleChooser");
-        Anchor(chooseBox, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -340f), new Vector2(290f, 340f));
-        Label(chooseBox.transform, "Title", "병 고르기", 48, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(290f, 70f), TextAlignmentOptions.Center);
-        const int ChoiceCount = 3;
+        Anchor(chooseBox, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -325f), new Vector2(290f, 380f));
+        Label(chooseBox.transform, "Title", "병 고르기", 44, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(290f, 60f), TextAlignmentOptions.Center);
+        const int ChoiceCount = 4;
         Button[] choiceButtons = new Button[ChoiceCount];
         TMP_Text[] choiceLabels = new TMP_Text[ChoiceCount];
         Image[] choiceBackgrounds = new Image[ChoiceCount];
         for (int i = 0; i < ChoiceCount; i++)
         {
-            Button b = MakeButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 1f), new Vector2(0f, -85f - i * 95f), new Vector2(290f, 85f));
-            b.GetComponentInChildren<TextMeshProUGUI>().fontSize = 38;
+            Button b = MakeButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 1f), new Vector2(0f, -65f - i * 77f), new Vector2(290f, 68f));
+            b.GetComponentInChildren<TextMeshProUGUI>().fontSize = 34;
             choiceButtons[i] = b;
             choiceLabels[i] = b.GetComponentInChildren<TextMeshProUGUI>();
             choiceBackgrounds[i] = b.GetComponent<Image>();
