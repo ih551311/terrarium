@@ -71,7 +71,7 @@ public class SkyController : MonoBehaviour
         else if (t < 0.72f) { float u = (t - 0.55f) / 0.17f; height = Mathf.Lerp(1f, 0.35f, u); warm = u; }
         else if (t < 0.88f) { float u = (t - 0.72f) / 0.16f; height = Mathf.Lerp(0.35f, 0f, u); warm = 1f - u; }
         else { height = 0f; warm = 0f; }
-        float night = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.72f, 0.86f, t)); // 0 낮 하늘 ~ 1 밤 하늘
+        float night = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.72f, 0.86f, t)); // 0 낮 하늘 ~ 1 밤 하늘 (Pickup.NightStart 0.78은 이 한가운데쯤)
 
         // 하늘: 낮 하늘은 아침과 노을에 따뜻한 색과 낮은 밝기, 밤 하늘은 섞이면서 밝아진다
         if (skyInstance != null)
