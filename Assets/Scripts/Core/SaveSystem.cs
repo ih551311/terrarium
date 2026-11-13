@@ -40,11 +40,10 @@ public static class SaveSystem
                     completed = r.completed,
                     soilLevel = r.soilLevel,
                     shelfSlot = r.shelfSlot,
-                    wateredToday = r.wateredToday,
                     groundId = r.ground != null ? r.ground.id : string.Empty
                 };
                 foreach (PlacedData p in r.items)
-                    b.items.Add(new PlacedSave { id = p.material.id, position = p.localPosition, yaw = p.yaw, scale = p.scaleFactor, growth = p.growth });
+                    b.items.Add(new PlacedSave { id = p.material.id, position = p.localPosition, yaw = p.yaw, scale = p.scaleFactor });
                 data.bottles.Add(b);
             }
 
@@ -108,14 +107,13 @@ public static class SaveSystem
                     completed = b.completed,
                     soilLevel = b.soilLevel,
                     shelfSlot = b.shelfSlot,
-                    wateredToday = b.wateredToday,
                     ground = db.Find(b.groundId)
                 };
                 foreach (PlacedSave p in b.items)
                 {
                     MaterialData m = db.Find(p.id);
                     if (m == null) continue;
-                    record.items.Add(new PlacedData { material = m, localPosition = p.position, yaw = p.yaw, scaleFactor = p.scale, growth = p.growth });
+                    record.items.Add(new PlacedData { material = m, localPosition = p.position, yaw = p.yaw, scaleFactor = p.scale });
                 }
                 BottleStore.Set(b.bottleId, record);
             }

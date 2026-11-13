@@ -45,7 +45,6 @@ public class BottleSave
     public int soilLevel = 1;
     public string groundId;                 // 비어 있으면 흙
     public int shelfSlot = -1;              // 선반의 몇 번째 칸 (-1이면 선반에 없다)
-    public bool wateredToday;               // 오늘 물을 줬는가
     public List<PlacedSave> items = new List<PlacedSave>();
 }
 
@@ -56,5 +55,4 @@ public class PlacedSave
     public Vector3 position;
     public float yaw;
     public float scale = 1f;
-    public int growth;                      // 식물의 성장 단계 (0 새싹, 1, 2 다 자란 모습)
 }

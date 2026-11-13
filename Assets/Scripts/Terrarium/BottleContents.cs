@@ -147,7 +147,7 @@ public class BottleContents : MonoBehaviour
         // 씬을 옮겼다 돌아왔을 때 기억해 둔 상태를 다시 만든다.
         BottleRecord record = BottleStore.Get(bottleId);
         foreach (PlacedData placed in record.items)
-            Spawn(placed.material, placed.localPosition, placed.yaw, placed.scaleFactor, placed.growth);
+            Spawn(placed.material, placed.localPosition, placed.yaw, placed.scaleFactor);
 
         Ground = record.ground;
         ApplyGround();
@@ -380,8 +380,7 @@ public class BottleContents : MonoBehaviour
                 material = placed.Material,
                 localPosition = placed.transform.localPosition,
                 yaw = placed.Yaw,
-                scaleFactor = placed.ScaleFactor,
-                growth = placed.Growth
+                scaleFactor = placed.ScaleFactor
             });
         }
         BottleStore.Set(bottleId, record);
@@ -429,7 +428,7 @@ public class BottleContents : MonoBehaviour
         DestroyGhost();
     }
 
-    private PlacedMaterial Spawn(MaterialData material, Vector3 localPosition, float yaw, float scaleFactor, int growth = 0)
+    private PlacedMaterial Spawn(MaterialData material, Vector3 localPosition, float yaw, float scaleFactor)
     {
         GameObject root = new GameObject("Placed_" + material.id);
         root.transform.SetParent(transform, false);
@@ -439,7 +438,7 @@ public class BottleContents : MonoBehaviour
         CreateVisual(material, root.transform);
 
         PlacedMaterial placed = root.AddComponent<PlacedMaterial>();
-        placed.Init(material, yaw, scaleFactor, growth);
+        placed.Init(material, yaw, scaleFactor);
         items.Add(placed);
         return placed;
     }

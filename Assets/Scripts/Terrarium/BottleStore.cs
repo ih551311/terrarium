@@ -9,7 +9,6 @@ public class PlacedData
     public Vector3 localPosition; // 병 기준 위치
     public float yaw;
     public float scaleFactor;
-    public int growth;            // 식물의 성장 단계: 0 새싹, 1 자란 모습, 2 다 자란 모습
 }
 
 /// <summary>병 하나의 기록 (저장할 내용)</summary>
@@ -21,7 +20,6 @@ public class BottleRecord
     public bool created;          // 병을 만들었는가 (만들 때 병 종류와 흙의 양을 정하고, 그 뒤로는 바꿀 수 없다)
     public int soilLevel = 1;     // 흙의 양: 0 적게, 1 보통, 2 많이
     public int shelfSlot = -1;    // 선반의 몇 번째 칸에 놓였는가 (-1이면 선반에 없다)
-    public bool wateredToday;     // 오늘 물을 줬는가 (자고 나면 식물이 자라고 다시 false가 된다)
 }
 
 /// <summary>
@@ -51,12 +49,9 @@ public static class BottleStore
 
     public static void Set(string bottleId, BottleRecord record)
     {
-        // 이미 선반에 있거나 물을 준 기록은 새 기록으로 덮어쓰면서 지워지지 않게 이어 받는다
-        if (bottles.TryGetValue(bottleId, out BottleRecord old))
-        {
-            if (record.shelfSlot < 0) record.shelfSlot = old.shelfSlot;
-            if (!record.wateredToday) record.wateredToday = old.wateredToday;
-        }
+        // 이미 선반에 있는 병은 새 기록으로 덮어쓰면서 칸 번호가 지워지지 않게 이어 받는다
+        if (bottles.TryGetValue(bottleId, out BottleRecord old) && record.shelfSlot < 0)
+            record.shelfSlot = old.shelfSlot;
         bottles[bottleId] = record;
         Changed?.Invoke();
     }
@@ -85,25 +80,6 @@ public static class BottleStore
         for (int i = 0; i < ShelfCapacity; i++)
             if (!used.Contains(i)) return i;
         return -1;
-    }
-
-    /// <summary>
-    /// 자고 일어났을 때: 어제 물을 준 완성한 병의 식물이 한 단계 자란다. 그리고 모든 병의 "오늘 물 줌"이 지워진다.
-    /// 물을 안 준 병은 그대로다 (시들지 않는다).
-    /// </summary>
-    public static void AdvanceDay()
-    {
-        foreach (BottleRecord record in bottles.Values)
-        {
-            if (record.completed && record.wateredToday)
-            {
-                foreach (PlacedData item in record.items)
-                    if (item.material != null && item.material.kind == MaterialKind.Plant)
-                        item.growth = Mathf.Min(PlacedMaterial.MaxGrowth, item.growth + 1);
-            }
-            record.wateredToday = false;
-        }
-        Changed?.Invoke();
     }
 
     // Play를 껐다 켤 때 기록이 남아 있지 않도록 초기화한다.

@@ -3,9 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// 집 안 선반. 완성한 병이 생기면 비어 있는 가장 앞 칸에 자동으로 올라가고, 병 속(재료와 식물)이 그대로 보인다.
-/// 선반 병을 바라보고 E를 누르면 물을 준다. (ShelfBottle)
 /// 칸 자리(slots)는 InteriorSetup이 선반 위에 놓아 둔다. 병은 작업대의 병과 같은 병 프리팹을 작게 줄여 복사해서 올린다.
-/// 자고 일어나면(식물이 자라면) 병을 새로 만들어 자란 모습으로 바꾼다.
+/// 선반은 완성한 병을 전시하는 곳이다. (식물은 자라지 않는다)
 /// </summary>
 public class BottleShelf : MonoBehaviour
 {
@@ -28,13 +27,11 @@ public class BottleShelf : MonoBehaviour
     private void OnEnable()
     {
         BottleStore.Changed += Refresh;
-        GameState.DayStarted += Rebuild;
     }
 
     private void OnDisable()
     {
         BottleStore.Changed -= Refresh;
-        GameState.DayStarted -= Rebuild;
     }
 
     /// <summary>완성한 병 중 아직 선반에 없는 것을 올린다.</summary>
@@ -53,19 +50,6 @@ public class BottleShelf : MonoBehaviour
 
             shown[id] = Place(bottle, record.shelfSlot);
         }
-    }
-
-    /// <summary>선반의 병을 모두 지우고 다시 올린다. (식물이 자란 모습을 보이려고 아침마다)</summary>
-    private void Rebuild()
-    {
-        foreach (GameObject go in shown.Values)
-        {
-            if (go == null) continue;
-            go.SetActive(false);
-            Destroy(go);
-        }
-        shown.Clear();
-        Refresh();
     }
 
     private GameObject Place(BottleContents source, int slotIndex)
@@ -87,9 +71,6 @@ public class BottleShelf : MonoBehaviour
         copy.transform.localScale = Vector3.one * bottleScale;
         if (copy.GetComponent<BottleContents>().IsSideways)
             copy.transform.rotation = slot.rotation * Quaternion.Euler(0f, 90f, 0f);
-
-        ShelfBottle water = copy.AddComponent<ShelfBottle>();
-        water.Init(source.BottleId, source.DisplayName);
         return copy;
     }
 }
