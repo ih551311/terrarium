@@ -20,8 +20,12 @@ public class BottlePanel : MonoBehaviour
     [SerializeField] private BottleDecorator decorator;
     [SerializeField] private GroundSelector groundSelector;
     [SerializeField] private CompleteBottleButton completeButton;
-    [Tooltip("꾸밀 병을 고르는 버튼들")]
+    [Tooltip("병 고르기 화면 (패널을 열면 이것이 먼저 보인다)")]
     [SerializeField] private BottleChooser chooser;
+    [Tooltip("병 그림(RawImage) 오브젝트. 병을 고르기 전에는 숨긴다.")]
+    [SerializeField] private GameObject bottleView;
+    [Tooltip("꾸미기 화면에서 병 고르기 화면으로 돌아가는 버튼")]
+    [SerializeField] private Button backButton;
 
     [Header("꾸미는 중 / 완성 후 모드")]
     [Tooltip("재료 칸, 바닥재, 완성 버튼 등 꾸밀 때만 보이는 것을 담은 오브젝트")]
@@ -30,6 +34,7 @@ public class BottlePanel : MonoBehaviour
     [SerializeField] private GameObject completedLabel;
 
     private bool isOpen;
+    private bool choosing; // true: 병 고르기 화면, false: 꾸미기 화면
     private BottleStation station;
     private BottleContents contents;
     private Camera bottleCamera;
@@ -39,6 +44,7 @@ public class BottlePanel : MonoBehaviour
         root.SetActive(false);
         closeButton.onClick.AddListener(Close);
         chooser.Chosen += ShowBottle;
+        backButton.onClick.AddListener(ShowChooser);
     }
 
     private void OnDisable()
@@ -50,11 +56,15 @@ public class BottlePanel : MonoBehaviour
     {
         Keyboard keyboard = Keyboard.current;
         // 가방이 위에 열려 있으면 가방이 먼저 닫히도록 양보한다.
+        // Esc: 꾸미는 중이면 병 고르기로 돌아가고, 병 고르기 화면이면 패널을 닫는다.
         if (isOpen && !InventoryPanel.IsOpen && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
-            Close();
+        {
+            if (choosing) Close();
+            else ShowChooser();
+        }
     }
 
-    /// <summary>작업대의 병들을 받아서 열고, 작업대에 올려 둔 병부터 보여 준다.</summary>
+    /// <summary>작업대의 병들을 받아서 열고, 먼저 꾸밀 병을 고르는 화면을 보여 준다.</summary>
     public void Open(BottleStation bottleStation)
     {
         if (isOpen) return;
@@ -62,8 +72,23 @@ public class BottlePanel : MonoBehaviour
         station = bottleStation;
 
         root.SetActive(true);
-        ShowBottle(station.SelectedIndex);
+        ShowChooser();
         UIFocus.Open();
+    }
+
+    /// <summary>병 고르기 화면을 보인다. (보고 있던 병은 놓고, 병 그림과 꾸미기 도구는 숨긴다)</summary>
+    private void ShowChooser()
+    {
+        if (station == null) return;
+        ReleaseBottle();
+        choosing = true;
+
+        chooser.gameObject.SetActive(true);
+        chooser.Refresh(station);
+        bottleView.SetActive(false);
+        editTools.SetActive(false);
+        completedLabel.SetActive(false);
+        backButton.gameObject.SetActive(false);
     }
 
     public void Close()
@@ -83,6 +108,10 @@ public class BottlePanel : MonoBehaviour
     {
         if (station == null) return;
         ReleaseBottle();
+        choosing = false;
+        chooser.gameObject.SetActive(false);
+        bottleView.SetActive(true);
+        backButton.gameObject.SetActive(true);
 
         station.Select(index);
         contents = station.Get(index);
@@ -94,7 +123,6 @@ public class BottlePanel : MonoBehaviour
         completeButton.SetTarget(contents);
         if (bottleCamera != null) bottleCamera.enabled = true;
 
-        chooser.Refresh(station);
         RefreshMode();
     }
 
@@ -112,9 +140,9 @@ public class BottlePanel : MonoBehaviour
     /// <summary>병이 완성됐는지에 따라 꾸미기 도구를 보이거나 숨긴다.</summary>
     public void RefreshMode()
     {
+        if (choosing) return; // 병 고르기 화면에서는 꾸미기 도구를 보이지 않는다
         bool done = contents != null && contents.IsCompleted;
         editTools.SetActive(!done);
         completedLabel.SetActive(done);
-        if (station != null) chooser.Refresh(station); // (완성) 표시를 갱신한다
     }
 }

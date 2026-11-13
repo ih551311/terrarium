@@ -14,6 +14,7 @@ public class GameRoot : MonoBehaviour
 
     public static GameRoot Instance { get; private set; }
     public BottlePanel BottlePanel => bottlePanel;
+    public Transform Player => player;
 
     private string pendingSpawnId;
 
@@ -45,6 +46,56 @@ public class GameRoot : MonoBehaviour
     {
         pendingSpawnId = spawnId;
         SceneManager.LoadScene(sceneName);
+    }
+
+    /// <summary>
+    /// 지금 있는 씬의 "집 앞"(id가 FromHut인 도착 지점)으로 바로 간다. 섬에서 쓴다.
+    /// 그런 자리가 없는 씬(집 안)에서는 아무 일도 하지 않고 false를 돌려준다.
+    /// </summary>
+    public bool GoHome()
+    {
+        foreach (SpawnPoint spawn in FindObjectsByType<SpawnPoint>(FindObjectsSortMode.None))
+        {
+            if (spawn.Id != "FromHut") continue;
+            Teleport(spawn.transform);
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 섬의 (x, z) 자리로 이동한다. 지형 높이에 맞춰 서고, 그 자리가 바다이거나 나무와 바위로 막혀 있으면
+    /// 가까운 빈 자리를 찾아 보고, 그래도 없으면 이동하지 않고 false를 돌려준다.
+    /// </summary>
+    public bool TeleportTo(Vector2 xz)
+    {
+        Terrain terrain = Terrain.activeTerrain;
+        if (terrain == null) return false;
+
+        // 가까운 자리부터 차례로 시험한다 (나무 한가운데에 서지 않도록)
+        Vector2[] offsets =
+        {
+            Vector2.zero, new Vector2(2f, 0f), new Vector2(-2f, 0f), new Vector2(0f, 2f), new Vector2(0f, -2f),
+            new Vector2(3f, 3f), new Vector2(-3f, 3f), new Vector2(3f, -3f), new Vector2(-3f, -3f),
+            new Vector2(5f, 0f), new Vector2(-5f, 0f), new Vector2(0f, 5f), new Vector2(0f, -5f)
+        };
+
+        foreach (Vector2 offset in offsets)
+        {
+            Vector2 p = xz + offset;
+            float ground = terrain.SampleHeight(new Vector3(p.x, 0f, p.y)) + terrain.transform.position.y;
+            if (ground < 0.6f) continue; // 바다
+
+            Vector3 bottom = new Vector3(p.x, ground + 0.5f, p.y);
+            if (Physics.CheckCapsule(bottom, bottom + Vector3.up * 1.2f, 0.35f)) continue; // 막힌 곳
+
+            CharacterController controller = player.GetComponent<CharacterController>();
+            if (controller != null) controller.enabled = false;
+            player.position = new Vector3(p.x, ground + 1f, p.y);
+            if (controller != null) controller.enabled = true;
+            return true;
+        }
+        return false;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

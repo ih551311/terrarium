@@ -69,10 +69,7 @@ public static class IslandSetup
 
         // 3) 오두막
         float hutY = GroundY(HutPosition.x, HutPosition.z);
-        Transform cabinParent = new GameObject("Cabin").transform;
-        cabinParent.SetParent(root.transform, false);
-        CabinBuilder.Cabin cabin = CabinBuilder.Build(cabinParent, new Vector3(HutPosition.x, hutY, HutPosition.z), 0f, true);
-        SetupOuterDoor(cabin);
+        BuildHouse(root.transform, new Vector3(HutPosition.x, hutY, HutPosition.z));
         BuildHutYard(root.transform, hutY);
 
         // 4) 도착 지점과 플레이어
@@ -275,36 +272,55 @@ public static class IslandSetup
 
     // ───────── 오두막 ─────────
 
-    private static void SetupOuterDoor(CabinBuilder.Cabin cabin)
+    private const string Medieval = "Assets/ThirdParty/MedievalTownExteriors/Prefabs/";
+
+    /// <summary>
+    /// 중세 마을 팩의 집(Building_b)을 놓는다. 현관 앞에 문 모양의 충돌 상자를 붙여,
+    /// 바라보고 E를 누르면 집 안으로 들어가게 한다. 문은 남쪽(-z)을 향한다.
+    /// </summary>
+    private static void BuildHouse(Transform parent, Vector3 pos)
     {
-        if (cabin.door == null) return;
-        cabin.door.name = "Door";
-        SceneDoor door = cabin.door.AddComponent<SceneDoor>();
-        SerializedObject so = new SerializedObject(door);
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Medieval + "Building_b.prefab");
+        GameObject house = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+        house.name = "Cabin";
+        house.transform.SetParent(parent, false);
+        house.transform.SetPositionAndRotation(pos, prefab.transform.rotation); // 프리팹 뿌리의 회전(-90도 등)을 그대로 둔다
+
+        // 현관 앞면(z = -0.3)에 붙은 문 상자
+        GameObject door = new GameObject("Door");
+        door.transform.SetPositionAndRotation(pos + new Vector3(0f, 1.1f, -0.5f), Quaternion.identity);
+        door.transform.SetParent(house.transform, true); // 집이 회전되어 있어서 세계 좌표로 놓고 붙인다
+        BoxCollider box = door.AddComponent<BoxCollider>();
+        box.size = new Vector3(1.6f, 2.2f, 0.5f);
+        SceneDoor sceneDoor = door.AddComponent<SceneDoor>();
+        SerializedObject so = new SerializedObject(sceneDoor);
         so.FindProperty("targetScene").stringValue = "HutInterior";
         so.FindProperty("spawnId").stringValue = "FromIsland";
         so.FindProperty("label").stringValue = "집에 들어가기";
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 
-    /// <summary>오두막 마당: 통, 상자, 모닥불 자리</summary>
+    /// <summary>집 마당: 통, 상자, 자루, 우물, 가로등, 수레</summary>
     private static void BuildHutYard(Transform parent, float y)
     {
         GameObject yard = new GameObject("HutYard");
         yard.transform.SetParent(parent, false);
-        PlaceKit(yard.transform, "Barrel", new Vector3(3.9f, y, 10.6f), 0f);
-        PlaceKit(yard.transform, "Barrel", new Vector3(-3.9f, y, 10.6f), 30f);
-        PlaceKit(yard.transform, "Box02", new Vector3(-4.2f, y, 12.3f), 15f);
-        PlaceKit(yard.transform, "CampFire", new Vector3(8f, GroundY(8f, 6f), 6f), 0f);
+        PlaceKit(yard.transform, "Barrel", new Vector3(3.6f, y, 11.2f), 0f);
+        PlaceKit(yard.transform, "Barrel", new Vector3(-3.6f, y, 11.4f), 30f);
+        PlaceKit(yard.transform, "Crate", new Vector3(-4.7f, y, 11.6f), 15f);
+        PlaceKit(yard.transform, "Bucket", new Vector3(4.4f, y, 11.5f), 0f);
+        PlaceKit(yard.transform, "Lantern_post", new Vector3(2.4f, y, 9f), 180f);
+        PlaceKit(yard.transform, "Well", new Vector3(9.5f, GroundY(9.5f, 8f), 8f), 0f);
+        PlaceKit(yard.transform, "Cart_a", new Vector3(-9f, GroundY(-9f, 10f), 10f), 25f);
     }
 
     private static GameObject PlaceKit(Transform parent, string name, Vector3 pos, float yaw)
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Pack + "Prefabs/Cabin/" + name + ".prefab");
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Medieval + name + ".prefab");
         GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
         go.transform.SetParent(parent, false);
-        go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
-        AddBoxCollider(go);
+        go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f) * prefab.transform.rotation);
+        if (go.GetComponentInChildren<Collider>() == null) AddBoxCollider(go);
         return go;
     }
 

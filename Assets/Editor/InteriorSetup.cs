@@ -13,7 +13,7 @@ public static class InteriorSetup
 {
     private const string InteriorPath = "Assets/Scenes/HutInterior.unity";
     private const string IslandPath = "Assets/Scenes/Island.unity";
-    private const string Kit = "Assets/ThirdParty/LowPolyNaturePack/Prefabs/Cabin/";
+    private const string Kit = "Assets/ThirdParty/MedievalTownExteriors/Prefabs/";
     private const string DecoFolder = "Assets/Models/Deco/";
 
     [MenuItem("유리병 정원/집 안 꾸미기")]
@@ -24,20 +24,19 @@ public static class InteriorSetup
         var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
 
         // 예전에 만든 것(큐브 바닥과 벽, 문, 도착 지점, 가구)을 지운다
-        foreach (string n in new[] { "Floor", "WallNorth", "WallSouth", "WallEast", "WallWest", "Door", "Spawn_FromIsland", "Cabin", "Furniture" })
+        foreach (string n in new[] { "Floor", "WallNorth", "WallSouth", "WallEast", "WallWest", "Door", "Spawn_FromIsland", "Cabin", "Room", "Furniture", "Lights" })
         {
             GameObject old = GameObject.Find(n);
             while (old != null) { Object.DestroyImmediate(old); old = GameObject.Find(n); }
         }
 
-        // 오두막 (바닥 윗면이 높이 0, 문은 남쪽)
-        CabinBuilder.Cabin cabin = CabinBuilder.Build(null, Vector3.zero, 0f, false);
+        // 중세풍 방 (바닥 윗면이 높이 0, 문은 남쪽)
+        GameObject doorObject = BuildRoom();
 
         // 문: 바라보고 E를 누르면 섬으로 나간다
-        if (cabin.door != null)
         {
-            cabin.door.name = "Door";
-            SceneDoor door = cabin.door.AddComponent<SceneDoor>();
+            doorObject.name = "Door";
+            SceneDoor door = doorObject.AddComponent<SceneDoor>();
             SerializedObject so = new SerializedObject(door);
             so.FindProperty("targetScene").stringValue = "Island";
             so.FindProperty("spawnId").stringValue = "FromHut";
@@ -74,6 +73,95 @@ public static class InteriorSetup
         return "집 안 꾸미기 완료";
     }
 
+    // ───────── 방 (바깥 중세 집과 같은 색: 회벽, 돌 밑단, 짙은 갈색 목조 뼈대) ─────────
+
+    private const float Half = 3f;       // 방 안쪽 반 폭 (6m x 6m)
+    private const float Height = 3.2f;
+    private const float DoorWidth = 1.2f;
+    private const float DoorHeight = 2.3f;
+
+    /// <summary>방을 만들고 문 오브젝트(SceneDoor를 붙일 자리)를 돌려준다.</summary>
+    private static GameObject BuildRoom()
+    {
+        GameObject room = new GameObject("Room");
+        Material plaster = Mat("MedPlaster", new Color(0.88f, 0.85f, 0.78f));
+        Material stone = Mat("MedStone", new Color(0.5f, 0.5f, 0.52f));
+        Material timber = Mat("MedTimber", new Color(0.33f, 0.2f, 0.12f));
+        Material floorMat = Mat("MedFloor", new Color(0.5f, 0.35f, 0.22f));
+        Material ceilingMat = Mat("MedCeiling", new Color(0.4f, 0.27f, 0.17f));
+        Material doorMat = Mat("MedDoor", new Color(0.42f, 0.27f, 0.15f));
+        Material glass = Mat("MedWindowGlow", new Color(1f, 0.85f, 0.5f));
+        glass.EnableKeyword("_EMISSION");
+        glass.SetColor("_EmissionColor", new Color(1f, 0.72f, 0.3f) * 1.4f);
+
+        float t = 0.2f;              // 벽 두께
+        float outer = Half + t / 2f; // 벽 중심
+
+        // 바닥과 천장 (천장은 충돌 없음)
+        Cube(room, "Floor", new Vector3(0f, -0.1f, 0f), new Vector3(Half * 2f + 0.6f, 0.2f, Half * 2f + 0.6f), floorMat);
+        Cube(room, "Ceiling", new Vector3(0f, Height + 0.1f, 0f), new Vector3(Half * 2f + 0.6f, 0.2f, Half * 2f + 0.6f), ceilingMat, false);
+        foreach (float z in new[] { -2f, 0f, 2f })
+            Cube(room, "CeilingBeam", new Vector3(0f, Height - 0.1f, z), new Vector3(Half * 2f, 0.2f, 0.25f), timber, false);
+
+        // 벽: 북, 동, 서는 통벽. 남쪽은 문 자리를 비운다
+        float wallLen = Half * 2f + t * 2f;
+        Cube(room, "WallNorth", new Vector3(0f, Height / 2f, outer), new Vector3(wallLen, Height, t), plaster);
+        Cube(room, "WallEast", new Vector3(outer, Height / 2f, 0f), new Vector3(t, Height, wallLen), plaster);
+        Cube(room, "WallWest", new Vector3(-outer, Height / 2f, 0f), new Vector3(t, Height, wallLen), plaster);
+        float sideLen = Half - DoorWidth / 2f + t;
+        float sideCenter = DoorWidth / 2f + sideLen / 2f;
+        Cube(room, "WallSouthL", new Vector3(-sideCenter, Height / 2f, -outer), new Vector3(sideLen, Height, t), plaster);
+        Cube(room, "WallSouthR", new Vector3(sideCenter, Height / 2f, -outer), new Vector3(sideLen, Height, t), plaster);
+        Cube(room, "DoorLintel", new Vector3(0f, (Height + DoorHeight) / 2f, -outer), new Vector3(DoorWidth, Height - DoorHeight, t), plaster);
+
+        // 문: 짙은 갈색 널문 (바라보고 E)
+        GameObject door = Cube(room, "DoorSlab", new Vector3(0f, DoorHeight / 2f, -Half - 0.02f), new Vector3(DoorWidth - 0.05f, DoorHeight - 0.05f, 0.1f), doorMat);
+        Cube(door.transform.parent.gameObject, "DoorFrameL", new Vector3(-DoorWidth / 2f - 0.07f, DoorHeight / 2f, -Half + 0.02f), new Vector3(0.14f, DoorHeight, 0.18f), timber, false);
+        Cube(door.transform.parent.gameObject, "DoorFrameR", new Vector3(DoorWidth / 2f + 0.07f, DoorHeight / 2f, -Half + 0.02f), new Vector3(0.14f, DoorHeight, 0.18f), timber, false);
+        Cube(door.transform.parent.gameObject, "DoorFrameTop", new Vector3(0f, DoorHeight + 0.07f, -Half + 0.02f), new Vector3(DoorWidth + 0.28f, 0.14f, 0.18f), timber, false);
+
+        // 벽 안쪽 장식: 돌 밑단, 가로 보, 모서리 기둥, 세로 기둥
+        float face = Half - 0.02f;
+        foreach (int side in new[] { 0, 1, 2, 3 }) // 0 북, 1 동, 2 남, 3 서
+        {
+            Quaternion rot = Quaternion.Euler(0f, side * 90f, 0f);
+            GameObject wall = new GameObject("WallTrim" + side);
+            wall.transform.SetParent(room.transform, false);
+            wall.transform.rotation = rot;
+            // 이 벽을 바라볼 때 +z가 벽 쪽: 벽의 안쪽 면은 z = face
+            Cube(wall, "StoneBase", new Vector3(0f, 0.45f, face), new Vector3(Half * 2f, 0.9f, 0.05f), stone, false);
+            Cube(wall, "BeamLow", new Vector3(0f, 0.93f, face - 0.01f), new Vector3(Half * 2f, 0.12f, 0.1f), timber, false);
+            Cube(wall, "BeamHigh", new Vector3(0f, Height - 0.2f, face - 0.01f), new Vector3(Half * 2f, 0.2f, 0.1f), timber, false);
+            foreach (float s in new[] { -2f, 2f })
+                Cube(wall, "Stud", new Vector3(s, Height / 2f, face - 0.01f), new Vector3(0.15f, Height, 0.1f), timber, false);
+        }
+        foreach (Vector2 c in new[] { new Vector2(-Half, -Half), new Vector2(Half, -Half), new Vector2(-Half, Half), new Vector2(Half, Half) })
+            Cube(room, "CornerPost", new Vector3(c.x - Mathf.Sign(c.x) * 0.1f, Height / 2f, c.y - Mathf.Sign(c.y) * 0.1f), new Vector3(0.25f, Height, 0.25f), timber, false);
+
+        // 창: 북쪽(작업대 뒤), 동쪽(침대 위), 서쪽(책상 위). 따뜻한 빛이 들어오는 느낌
+        Window(room, glass, timber, new Vector3(0f, 1.75f, Half - 0.03f), 0f);
+        Window(room, glass, timber, new Vector3(Half - 0.03f, 1.75f, -1.1f), 90f);
+        Window(room, glass, timber, new Vector3(-Half + 0.03f, 1.75f, -1.2f), 270f);
+
+        return door;
+    }
+
+    /// <summary>창틀과 따뜻하게 빛나는 유리. yaw는 창이 바라보는 방향(방 안쪽)이다.</summary>
+    private static void Window(GameObject parent, Material glass, Material timber, Vector3 pos, float yaw)
+    {
+        GameObject w = new GameObject("Window");
+        w.transform.SetParent(parent.transform, false);
+        w.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
+        Cube(w, "Glass", Vector3.zero, new Vector3(0.9f, 0.8f, 0.04f), glass, false);
+        Cube(w, "FrameTop", new Vector3(0f, 0.45f, -0.02f), new Vector3(1.1f, 0.1f, 0.12f), timber, false);
+        Cube(w, "FrameBottom", new Vector3(0f, -0.45f, -0.02f), new Vector3(1.1f, 0.1f, 0.12f), timber, false);
+        Cube(w, "FrameL", new Vector3(-0.5f, 0f, -0.02f), new Vector3(0.1f, 0.9f, 0.12f), timber, false);
+        Cube(w, "FrameR", new Vector3(0.5f, 0f, -0.02f), new Vector3(0.1f, 0.9f, 0.12f), timber, false);
+        Cube(w, "BarV", new Vector3(0f, 0f, -0.02f), new Vector3(0.06f, 0.8f, 0.08f), timber, false);
+        Cube(w, "BarH", new Vector3(0f, 0f, -0.02f), new Vector3(0.9f, 0.06f, 0.08f), timber, false);
+        PointLight(w.transform, "WindowLight", new Vector3(0f, 0f, -0.5f), new Color(1f, 0.85f, 0.6f), 0.9f, 4f);
+    }
+
     // ───────── 가구 ─────────
 
     private static void BuildFurniture(Vector3 benchPosition)
@@ -83,9 +171,9 @@ public static class InteriorSetup
         Material wood = Mat("FurnitureWood", new Color(0.69f, 0.51f, 0.35f));
         Material darkWood = Mat("FurnitureDarkWood", new Color(0.47f, 0.33f, 0.23f));
         Material cream = Mat("FurnitureCream", new Color(0.96f, 0.93f, 0.85f));
-        Material blanket = Mat("FurnitureBlanket", new Color(0.55f, 0.72f, 0.88f));
+        Material blanket = Mat("FurnitureBlanket", new Color(0.32f, 0.44f, 0.56f));
         Material pillow = Mat("FurniturePillow", new Color(0.99f, 0.97f, 0.94f));
-        Material rugMat = Mat("FurnitureRug", new Color(0.96f, 0.76f, 0.78f));
+        Material rugMat = Mat("FurnitureRug", new Color(0.6f, 0.3f, 0.27f));
         Material paper = Mat("FurniturePaper", new Color(1f, 0.99f, 0.95f));
 
         // 러그: 방 가운데
@@ -117,10 +205,16 @@ public static class InteriorSetup
         Cube(root, "ShelfBack", shelf + new Vector3(-0.13f, 1.07f, 0f), new Vector3(0.03f, 1.7f, 1.9f), darkWood, false);
 
         // 보관 상자와 통
-        Kitpiece(root, "Box02", new Vector3(1.7f, 0f, 2.1f), 195f);
+        Kitpiece(root, "Crate", new Vector3(1.6f, 0f, 2.3f), 15f);
+        Kitpiece(root, "Crate", new Vector3(1.6f, 0.8f, 2.3f), 40f);
         Kitpiece(root, "Barrel", new Vector3(2.35f, 0f, 2.3f), 0f);
-        Kitpiece(root, "Barrel", new Vector3(2.4f, 0f, 1.35f), 40f);
-        Kitpiece(root, "Box01", new Vector3(-2.2f, 0f, -0.2f), 80f);
+        Kitpiece(root, "Barrel", new Vector3(2.4f, 0f, 1.25f), 40f);
+        Kitpiece(root, "Crate", new Vector3(-2.2f, 0f, -0.1f), 80f);
+        Kitpiece(root, "Bucket", new Vector3(-2.3f, 0f, 3.0f - 0.35f), 0f);
+
+        // 천장에 매단 랜턴 (작업대 위)
+        GameObject lantern = Kitpiece(root, "Lantern", new Vector3(0f, 2.3f, 1.2f), 0f, false);
+        PointLight(lantern.transform, "LanternLight", new Vector3(0f, 0.3f, 0f), new Color(1f, 0.78f, 0.45f), 1.0f, 5f);
     }
 
     private static void BuildLighting()
@@ -166,13 +260,13 @@ public static class InteriorSetup
     }
 
     /// <summary>오두막 키트의 소품(통, 상자)을 놓는다.</summary>
-    private static void Kitpiece(GameObject parent, string prefabName, Vector3 pos, float yaw)
+    private static GameObject Kitpiece(GameObject parent, string prefabName, Vector3 pos, float yaw, bool collider = true)
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Kit + prefabName + ".prefab");
         GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
         go.transform.SetParent(parent.transform, false);
         go.transform.localPosition = pos;
-        go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f) * prefab.transform.rotation;
         Bounds b = new Bounds(go.transform.position, Vector3.zero);
         bool first = true;
         foreach (Renderer r in go.GetComponentsInChildren<Renderer>())
@@ -180,10 +274,13 @@ public static class InteriorSetup
             if (r.name.Contains("LOD1") || r.name.Contains("LOD2") || r.name.Contains("LOD3")) continue;
             if (first) { b = r.bounds; first = false; } else b.Encapsulate(r.bounds);
         }
+        foreach (Collider old in go.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(old);
+        if (!collider) return go;
         BoxCollider box = go.AddComponent<BoxCollider>();
         box.center = go.transform.InverseTransformPoint(b.center);
         Vector3 size = go.transform.InverseTransformVector(b.size);
         box.size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+        return go;
     }
 
     /// <summary>작은 장식 모델(deco_*)을 크게 키워 소품으로 놓는다.</summary>
