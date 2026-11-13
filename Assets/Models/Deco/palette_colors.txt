@@ -1,0 +1,33 @@
+ 0  gray        #9E9EA6
+ 1  lgray       #CDCDD2
+ 2  white       #F4F2EC
+ 3  black       #40404A
+ 4  brown       #926848
+ 5  dbrown      #684834
+ 6  lbrown      #C49C70
+ 7  tan         #E2C89C
+ 8  wood        #B0825A
+ 9  green       #74B26C
+10  lgreen      #A4D482
+11  dgreen      #4E8A5C
+12  moss        #70A45C
+13  dmoss       #487A52
+14  red         #D85854
+15  orange      #F29852
+16  yellow      #F7D866
+17  pink        #F6ACC0
+18  purple      #B28EDA
+19  blue        #7CA8E4
+20  cyan        #98D8E8
+21  amber       #ECA634
+22  crystal     #C0ACF2
+23  shellpink   #F6D0CA
+24  starorange  #F08E66
+25  coral       #F0847A
+26  coral2      #D6786E
+27  sand        #ECD8AC
+28  water       #70ACD8
+29  roof        #CE665C
+30  wall        #F6ECD8
+31  lampglow    #FFECA4
+32  metal       #7C828C
