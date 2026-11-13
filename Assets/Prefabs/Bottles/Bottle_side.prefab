@@ -40,7 +40,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1027663160545254180}
-  m_Mesh: {fileID: 4300000, guid: 6f7fbf98d1fd5a74094d3388033e653f, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 9e6bab4b5b49eee4690891b3f929db62, type: 2}
 --- !u!23 &1812188808969129681
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -455,6 +455,17 @@ MonoBehaviour:
   interiorMargin: 0.97
   surfaceCenter: {x: 0.027500004, y: 0}
   pointerTolerance: 0.06
+  soilLevels:
+  - mesh: {fileID: 4300000, guid: 532ef069cb933ef4d8068a4894a198bf, type: 2}
+    surfaceY: 0.074
+    zoomLookPoint: {x: 0.027500004, y: 0.1515, z: 0}
+  - mesh: {fileID: 4300000, guid: 9e6bab4b5b49eee4690891b3f929db62, type: 2}
+    surfaceY: 0.102
+    zoomLookPoint: {x: 0.027500004, y: 0.1795, z: 0}
+  - mesh: {fileID: 4300000, guid: 4dbe6dcb81137bd4495dcc1ef27644c2, type: 2}
+    surfaceY: 0.14199999
+    zoomLookPoint: {x: 0.027500004, y: 0.21949999, z: 0}
+  soilFilter: {fileID: 4505579377228112733}
   data: {fileID: 11400000, guid: b41cdd12e2dc2f64bbc7626ba8b84c70, type: 2}
   viewCamera: {fileID: 198076754444630514}
   groundRenderer: {fileID: 1812188808969129681}

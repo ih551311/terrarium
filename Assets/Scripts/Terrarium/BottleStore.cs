@@ -16,6 +16,8 @@ public class BottleRecord
     public List<PlacedData> items = new List<PlacedData>();
     public MaterialData ground;   // 바닥재. null이면 흙
     public bool completed;        // 완성해서 닫았는가
+    public bool created;          // 병을 만들었는가 (만들 때 병 종류와 흙의 양을 정하고, 그 뒤로는 바꿀 수 없다)
+    public int soilLevel = 1;     // 흙의 양: 0 적게, 1 보통, 2 많이
 }
 
 /// <summary>

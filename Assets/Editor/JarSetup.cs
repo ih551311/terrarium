@@ -28,6 +28,10 @@ public static class JarSetup
     private const string SoilMaterialPath = "Assets/Data/Placeholder/SoilBrown.mat";
 
     private const int SoilSegments = 32;
+    // 흙의 양 3단계 (적게, 보통, 많이)
+    private const int SoilLevelCount = 3;
+    private static readonly float[] SoilAmounts = { 0.5f, 1f, 1.5f };          // 세운 병: 보통 깊이에 곱하는 값
+    private static readonly float[] SideSoilOffsets = { -0.014f, 0f, 0.02f };   // 누운 병: 표면 높이 차(모델 크기 기준, 미터)
     private const float ViewTilt = 28f; // 서 있는 병을 카메라 쪽으로 기울이는 각도(도)
     private const float ProfileStep = 0.002f; // 안쪽 반지름 표의 간격(모델 크기 기준, 미터)
 
@@ -196,22 +200,27 @@ public static class JarSetup
         for (int i = 0; i < samples; i++)
             profileRadii[i] = profile.Radius(profile.First + i * ProfileStep) * S;
 
-        // 2) 흙 모양 (세운 병: 안쪽 단면에 맞춘 회전체 / 누운 병: 함께 온 모래 바닥 모델)
-        Mesh soilMesh;
-        float surfaceRadius = 0f;
+        // 2) 흙 모양 (세운 병: 안쪽 단면에 맞춘 회전체 / 누운 병: 안쪽 둥근 모양을 따라 채운 흙)
+        //    흙의 양(적게, 보통, 많이)마다 하나씩 만든다. 병을 만들 때 양을 정하고, 그에 맞는 모양이 끼워진다.
         float seed = jar.id[0] * 0.37f; // 병마다 굴곡 모양이 다르게
-        if (alongX)
+        AssetDatabase.DeleteAsset(DataFolder + "/" + jar.id + "_soil.asset"); // 예전 이름
+        var soilMeshes = new Mesh[SoilLevelCount];
+        var soilSurfaceYs = new float[SoilLevelCount];
+        float surfaceRadius = 0f;
+        for (int level = 0; level < SoilLevelCount; level++)
         {
-            soilMesh = BuildSideSoilMesh(profile, axisOrigin, surfaceY, seed);
+            float levelSurfaceY = alongX ? surfaceY + SideSoilOffsets[level] : floorY + jar.soilDepth * SoilAmounts[level];
+            soilSurfaceYs[level] = levelSurfaceY;
+            soilMeshes[level] = alongX
+                ? BuildSideSoilMesh(profile, axisOrigin, levelSurfaceY, seed)
+                : BuildSoilMesh(profile, floorY, levelSurfaceY, S, seed, out surfaceRadius);
+            string levelPath = DataFolder + "/" + jar.id + "_soil" + level + ".asset";
+            AssetDatabase.DeleteAsset(levelPath);
+            AssetDatabase.CreateAsset(soilMeshes[level], levelPath);
         }
-        else
-        {
-            soilMesh = BuildSoilMesh(profile, floorY, surfaceY, S, seed, out surfaceRadius);
-        }
-        string meshPath = DataFolder + "/" + jar.id + "_soil.asset";
-        AssetDatabase.DeleteAsset(meshPath);
-        AssetDatabase.CreateAsset(soilMesh, meshPath);
-        Debug.Log("[JarSetup] " + jar.id + ": 바닥 " + (floorY * S * 100f).ToString("0.0") + "cm, 흙 표면 " + (surfaceY * S * 100f).ToString("0.0") +
+        Mesh soilMesh = soilMeshes[1]; // 보통
+        surfaceY = soilSurfaceYs[1];
+        Debug.Log("[JarSetup] " + jar.id + ": 바닥 " + (floorY * S * 100f).ToString("0.0") + "cm, 흙 표면(보통) " + (surfaceY * S * 100f).ToString("0.0") +
                   "cm, 병 크기 " + (whole.size.x * S * 100f).ToString("0") + "x" + (whole.size.y * S * 100f).ToString("0") + "cm" +
                   (alongX ? "" : ", 표면 반지름 " + (surfaceRadius * 100f).ToString("0.0") + "cm") + ", 표 " + samples + "칸");
 
@@ -287,6 +296,20 @@ public static class JarSetup
         SetFloatArray(contents, "profileRadii", profileRadii);
         SetVector2(contents, "surfaceCenter", surfaceCenter * S);
         SetVector3(contents, "zoomLookPoint", new Vector3(surfaceCenter.x * S, surfaceY * S + extent * 0.1f, surfaceCenter.y * S));
+
+        // 흙의 양(적게, 보통, 많이)마다 흙 모양과 표면 높이를 연결한다
+        UISetup.SetRef(contents, "soilFilter", soil.GetComponent<MeshFilter>());
+        SerializedObject levelsSo = new SerializedObject(contents);
+        SerializedProperty levels = levelsSo.FindProperty("soilLevels");
+        levels.arraySize = SoilLevelCount;
+        for (int level = 0; level < SoilLevelCount; level++)
+        {
+            SerializedProperty element = levels.GetArrayElementAtIndex(level);
+            element.FindPropertyRelative("mesh").objectReferenceValue = soilMeshes[level];
+            element.FindPropertyRelative("surfaceY").floatValue = soilSurfaceYs[level] * S;
+            element.FindPropertyRelative("zoomLookPoint").vector3Value = new Vector3(surfaceCenter.x * S, soilSurfaceYs[level] * S + extent * 0.1f, surfaceCenter.y * S);
+        }
+        levelsSo.ApplyModifiedPropertiesWithoutUndo();
 
         SetLayerRecursive(root, layer);
 

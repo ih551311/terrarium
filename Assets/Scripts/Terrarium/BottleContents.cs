@@ -50,6 +50,21 @@ public class BottleContents : MonoBehaviour
     [Tooltip("마우스가 병 안 바닥에서 이만큼(미터)보다 멀면 놓지 않는다")]
     [SerializeField] private float pointerTolerance = 0.06f;
 
+    /// <summary>흙의 양 한 단계 (적게, 보통, 많이). JarSetup이 단계마다 흙 모양을 만들어 둔다.</summary>
+    [System.Serializable]
+    public struct SoilLevel
+    {
+        public Mesh mesh;
+        [Tooltip("이 양일 때 흙 표면의 높이 (병 기준)")]
+        public float surfaceY;
+        public Vector3 zoomLookPoint;
+    }
+
+    [Header("흙의 양 (JarSetup이 채운다)")]
+    [SerializeField] private SoilLevel[] soilLevels;
+    [Tooltip("흙 모양을 바꿔 끼울 MeshFilter (Soil 오브젝트)")]
+    [SerializeField] private MeshFilter soilFilter;
+
     [Header("연결")]
     [Tooltip("이 병의 종류 정보 (이름 등)")]
     [SerializeField] private BottleData data;
@@ -89,6 +104,33 @@ public class BottleContents : MonoBehaviour
     /// <summary>완성해서 닫았으면 true. 그때부터 고칠 수 없다.</summary>
     public bool IsCompleted { get; private set; }
 
+    /// <summary>만든 병이면 true. 만들 때 흙의 양을 정하고, 그 뒤로는 바꿀 수 없다.</summary>
+    public bool IsCreated { get; private set; }
+
+    /// <summary>흙의 양: 0 적게, 1 보통, 2 많이</summary>
+    public int SoilLevelIndex { get; private set; } = 1;
+
+    /// <summary>병을 만든다. 흙의 양(0 적게, 1 보통, 2 많이)을 정하고, 그 뒤로는 바꿀 수 없다.</summary>
+    public void Create(int soilLevel)
+    {
+        if (IsCreated) return;
+        IsCreated = true;
+        ApplySoilLevel(soilLevel);
+        SaveState();
+    }
+
+    /// <summary>흙의 양에 맞는 흙 모양과 표면 높이로 바꾼다.</summary>
+    private void ApplySoilLevel(int level)
+    {
+        SoilLevelIndex = Mathf.Clamp(level, 0, 2);
+        if (soilLevels == null || soilLevels.Length == 0) return;
+
+        SoilLevel s = soilLevels[Mathf.Min(SoilLevelIndex, soilLevels.Length - 1)];
+        if (soilFilter != null && s.mesh != null) soilFilter.sharedMesh = s.mesh;
+        surfaceLocalY = s.surfaceY;
+        zoomLookPoint = s.zoomLookPoint;
+    }
+
     // 처음 켜지는 순간(Awake)에 기억해 둔 상태를 되살린다. 숨겨 뒀다가 나중에 켜지는 병도
     // 켜지자마자 완성 여부와 바닥재가 맞게 보이도록, Start가 아니라 Awake에서 한다.
     private void Awake()
@@ -102,6 +144,8 @@ public class BottleContents : MonoBehaviour
 
         Ground = record.ground;
         ApplyGround();
+        IsCreated = record.created;
+        ApplySoilLevel(record.soilLevel);
         IsCompleted = record.completed;
         if (lid != null) lid.SetActive(IsCompleted);
     }
@@ -131,7 +175,7 @@ public class BottleContents : MonoBehaviour
     /// <summary>재료를 놓는다. 가득 찼거나 완성한 병이면 null. (자리는 TryFindPlacement로 구한 것을 넣는다)</summary>
     public PlacedMaterial Place(MaterialData material, Vector3 localPosition)
     {
-        if (IsFull || IsCompleted) return null;
+        if (IsFull || IsCompleted || !IsCreated) return null;
         PlacedMaterial placed = Spawn(material, localPosition, 0f, 1f);
         SaveState();
         return placed;
@@ -321,7 +365,7 @@ public class BottleContents : MonoBehaviour
     /// <summary>돌리거나 키운 뒤에 불러서 기록을 새로 한다.</summary>
     public void SaveState()
     {
-        BottleRecord record = new BottleRecord { ground = Ground, completed = IsCompleted };
+        BottleRecord record = new BottleRecord { ground = Ground, completed = IsCompleted, created = IsCreated, soilLevel = SoilLevelIndex };
         foreach (PlacedMaterial placed in items)
         {
             record.items.Add(new PlacedData

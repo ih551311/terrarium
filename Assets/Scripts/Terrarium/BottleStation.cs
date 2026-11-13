@@ -19,6 +19,20 @@ public class BottleStation : MonoBehaviour, IInteractable
     public int SelectedIndex => selectedIndex;
     public BottleContents Selected => bottles[selectedIndex];
 
+    /// <summary>
+    /// 지금 꾸미는 중인 병(만들었고 아직 완성 안 한 병)의 번호. 없으면 -1.
+    /// 꾸미는 중인 병이 있으면 패널은 병 고르기 없이 바로 그 병을 연다.
+    /// </summary>
+    public int InProgressIndex
+    {
+        get
+        {
+            for (int i = 0; i < bottles.Length; i++)
+                if (bottles[i].IsCreated && !bottles[i].IsCompleted) return i;
+            return -1;
+        }
+    }
+
     private void Awake()
     {
         Select(selectedIndex);

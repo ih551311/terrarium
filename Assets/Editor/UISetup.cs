@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -114,15 +114,16 @@ public static class UISetup
         Image dim = bottleRoot.AddComponent<Image>(); dim.color = new Color(0f, 0f, 0f, 0.55f);
 
         GameObject bWindow = Rect(bottleRoot.transform, "Window");
-        Center(bWindow, 1300f, 960f);
+        Center(bWindow, 1500f, 1000f);
         Image bBg = bWindow.AddComponent<Image>(); bBg.color = new Color(0.96f, 0.94f, 0.89f, 1f);
-        Label(bWindow.transform, "Title", "병 꾸미기", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -25f), new Vector2(600f, 90f), TextAlignmentOptions.TopLeft);
-        TextMeshProUGUI message = Label(bWindow.transform, "Message", string.Empty, 44, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(700f, 70f), TextAlignmentOptions.Center);
+        Label(bWindow.transform, "Title", "병 꾸미기", 48, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f, -20f), new Vector2(500f, 70f), TextAlignmentOptions.TopLeft);
+        TextMeshProUGUI message = Label(bWindow.transform, "Message", string.Empty, 38, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(800f, 60f), TextAlignmentOptions.Center);
         message.color = new Color(0.72f, 0.3f, 0.2f, 1f);
-        Button closeButton = MakeButton(bWindow.transform, "CloseButton", "닫기", new Vector2(1f, 1f), new Vector2(-40f, -30f), new Vector2(220f, 80f));
+        Button closeButton = MakeSmallButton(bWindow.transform, "CloseButton", "닫기", new Vector2(1f, 1f), new Vector2(-30f, -24f), new Vector2(150f, 60f), 32);
 
+        // 병 그림: 꾸미는 곳이라 크게 둔다. 버튼들은 작게 해서 옆으로 비킨다.
         GameObject view = Rect(bWindow.transform, "BottleView");
-        Anchor(view, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -120f), new Vector2(620f, 620f));
+        Anchor(view, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -90f), new Vector2(740f, 740f));
         RawImage raw = view.AddComponent<RawImage>(); raw.color = Color.white;
         raw.texture = AssetDatabase.LoadAssetAtPath<RenderTexture>(RenderTexturePath);
         DragRotate drag = view.AddComponent<DragRotate>();
@@ -131,17 +132,22 @@ public static class UISetup
         GameObject edit = Rect(bWindow.transform, "EditTools");
         Stretch(edit);
 
-        Label(edit.transform, "Hint", "클릭: 놓기   |   재료 위 휠: 돌리기   |   그 밖의 휠: 확대/축소   |   Q/R: 크기   |   우클릭: 빼기   |   끌기: 병 방향 바꾸기 (T: 원위치)",
-            28, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 175f), new Vector2(1240f, 50f), TextAlignmentOptions.Center);
+        Label(edit.transform, "Hint", "클릭: 놓기  |  재료 위 휠: 돌리기  |  그 밖의 휠: 확대/축소  |  Q/R: 크기  |  우클릭: 빼기  |  끌기: 병 방향 바꾸기 (T: 원위치)",
+            24, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 128f), new Vector2(1440f, 40f), TextAlignmentOptions.Center);
 
         // 완성한 병을 열었을 때 보이는 글자 (평소엔 꺼 둔다)
-        GameObject completedLabel = Label(bWindow.transform, "CompletedLabel", "완성한 병이에요\n끌어서 돌리고, 휠로 확대/축소할 수 있어요", 48,
-            new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(1000f, 160f), TextAlignmentOptions.Center).gameObject;
+        GameObject completedLabel = Label(bWindow.transform, "CompletedLabel", "완성한 병이에요\n끌어서 돌리고, 휠로 확대/축소할 수 있어요", 40,
+            new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1000f, 120f), TextAlignmentOptions.Center).gameObject;
         completedLabel.SetActive(false);
+
+        // 완성한 뒤에 나오는 "새 병 만들기" 버튼 (병 만들기 화면으로 간다)
+        Button newBottleButton = MakeSmallButton(bWindow.transform, "NewBottleButton", "새 병 만들기", new Vector2(0f, 1f), new Vector2(30f, -110f), new Vector2(230f, 80f), 34);
+        newBottleButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
+        newBottleButton.gameObject.SetActive(false);
 
         // 재료 칸: 가방 칸을 가로로 늘어놓는다
         GameObject strip = Rect(edit.transform, "MaterialStrip");
-        Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(1220f, 130f));
+        Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(1440f, 100f));
         HorizontalLayoutGroup hlg = strip.AddComponent<HorizontalLayoutGroup>();
         hlg.spacing = 8f; hlg.childAlignment = TextAnchor.MiddleCenter;
         hlg.childControlWidth = true; hlg.childControlHeight = true;
@@ -158,7 +164,7 @@ public static class UISetup
             GameObject t = Rect(slot.transform, "Text");
             Stretch(t);
             TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
-            tmp.font = font; tmp.fontSize = 28; tmp.color = TextColor; tmp.alignment = TextAlignmentOptions.Center;
+            tmp.font = font; tmp.fontSize = 24; tmp.color = TextColor; tmp.alignment = TextAlignmentOptions.Center;
             tmp.raycastTarget = false; tmp.text = string.Empty;
             slotButtons[i] = b; slotLabels[i] = tmp; slotBackgrounds[i] = bg;
         }
@@ -172,12 +178,12 @@ public static class UISetup
         BottleDecorator decorator = view.AddComponent<BottleDecorator>();
         SetRef(decorator, "bag", bag); SetRef(decorator, "strip", materialStrip); SetRef(decorator, "messageText", message);
 
-        // 바닥재 고르기 (병 그림 오른쪽)
+        // 바닥재 고르기 (병 그림 오른쪽, 작게)
         GameObject groundBox = Rect(edit.transform, "GroundSelector");
-        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -170f), new Vector2(290f, 360f));
-        Label(groundBox.transform, "Title", "바닥재", 48, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(290f, 70f), TextAlignmentOptions.Center);
-        Button soilButton = MakeButton(groundBox.transform, "SoilButton", "흙", new Vector2(0.5f, 1f), new Vector2(0f, -90f), new Vector2(290f, 100f));
-        Button sandButton = MakeButton(groundBox.transform, "SandButton", "모래 x0", new Vector2(0.5f, 1f), new Vector2(0f, -210f), new Vector2(290f, 100f));
+        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -110f), new Vector2(200f, 210f));
+        Label(groundBox.transform, "Title", "바닥재", 34, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(200f, 50f), TextAlignmentOptions.Center);
+        Button soilButton = MakeSmallButton(groundBox.transform, "SoilButton", "흙", new Vector2(0.5f, 1f), new Vector2(0f, -60f), new Vector2(200f, 70f), 30);
+        Button sandButton = MakeSmallButton(groundBox.transform, "SandButton", "모래 x0", new Vector2(0.5f, 1f), new Vector2(0f, -140f), new Vector2(200f, 70f), 30);
         GroundSelector groundSelector = groundBox.AddComponent<GroundSelector>();
         SetRef(groundSelector, "bag", bag); SetRef(groundSelector, "decorator", decorator);
         SetRef(groundSelector, "sand", BottleSetup.EnsureSandAsset());
@@ -186,38 +192,49 @@ public static class UISetup
         SetRef(groundSelector, "sandBackground", sandButton.GetComponent<Image>());
         SetRef(groundSelector, "sandLabel", sandButton.GetComponentInChildren<TextMeshProUGUI>());
 
-        // 병 고르기 (병 그림 왼쪽, 완성 버튼 아래). 완성한 병도 보러 갈 수 있게 꾸미기 도구 밖에 둔다.
-        // 병 고르기 화면: 병 꾸미기를 열면 이 화면이 먼저 나온다. 큰 카드 4장 중 하나를 고르면 꾸미기 화면으로 넘어간다.
-        // (창 전체를 덮어서, 닫기 버튼 말고는 아래 화면이 보이지 않는다)
+        // 병 만들기 화면: 꾸미는 중인 병이 없을 때 먼저 나온다. 흙의 양을 고르고 병 카드를 누르면 병이 만들어진다.
+        // 병 종류와 흙의 양은 이때 정해지고 그 뒤로는 바꿀 수 없다. (창 전체를 덮어서, 닫기 버튼 말고는 아래 화면이 보이지 않는다)
         GameObject chooseBox = Rect(bWindow.transform, "BottleChooser");
         Stretch(chooseBox);
         Image chooseBg = chooseBox.AddComponent<Image>(); chooseBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
-        Label(chooseBox.transform, "Title", "꾸밀 병을 골라요", 64, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1000f, 100f), TextAlignmentOptions.Center);
+        Label(chooseBox.transform, "Title", "병을 만들어요", 56, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(1000f, 80f), TextAlignmentOptions.Center);
+        Label(chooseBox.transform, "Subtitle", "병 종류와 흙의 양은 만들 때 정하고, 그 뒤로는 바꿀 수 없어요", 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -140f), new Vector2(1300f, 50f), TextAlignmentOptions.Center);
+
+        Label(chooseBox.transform, "SoilLabel", "흙의 양", 38, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-330f, -230f), new Vector2(200f, 70f), TextAlignmentOptions.Center);
+        string[] soilNames = { "적게", "보통", "많이" };
+        Button[] soilButtons = new Button[3];
+        Image[] soilBackgrounds = new Image[3];
+        for (int i = 0; i < 3; i++)
+        {
+            Button b = MakeSmallButton(chooseBox.transform, "Soil" + i, soilNames[i], new Vector2(0.5f, 1f), new Vector2(-110f + i * 220f, -230f), new Vector2(200f, 70f), 34);
+            soilButtons[i] = b; soilBackgrounds[i] = b.GetComponent<Image>();
+        }
+
         const int ChoiceCount = 4;
         Button[] choiceButtons = new Button[ChoiceCount];
         TMP_Text[] choiceLabels = new TMP_Text[ChoiceCount];
         Image[] choiceBackgrounds = new Image[ChoiceCount];
         for (int i = 0; i < ChoiceCount; i++)
         {
-            Button b = MakeButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 0.5f), new Vector2((i - 1.5f) * 310f, -40f), new Vector2(290f, 520f));
-            b.GetComponentInChildren<TextMeshProUGUI>().fontSize = 46;
+            Button b = MakeSmallButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 0.5f), new Vector2((i - 1.5f) * 340f, -130f), new Vector2(320f, 560f), 40);
             choiceButtons[i] = b;
             choiceLabels[i] = b.GetComponentInChildren<TextMeshProUGUI>();
             choiceBackgrounds[i] = b.GetComponent<Image>();
         }
-        closeButton.transform.SetAsLastSibling(); // 닫기 버튼이 병 고르기 화면 위에도 보이게 한다
+        GameObject noneLeft = Label(chooseBox.transform, "NoneLeft", "만들 수 있는 병이 없어요 (병은 나중에 살 수 있어요)", 34, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1300f, 60f), TextAlignmentOptions.Center).gameObject;
+        noneLeft.SetActive(false);
+        closeButton.transform.SetAsLastSibling(); // 닫기 버튼이 병 만들기 화면 위에도 보이게 한다
 
-        // 병 다시 고르기 (꾸미기 화면의 왼쪽 위)
-        Button backButton = MakeButton(bWindow.transform, "BackButton", "병 다시 고르기", new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(330f, 80f));
-        backButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 36;
         BottleChooser chooser = chooseBox.AddComponent<BottleChooser>();
         SetArray(chooser, "buttons", choiceButtons);
         SetArray(chooser, "labels", choiceLabels);
         SetArray(chooser, "backgrounds", choiceBackgrounds);
+        SetArray(chooser, "soilButtons", soilButtons);
+        SetArray(chooser, "soilBackgrounds", soilBackgrounds);
+        SetRef(chooser, "noneLeftNotice", noneLeft);
 
-        // 완성 버튼 (병 그림 왼쪽)
-        Button completeButton = MakeButton(edit.transform, "CompleteButton", "완성", new Vector2(0f, 1f), new Vector2(50f, -170f), new Vector2(290f, 140f));
-        completeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 40;
+        // 완성 버튼 (병 그림 왼쪽, 작게)
+        Button completeButton = MakeSmallButton(edit.transform, "CompleteButton", "완성", new Vector2(0f, 1f), new Vector2(30f, -110f), new Vector2(200f, 80f), 36);
         completeButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         CompleteBottleButton complete = completeButton.gameObject.AddComponent<CompleteBottleButton>();
 
@@ -364,7 +381,7 @@ public static class UISetup
         SetRef(bp, "root", bottleRoot); SetRef(bp, "closeButton", closeButton);
         SetRef(bp, "dragRotate", drag); SetRef(bp, "decorator", decorator);
         SetRef(bp, "groundSelector", groundSelector); SetRef(bp, "completeButton", complete); SetRef(bp, "chooser", chooser);
-        SetRef(bp, "bottleView", view); SetRef(bp, "backButton", backButton);
+        SetRef(bp, "bottleView", view); SetRef(bp, "newBottleButton", newBottleButton);
         SetRef(bp, "editTools", edit); SetRef(bp, "completedLabel", completedLabel);
         SetRef(complete, "button", completeButton);
         SetRef(complete, "label", completeButton.GetComponentInChildren<TextMeshProUGUI>());
@@ -480,6 +497,14 @@ public static class UISetup
         TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
         tmp.font = font; tmp.text = text; tmp.fontSize = 44; tmp.alignment = TextAlignmentOptions.Center;
         tmp.color = new Color(0.15f, 0.2f, 0.15f, 1f); tmp.raycastTarget = false;
+        return b;
+    }
+
+    /// <summary>글자 크기를 정해서 만드는 버튼 (꾸미는 화면처럼 좁은 곳에서 작게 쓴다)</summary>
+    private static Button MakeSmallButton(Transform parent, string name, string text, Vector2 corner, Vector2 pos, Vector2 size, float fontSize)
+    {
+        Button b = MakeButton(parent, name, text, corner, pos, size);
+        b.GetComponentInChildren<TextMeshProUGUI>().fontSize = fontSize;
         return b;
     }
 
