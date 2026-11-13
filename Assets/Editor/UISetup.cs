@@ -90,7 +90,7 @@ public static class UISetup
         GameObject edit = Rect(bWindow.transform, "EditTools");
         Stretch(edit);
 
-        Label(edit.transform, "Hint", "클릭: 놓기  ·  재료 위 휠: 돌리기  ·  그 밖의 휠: 확대/축소  ·  Q/R: 크기  ·  우클릭: 빼기  ·  끌기: 병 돌리기",
+        Label(edit.transform, "Hint", "클릭: 놓기   |   재료 위 휠: 돌리기   |   그 밖의 휠: 확대/축소   |   Q/R: 크기   |   우클릭: 빼기   |   끌기: 병 돌리기",
             28, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 175f), new Vector2(1240f, 50f), TextAlignmentOptions.Center);
 
         // 완성한 병을 열었을 때 보이는 글자 (평소엔 꺼 둔다)

@@ -21,7 +21,10 @@ public class GameRoot : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject); // 이미 하나 있다: 중복은 지운다
+            // 이미 하나 있다: 중복은 지운다. 지워지기 전 한 프레임 동안 EventSystem이나 오디오 리스너가
+            // 두 개로 잡히지 않게, 먼저 꺼 둔다.
+            gameObject.SetActive(false);
+            Destroy(gameObject);
             return;
         }
 
