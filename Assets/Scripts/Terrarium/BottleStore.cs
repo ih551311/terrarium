@@ -28,6 +28,9 @@ public static class BottleStore
 {
     private static readonly Dictionary<string, BottleRecord> bottles = new Dictionary<string, BottleRecord>();
 
+    /// <summary>모든 병의 기록 (저장할 때 쓴다)</summary>
+    public static IEnumerable<KeyValuePair<string, BottleRecord>> All => bottles;
+
     /// <summary>병의 기록을 돌려준다. 처음 보는 병이면 빈 기록을 만든다.</summary>
     public static BottleRecord Get(string bottleId)
     {

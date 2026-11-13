@@ -34,6 +34,9 @@ public class GameRoot : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        // 저장이 있으면 가방을 저장된 내용으로 채운다 (날짜, 코인, 병은 장면이 열리기 전에 이미 채워졌다)
+        if (player != null) SaveSystem.ApplyBag(player.GetComponent<Bag>());
     }
 
     private void OnDestroy()

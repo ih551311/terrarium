@@ -140,6 +140,36 @@ public static class GameState
         Changed?.Invoke();
     }
 
+    // ───────── 저장과 불러오기 ─────────
+
+    /// <summary>지금 상태를 저장 내용(SaveData)에 적는다.</summary>
+    public static void Export(SaveData data)
+    {
+        data.day = Day;
+        data.coins = Coins;
+        data.arrivedCoins = ArrivedCoins;
+        data.axeLevel = AxeLevel;
+        data.pickaxeLevel = PickaxeLevel;
+        foreach (MaterialData m in outbox) data.outbox.Add(m.id);
+        foreach (MaterialData m in orders) data.orders.Add(m.id);
+        foreach (MaterialData m in arrivedItems) data.arrivedItems.Add(m.id);
+    }
+
+    /// <summary>저장 내용으로 상태를 되살린다. (게임을 켤 때 한 번)</summary>
+    public static void Import(SaveData data, MaterialDatabase db)
+    {
+        Day = Mathf.Max(1, data.day);
+        Coins = data.coins;
+        ArrivedCoins = data.arrivedCoins;
+        AxeLevel = data.axeLevel;
+        PickaxeLevel = data.pickaxeLevel;
+
+        outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
+        foreach (string id in data.outbox) { MaterialData m = db.Find(id); if (m != null) outbox.Add(m); }
+        foreach (string id in data.orders) { MaterialData m = db.Find(id); if (m != null) orders.Add(m); }
+        foreach (string id in data.arrivedItems) { MaterialData m = db.Find(id); if (m != null) arrivedItems.Add(m); }
+    }
+
     // Play를 껐다 켤 때 값이 남아 있지 않도록 초기화한다.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Reset()

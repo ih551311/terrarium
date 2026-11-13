@@ -25,6 +25,18 @@ public class Bag : MonoBehaviour
     /// <summary>가방 내용이 바뀔 때마다 호출된다. (화면 갱신용)</summary>
     public event System.Action Changed;
 
+    /// <summary>가방을 주어진 내용으로 바꾼다. (저장을 불러올 때) 칸 수와 한 칸의 최대 개수를 넘는 것은 버린다.</summary>
+    public void Restore(List<(MaterialData material, int count)> entries)
+    {
+        slots.Clear();
+        foreach ((MaterialData material, int count) in entries)
+        {
+            if (slots.Count >= slotCount) break;
+            slots.Add(new Slot { material = material, count = Mathf.Clamp(count, 1, maxStack) });
+        }
+        Changed?.Invoke();
+    }
+
     /// <summary>재료 1개를 넣는다. 자리가 없으면 false.</summary>
     public bool TryAdd(MaterialData material)
     {
