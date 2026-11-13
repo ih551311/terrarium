@@ -41,6 +41,7 @@ public static class IslandSetup
     private const string IslandPath = "Assets/Scenes/Island.unity";
     private const string TerrainFolder = "Assets/Terrain";
     private const string Pack = "Assets/ThirdParty/LowPolyNaturePack/";
+    private const string TreePack = "Assets/Low Poly Tree Mega Pack by MysticForge/Prefabs/URP/";
     private const string DecoFolder = "Assets/Models/Deco/";
     private const string MaterialFolder = "Assets/Data/Materials/";
 
@@ -54,6 +55,7 @@ public static class IslandSetup
     {
         EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
         rng = new System.Random(20261114);
+        ToolSetup.EnsureHiddenLeafMaterial(); // 캔 나무의 잎을 숨길 때 쓰는 투명 재질
 
         // 1) 예전에 만든 것을 지운다 (큐브 바닥, 임시 집, 기둥, 시험용 재료, 이전에 만든 섬)
         foreach (string n in new[] { "Ground", "Hut", "Marker0", "Marker1", "Marker2", "TestMaterials", "Spawn_FromHut", RootName })
@@ -364,7 +366,13 @@ public static class IslandSetup
 
     private static GameObject Spawn(Transform parent, string category, string name, float x, float z, float scale, float yawRange = 360f)
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Pack + "Prefabs/" + category + "/" + name + ".prefab");
+        // 나무는 Low Poly Tree Mega Pack의 것을 쓴다 (이름: Palm n, Pine n, BasicTree n). 그 밖의 것은 자연 팩.
+        string path = Pack + "Prefabs/" + category + "/" + name + ".prefab";
+        if (name.StartsWith("Palm ")) path = TreePack + "Palm Trees/" + name + ".prefab";
+        else if (name.StartsWith("Pine ")) path = TreePack + "Pine Trees/" + name + ".prefab";
+        else if (name.StartsWith("BasicTree ")) path = TreePack + "Woodland/" + name + ".prefab";
+
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
         if (prefab == null) return null;
         GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
         go.transform.SetParent(parent, false);
@@ -394,10 +402,13 @@ public static class IslandSetup
         group.transform.SetParent(parent, false);
         int count = 0;
 
-        string[] forest = { "Tree01A", "Tree01C", "Tree10B", "Tree10C", "Tree12A", "Tree13A", "Tree3A", "Tree4A", "Tree4A", "Tree5A", "Tree5A", "Tree11B", "Tree6A" };
-        string[] meadow = { "Tree01A", "Tree01C", "Tree2A", "Tree2B", "Tree3A", "Tree10B" };
-        string[] hill = { "Tree2A", "Tree2B", "Tree2C", "Tree3C" };
-        string[] palm = { "Tree7A", "Tree7B", "Tree8A", "Tree8B" };
+        // Low Poly Tree Mega Pack에서 모양이 좋은 것만 골랐다 (번호는 팩의 프리팹 번호)
+        string[] pines = { "Pine 1", "Pine 10", "Pine 20", "Pine 30", "Pine 40", "Pine 50", "Pine 60", "Pine 70", "Pine 90", "Pine 110", "Pine 170" };
+        string[] woods = { "BasicTree 40", "BasicTree 50", "BasicTree 60", "BasicTree 70", "BasicTree 90", "BasicTree 150", "BasicTree 210", "BasicTree 270", "BasicTree 330", "BasicTree 450" };
+        string[] forest = pines.Concat(new[] { "BasicTree 40", "BasicTree 50", "BasicTree 60", "BasicTree 90", "BasicTree 150" }).ToArray(); // 숲: 소나무가 많고 활엽수가 섞인다
+        string[] meadow = woods;
+        string[] hill = { "BasicTree 40", "BasicTree 50", "BasicTree 60", "BasicTree 70", "BasicTree 90", "BasicTree 270" };
+        string[] palm = { "Palm 20", "Palm 30", "Palm 50", "Palm 60", "Palm 90", "Palm 110", "Palm 130", "Palm 170" };
 
         Grid(10f, (x, z, h, zone) =>
         {
@@ -415,7 +426,8 @@ public static class IslandSetup
             if (zone == Zone.Forest && Vector2.Distance(new Vector2(x, z), HutPlateau) < 44f) return; // 오두막 주변은 트이게
             if (Rand() > prob) return;
             string name = pool[rng.Next(pool.Length)];
-            float scale = zone == Zone.Beach ? Range(0.9f, 1.2f) : Range(0.85f, 1.35f);
+            // 소나무는 원래 키가 커서(7~12m) 조금 줄이고, 활엽수와 야자는 비슷하게 키운다
+            float scale = name.StartsWith("Pine ") ? Range(0.8f, 1.1f) : zone == Zone.Beach ? Range(0.9f, 1.2f) : Range(0.9f, 1.3f);
             GameObject go = Spawn(group.transform, "Trees", name, x, z, scale);
             if (go == null) return;
             AddTrunkCollider(go, scale);

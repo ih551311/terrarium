@@ -49,6 +49,8 @@ public class Harvestable : MonoBehaviour, IInteractable
         id = "h_" + p.x.ToString("F1") + "_" + p.z.ToString("F1");
         restPosition = transform.position;
         renderers = GetComponentsInChildren<Renderer>();
+        originals = new Material[renderers.Length][];
+        for (int i = 0; i < renderers.Length; i++) originals[i] = renderers[i].sharedMaterials;
 
         if (GameState.IsTaken(id)) SetDepleted(true);
     }
@@ -154,12 +156,6 @@ public class Harvestable : MonoBehaviour, IInteractable
         // 나무는 잎을 숨기고 줄기만 남긴다. (잎 오브젝트 이름은 줄기 이름 뒤에 l이 붙는다. 예: Tree01A_LOD0 / Tree01Al_LOD0)
         if (tool == AcquireMethod.Axe && SetLeavesVisible(!value)) return;
 
-        if (originals == null)
-        {
-            originals = new Material[renderers.Length][];
-            for (int i = 0; i < renderers.Length; i++) originals[i] = renderers[i] != null ? renderers[i].sharedMaterials : null;
-        }
-
         for (int i = 0; i < renderers.Length; i++)
         {
             Renderer r = renderers[i];
@@ -190,13 +186,57 @@ public class Harvestable : MonoBehaviour, IInteractable
     private bool SetLeavesVisible(bool visible)
     {
         bool found = false;
-        foreach (Renderer r in renderers)
+        Material hidden = HiddenLeaf;
+        for (int i = 0; i < renderers.Length; i++)
         {
-            if (r == null || !LeafName.IsMatch(r.name)) continue;
-            r.enabled = visible;
+            Renderer r = renderers[i];
+            if (r == null) continue;
+
+            // 잎이 따로 떨어진 오브젝트인 나무(예: Tree10Bl_LOD0)는 그 오브젝트를 끈다
+            if (LeafName.IsMatch(r.name))
+            {
+                r.enabled = visible;
+                found = true;
+                continue;
+            }
+
+            // 줄기와 잎이 한 덩어리 메시인 나무는, 잎 재질 칸만 투명 재질로 바꾼다
+            if (hidden == null) continue;
+            Material[] original = originals[i];
+            bool hasLeaf = false;
+            var swapped = (Material[])original.Clone();
+            for (int k = 0; k < swapped.Length; k++)
+            {
+                if (!IsLeafMaterial(original[k])) continue;
+                swapped[k] = hidden;
+                hasLeaf = true;
+            }
+            if (!hasLeaf) continue;
+
+            r.sharedMaterials = visible ? original : swapped;
             found = true;
         }
         return found;
+    }
+
+    /// <summary>잎 재질인가. (재질 이름이 Leaves나 Grass로 시작. 야자수는 열매(Coconut)도 숨긴다. 소나무는 Coconut이 줄기라 숨기지 않는다)</summary>
+    private bool IsLeafMaterial(Material m)
+    {
+        if (m == null) return false;
+        if (m.name.StartsWith("Leaves") || m.name.StartsWith("Grass")) return true;
+        return m.name == "Coconut" && name.StartsWith("Palm");
+    }
+
+    private static Material hiddenLeaf;
+
+    /// <summary>잎 칸에 끼우는 투명 재질 (Assets/Resources/HiddenLeaf.mat)</summary>
+    private static Material HiddenLeaf
+    {
+        get
+        {
+            if (hiddenLeaf == null) hiddenLeaf = Resources.Load<Material>("HiddenLeaf");
+            return hiddenLeaf;
+        }
     }
 
     // ───────── 흔들림 ─────────

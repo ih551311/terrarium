@@ -42,6 +42,27 @@ public static class ToolSetup
         return (created ? "도구 설정을 만들었어요" : "도구 설정의 재료 목록을 갱신했어요") + ": 캘 수 있는 재료 " + list.Count + "종";
     }
 
+    /// <summary>
+    /// 캔 나무의 잎을 숨길 때 잎 칸에 끼우는 투명 재질(Assets/Resources/HiddenLeaf.mat)을 만든다.
+    /// 모든 픽셀을 버리는(Alpha Clip) 재질이라 그림자도 생기지 않는다.
+    /// </summary>
+    public static Material EnsureHiddenLeafMaterial()
+    {
+        const string path = "Assets/Resources/HiddenLeaf.mat";
+        Directory.CreateDirectory("Assets/Resources");
+        Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (m != null) return m;
+
+        m = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        m.SetFloat("_AlphaClip", 1f);
+        m.SetFloat("_Cutoff", 0.5f);
+        m.EnableKeyword("_ALPHATEST_ON");
+        m.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0f));
+        AssetDatabase.CreateAsset(m, path);
+        AssetDatabase.SaveAssets();
+        return m;
+    }
+
     private static ToolSettings.Level[] DefaultLevels()
     {
         return new[]
