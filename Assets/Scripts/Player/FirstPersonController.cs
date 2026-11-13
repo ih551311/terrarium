@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// 1인칭 걷기, 왼쪽 Shift 달리기, 마우스 둘러보기.
-/// 점프는 기획서에 따라 넣지 않았다. (달리기는 섬이 넓어서 사용자 요청으로 넣었다)
+/// 1인칭 걷기, 왼쪽 Shift 달리기, 스페이스 점프, 마우스 둘러보기.
+/// 점프와 달리기는 기획서에는 없지만 섬이 넓어서 사용자 요청으로 넣었다.
 /// Player 오브젝트(CharacterController 포함)에 붙인다.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
@@ -18,6 +18,8 @@ public class FirstPersonController : MonoBehaviour
     [Tooltip("왼쪽 Shift를 누른 채 걸을 때의 속도")]
     [SerializeField] private float runSpeed = 7f;
     [SerializeField] private float gravity = -20f;
+    [Tooltip("스페이스를 눌렀을 때 뛰어오르는 높이(미터)")]
+    [SerializeField] private float jumpHeight = 1.1f;
 
     [Header("시선")]
     [Tooltip("마우스 움직임 한 픽셀당 회전 각도")]
@@ -80,8 +82,10 @@ public class FirstPersonController : MonoBehaviour
         if (move.sqrMagnitude > 1f) move.Normalize(); // 대각선이 더 빠르지 않게
         move *= keyboard.leftShiftKey.isPressed ? runSpeed : walkSpeed;
 
-        // 땅에 붙어 있게 하는 중력
+        // 땅에 붙어 있게 하는 중력. 땅에 서 있을 때 스페이스를 누르면 점프한다.
         if (controller.isGrounded && verticalVelocity < 0f) verticalVelocity = -2f;
+        if (controller.isGrounded && keyboard.spaceKey.wasPressedThisFrame)
+            verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
         verticalVelocity += gravity * Time.deltaTime;
         move.y = verticalVelocity;
 
