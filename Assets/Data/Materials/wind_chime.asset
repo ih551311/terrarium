@@ -15,7 +15,7 @@ MonoBehaviour:
   id: wind_chime
   displayName: "\uBC14\uB78C\uC885"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 10e8ce57621244949b117d0bede645e3, type: 3}
   zone: 4
   acquire: 3
   condition: 0

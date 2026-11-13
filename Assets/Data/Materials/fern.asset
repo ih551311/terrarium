@@ -15,7 +15,7 @@ MonoBehaviour:
   id: fern
   displayName: "\uACE0\uC0AC\uB9AC"
   kind: 0
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 1b7022203e2befa49a0b79be5c16aeef, type: 3}
   zone: 1
   acquire: 0
   condition: 0

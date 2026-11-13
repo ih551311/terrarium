@@ -15,7 +15,7 @@ MonoBehaviour:
   id: paper_boat
   displayName: "\uC885\uC774\uBC30"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9471e5ce0b56e674fbeb5be536cbef5b, type: 3}
   zone: 4
   acquire: 3
   condition: 0

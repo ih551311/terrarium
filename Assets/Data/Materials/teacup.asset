@@ -15,7 +15,7 @@ MonoBehaviour:
   id: teacup
   displayName: "\uCC3B\uC794"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 4c0fe7c930df74d478babbe84345af3d, type: 3}
   zone: 4
   acquire: 3
   condition: 0

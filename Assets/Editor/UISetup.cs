@@ -172,6 +172,7 @@ public static class UISetup
         Button[] slotButtons = new Button[SlotCount];
         TMP_Text[] slotLabels = new TMP_Text[SlotCount];
         Image[] slotBackgrounds = new Image[SlotCount];
+        Image[] stripIcons = new Image[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
             GameObject slot = Rect(strip.transform, "Slot" + i);
@@ -182,6 +183,10 @@ public static class UISetup
             TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
             tmp.font = font; tmp.fontSize = 24; tmp.color = TextColor; tmp.alignment = TextAlignmentOptions.Center;
             tmp.raycastTarget = false; tmp.text = string.Empty;
+            // 위에 재료 그림, 아래에 이름과 개수 (재료 칸은 낮아서 글자를 작게)
+            tmp.fontSize = 19;
+            SetBottomText(tmp.rectTransform, 46f);
+            stripIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(52f, 52f));
             slotButtons[i] = b; slotLabels[i] = tmp; slotBackgrounds[i] = bg;
         }
 
@@ -190,6 +195,7 @@ public static class UISetup
         SetArray(materialStrip, "buttons", slotButtons);
         SetArray(materialStrip, "labels", slotLabels);
         SetArray(materialStrip, "backgrounds", slotBackgrounds);
+        SetArray(materialStrip, "icons", stripIcons);
 
         BottleDecorator decorator = view.AddComponent<BottleDecorator>();
         SetRef(decorator, "bag", bag); SetRef(decorator, "strip", materialStrip); SetRef(decorator, "messageText", message);
@@ -330,11 +336,14 @@ public static class UISetup
         sendLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; sendLayout.constraintCount = 5;
         Button[] sendButtons = new Button[SlotCount];
         TMP_Text[] sendLabels = new TMP_Text[SlotCount];
+        Image[] sendIcons = new Image[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
             Button b = MakeButton(sendGrid.transform, "Send" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(132f, 130f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
-            t.fontSize = 26;
+            t.fontSize = 20;
+            SetBottomText(t.rectTransform, 56f);
+            sendIcons[i] = MakeSlotIcon(b.transform, new Vector2(0.5f, 1f), new Vector2(0f, -6f), new Vector2(66f, 66f));
             sendButtons[i] = b; sendLabels[i] = t;
         }
 
@@ -371,11 +380,16 @@ public static class UISetup
         orderableList.Sort((a, b) => a.buyPrice != b.buyPrice ? a.buyPrice.CompareTo(b.buyPrice) : string.CompareOrdinal(a.id, b.id));
         Button[] orderButtons = new Button[orderableList.Count];
         TMP_Text[] orderLabels = new TMP_Text[orderableList.Count];
+        Image[] orderIcons = new Image[orderableList.Count];
         for (int i = 0; i < orderableList.Count; i++)
         {
             Button b = MakeButton(orderGrid.transform, "Order" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(226f, 80f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
-            t.fontSize = 26;
+            t.fontSize = 22;
+            // 왼쪽에 재료 그림, 오른쪽에 이름과 가격
+            RectTransform tr = t.rectTransform;
+            tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = new Vector2(60f, 0f); tr.offsetMax = Vector2.zero;
+            orderIcons[i] = MakeSlotIcon(b.transform, new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(54f, 54f));
             orderButtons[i] = b; orderLabels[i] = t;
         }
 
@@ -406,6 +420,7 @@ public static class UISetup
         glg.childAlignment = TextAnchor.UpperCenter;
 
         TMP_Text[] slotTexts = new TMP_Text[SlotCount];
+        Image[] slotIcons = new Image[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
             GameObject slot = Rect(grid.transform, "Slot" + i);
@@ -413,8 +428,10 @@ public static class UISetup
             GameObject t = Rect(slot.transform, "Text");
             Stretch(t);
             TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
-            tmp.font = font; tmp.fontSize = 38; tmp.color = TextColor;
+            tmp.font = font; tmp.fontSize = 28; tmp.color = TextColor;
             tmp.alignment = TextAlignmentOptions.Center; tmp.raycastTarget = false; tmp.text = string.Empty;
+            SetBottomText(tmp.rectTransform, 70f);
+            slotIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(100f, 100f));
             slotTexts[i] = tmp;
         }
 
@@ -431,6 +448,7 @@ public static class UISetup
         InventoryPanel ip = ui.AddComponent<InventoryPanel>();
         SetRef(ip, "bag", bag); SetRef(ip, "root", invRoot);
         SetArray(ip, "slotTexts", slotTexts);
+        SetArray(ip, "slotIcons", slotIcons);
 
         MapPanel mp = ui.AddComponent<MapPanel>();
         SetRef(mp, "root", mapRoot); SetRef(mp, "closeButton", mapCloseButton); SetRef(mp, "homeButton", homeButton);
@@ -447,7 +465,8 @@ public static class UISetup
         MailboxPanel mailPanel = ui.AddComponent<MailboxPanel>();
         SetRef(mailPanel, "bag", bag); SetRef(mailPanel, "root", mailRoot); SetRef(mailPanel, "closeButton", mailCloseButton);
         SetRef(mailPanel, "headerText", mailHeader); SetRef(mailPanel, "summaryText", mailSummary); SetRef(mailPanel, "messageText", mailMessage);
-        SetArray(mailPanel, "sendButtons", sendButtons); SetArray(mailPanel, "sendLabels", sendLabels);
+        SetArray(mailPanel, "sendButtons", sendButtons); SetArray(mailPanel, "sendLabels", sendLabels); SetArray(mailPanel, "sendIcons", sendIcons);
+        SetArray(mailPanel, "orderIcons", orderIcons);
         SetArray(mailPanel, "orderables", orderableList.ToArray());
         SetArray(mailPanel, "orderButtons", orderButtons); SetArray(mailPanel, "orderLabels", orderLabels);
         SetArray(mailPanel, "upgradeButtons", upgradeButtons); SetArray(mailPanel, "upgradeLabels", upgradeLabels);
@@ -541,6 +560,24 @@ public static class UISetup
         tmp.font = font; tmp.text = text; tmp.fontSize = 44; tmp.alignment = TextAlignmentOptions.Center;
         tmp.color = new Color(0.15f, 0.2f, 0.15f, 1f); tmp.raycastTarget = false;
         return b;
+    }
+
+    /// <summary>칸 위쪽(또는 왼쪽)에 놓는 재료 그림 자리를 만든다. 그림이 없으면 숨겨진다.</summary>
+    private static Image MakeSlotIcon(Transform slot, Vector2 anchor, Vector2 pos, Vector2 size)
+    {
+        GameObject go = Rect(slot, "Icon");
+        Anchor(go, anchor, anchor, pos, size);
+        Image img = go.AddComponent<Image>();
+        img.preserveAspect = true; img.raycastTarget = false; img.enabled = false;
+        return img;
+    }
+
+    /// <summary>칸의 글자를 아래쪽 띠(높이 height)로 옮긴다. (위쪽은 재료 그림 자리)</summary>
+    private static void SetBottomText(RectTransform rt, float height)
+    {
+        rt.anchorMin = new Vector2(0f, 0f); rt.anchorMax = new Vector2(1f, 0f);
+        rt.pivot = new Vector2(0.5f, 0f);
+        rt.anchoredPosition = new Vector2(0f, 2f); rt.sizeDelta = new Vector2(0f, height);
     }
 
     /// <summary>글자 크기를 정해서 만드는 버튼 (꾸미는 화면처럼 좁은 곳에서 작게 쓴다)</summary>

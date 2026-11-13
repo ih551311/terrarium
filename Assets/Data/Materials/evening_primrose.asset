@@ -15,7 +15,7 @@ MonoBehaviour:
   id: evening_primrose
   displayName: "\uB2EC\uB9DE\uC774\uAF43"
   kind: 0
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9d27ae72f07a06b43ab35ec2d79fca23, type: 3}
   zone: 3
   acquire: 0
   condition: 1

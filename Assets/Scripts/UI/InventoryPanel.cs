@@ -13,6 +13,8 @@ public class InventoryPanel : MonoBehaviour
     [SerializeField] private GameObject root;
     [Tooltip("가방 칸마다 하나씩, 순서대로")]
     [SerializeField] private TMP_Text[] slotTexts;
+    [Tooltip("가방 칸마다 하나씩. 재료 그림을 보여 준다")]
+    [SerializeField] private UnityEngine.UI.Image[] slotIcons;
 
     /// <summary>다른 패널이 Esc 처리를 양보할 때 쓴다.</summary>
     public static bool IsOpen { get; private set; }
@@ -63,6 +65,13 @@ public class InventoryPanel : MonoBehaviour
         UIFocus.Close();
     }
 
+    private void SetIcon(int i, MaterialData material)
+    {
+        if (slotIcons == null || i >= slotIcons.Length || slotIcons[i] == null) return;
+        slotIcons[i].sprite = material != null ? material.icon : null;
+        slotIcons[i].enabled = material != null && material.icon != null;
+    }
+
     private void Refresh()
     {
         for (int i = 0; i < slotTexts.Length; i++)
@@ -71,10 +80,12 @@ public class InventoryPanel : MonoBehaviour
             {
                 Bag.Slot slot = bag.Slots[i];
                 slotTexts[i].text = slot.material.displayName + "\nx" + slot.count;
+                SetIcon(i, slot.material);
             }
             else
             {
                 slotTexts[i].text = string.Empty;
+                SetIcon(i, null);
             }
         }
     }

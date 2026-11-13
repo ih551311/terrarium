@@ -15,7 +15,7 @@ MonoBehaviour:
   id: tent
   displayName: "\uD150\uD2B8"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 28b8e1b2758b8814fab671c932ba1cbb, type: 3}
   zone: 4
   acquire: 3
   condition: 0

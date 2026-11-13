@@ -15,7 +15,7 @@ MonoBehaviour:
   id: ladder
   displayName: "\uC0AC\uB2E4\uB9AC"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 30c576f5b5596cf4fa2b2ebd88ca2848, type: 3}
   zone: 4
   acquire: 3
   condition: 0

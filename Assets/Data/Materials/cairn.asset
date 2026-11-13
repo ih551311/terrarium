@@ -15,7 +15,7 @@ MonoBehaviour:
   id: cairn
   displayName: "\uB3CC\uD0D1"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9d2fea25a6ebce34ab028d57b191a5ce, type: 3}
   zone: 4
   acquire: 3
   condition: 0

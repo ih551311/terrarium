@@ -15,7 +15,7 @@ MonoBehaviour:
   id: sand
   displayName: "\uBAA8\uB798"
   kind: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 2d7c41ab19a676743b017a908b19f7a1, type: 3}
   zone: 2
   acquire: 0
   condition: 0

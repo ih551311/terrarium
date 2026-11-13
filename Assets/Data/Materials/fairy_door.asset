@@ -15,7 +15,7 @@ MonoBehaviour:
   id: fairy_door
   displayName: "\uC694\uC815 \uBB38"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 112d4716fb1314944ba29587e222313f, type: 3}
   zone: 4
   acquire: 3
   condition: 0

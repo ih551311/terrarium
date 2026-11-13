@@ -14,6 +14,8 @@ public class MaterialStrip : MonoBehaviour
     [SerializeField] private Button[] buttons;
     [SerializeField] private TMP_Text[] labels;
     [SerializeField] private Image[] backgrounds;
+    [Tooltip("칸마다 하나씩. 재료 그림을 보여 준다 (없으면 글자만)")]
+    [SerializeField] private Image[] icons;
 
     [SerializeField] private Color normalColor = new Color(0.82f, 0.88f, 0.82f, 1f);
     [SerializeField] private Color selectedColor = new Color(0.98f, 0.82f, 0.45f, 1f);
@@ -74,13 +76,22 @@ public class MaterialStrip : MonoBehaviour
                 Bag.Slot slot = bag.Slots[i];
                 labels[i].text = slot.material.displayName + "\nx" + slot.count;
                 backgrounds[i].color = slot.material == Selected ? selectedColor : normalColor;
+                ShowIcon(i, slot.material);
             }
             else
             {
                 labels[i].text = string.Empty;
                 backgrounds[i].color = emptyColor;
+                ShowIcon(i, null);
             }
         }
+    }
+
+    private void ShowIcon(int i, MaterialData material)
+    {
+        if (icons == null || i >= icons.Length || icons[i] == null) return;
+        icons[i].sprite = material != null ? material.icon : null;
+        icons[i].enabled = material != null && material.icon != null;
     }
 
     private bool Contains(MaterialData material)

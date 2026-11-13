@@ -15,7 +15,7 @@ MonoBehaviour:
   id: book
   displayName: "\uCC45"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 66c78b2476ad0ba468e31ce0b0c91a4a, type: 3}
   zone: 4
   acquire: 3
   condition: 0

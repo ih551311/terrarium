@@ -15,7 +15,7 @@ MonoBehaviour:
   id: blue_flower
   displayName: "\uD30C\uB780 \uB4E4\uAF43"
   kind: 0
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 97a947d354d21db4b8b327bb5e314f93, type: 3}
   zone: 3
   acquire: 0
   condition: 0

@@ -28,11 +28,13 @@ public class MailboxPanel : MonoBehaviour
     [Header("보내기: 가방 칸마다 하나씩")]
     [SerializeField] private Button[] sendButtons;
     [SerializeField] private TMP_Text[] sendLabels;
+    [SerializeField] private Image[] sendIcons;
 
     [Header("주문하기: 살 수 있는 물건마다 하나씩")]
     [SerializeField] private MaterialData[] orderables;
     [SerializeField] private Button[] orderButtons;
     [SerializeField] private TMP_Text[] orderLabels;
+    [SerializeField] private Image[] orderIcons;
 
     [Header("도구 강화: 0 도끼, 1 곡괭이")]
     [SerializeField] private Button[] upgradeButtons;
@@ -178,6 +180,13 @@ public class MailboxPanel : MonoBehaviour
 
     // ───────── 화면 ─────────
 
+    private static void SetIcon(Image[] icons, int i, MaterialData material)
+    {
+        if (icons == null || i >= icons.Length || icons[i] == null) return;
+        icons[i].sprite = material != null ? material.icon : null;
+        icons[i].enabled = material != null && material.icon != null;
+    }
+
     private void Refresh()
     {
         if (!IsOpen) return;
@@ -189,8 +198,9 @@ public class MailboxPanel : MonoBehaviour
             bool has = i < bag.Slots.Count;
             sendButtons[i].interactable = has;
             sendLabels[i].text = has
-                ? bag.Slots[i].material.displayName + "\nx" + bag.Slots[i].count + "\n" + bag.Slots[i].material.sellPrice + "코인"
+                ? bag.Slots[i].material.displayName + "\nx" + bag.Slots[i].count + "  " + bag.Slots[i].material.sellPrice + "코인"
                 : string.Empty;
+            SetIcon(sendIcons, i, has ? bag.Slots[i].material : null);
         }
 
         for (int i = 0; i < orderButtons.Length; i++)
@@ -198,6 +208,7 @@ public class MailboxPanel : MonoBehaviour
             MaterialData m = orderables[i];
             orderButtons[i].interactable = GameState.Coins >= m.buyPrice;
             orderLabels[i].text = m.displayName + "\n" + m.buyPrice + "코인";
+            SetIcon(orderIcons, i, m);
         }
 
         for (int i = 0; i < upgradeButtons.Length; i++)

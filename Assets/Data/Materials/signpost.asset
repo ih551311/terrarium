@@ -15,7 +15,7 @@ MonoBehaviour:
   id: signpost
   displayName: "\uC774\uC815\uD45C"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ac46fe0138beb1e499dec206907a0afd, type: 3}
   zone: 4
   acquire: 3
   condition: 0

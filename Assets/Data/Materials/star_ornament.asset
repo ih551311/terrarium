@@ -15,7 +15,7 @@ MonoBehaviour:
   id: star_ornament
   displayName: "\uBCC4 \uC7A5\uC2DD"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: b70df54a1a128c940b306cd81e1815d5, type: 3}
   zone: 4
   acquire: 3
   condition: 0

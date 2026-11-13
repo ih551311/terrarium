@@ -15,7 +15,7 @@ MonoBehaviour:
   id: crystal
   displayName: "\uC218\uC815 \uC870\uAC01"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 2a25e0fdcdab0c048beb8f120f17b592, type: 3}
   zone: 0
   acquire: 2
   condition: 0

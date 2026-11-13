@@ -15,7 +15,7 @@ MonoBehaviour:
   id: clover
   displayName: "\uD074\uB85C\uBC84"
   kind: 0
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 2daae51308cfcbc40bc7bdbb828a34c6, type: 3}
   zone: 3
   acquire: 0
   condition: 0

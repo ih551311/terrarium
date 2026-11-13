@@ -15,7 +15,7 @@ MonoBehaviour:
   id: hot_air_balloon
   displayName: "\uC5F4\uAE30\uAD6C"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 4dc0684a6baba35449c00592ceff4009, type: 3}
   zone: 4
   acquire: 3
   condition: 0

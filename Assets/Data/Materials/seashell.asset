@@ -15,7 +15,7 @@ MonoBehaviour:
   id: seashell
   displayName: "\uC870\uAC1C\uAECD\uB370\uAE30"
   kind: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: b9a724f2b010131488403e861cf5615b, type: 3}
   zone: 2
   acquire: 0
   condition: 0
