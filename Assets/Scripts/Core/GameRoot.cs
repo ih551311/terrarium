@@ -11,9 +11,11 @@ public class GameRoot : MonoBehaviour
     [Tooltip("플레이어 오브젝트 (씬을 옮길 때 도착 지점으로 이동시킨다)")]
     [SerializeField] private Transform player;
     [SerializeField] private BottlePanel bottlePanel;
+    [SerializeField] private MailboxPanel mailboxPanel;
 
     public static GameRoot Instance { get; private set; }
     public BottlePanel BottlePanel => bottlePanel;
+    public MailboxPanel MailboxPanel => mailboxPanel;
     public Transform Player => player;
 
     private string pendingSpawnId;

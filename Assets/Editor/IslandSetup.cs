@@ -312,6 +312,39 @@ public static class IslandSetup
         PlaceKit(yard.transform, "Lantern_post", new Vector3(2.4f, y, 9f), 180f);
         PlaceKit(yard.transform, "Well", new Vector3(9.5f, GroundY(9.5f, 8f), 8f), 0f);
         PlaceKit(yard.transform, "Cart_a", new Vector3(-9f, GroundY(-9f, 10f), 10f), 25f);
+        BuildMailbox(yard.transform, new Vector3(-2.2f, y, 11.6f));
+    }
+
+    /// <summary>
+    /// 문 옆 우체통(상점): 나무 기둥 위의 붉은 우편함과 올라간 깃발. 바라보고 E를 누르면 우체통 패널이 열린다.
+    /// 큐브로 만든 임시 모양이다 (나중에 모델로 바꿀 수 있다).
+    /// </summary>
+    private static void BuildMailbox(Transform parent, Vector3 pos)
+    {
+        GameObject box = new GameObject("Mailbox");
+        box.transform.SetParent(parent, false);
+        box.transform.SetPositionAndRotation(pos, Quaternion.identity);
+        box.AddComponent<Mailbox>();
+
+        Material wood = BottleSetup.GetOrCreateMaterial("MailboxWood", new Color(0.33f, 0.2f, 0.12f));
+        Material red = BottleSetup.GetOrCreateMaterial("MailboxRed", new Color(0.72f, 0.2f, 0.18f));
+        Material gold = BottleSetup.GetOrCreateMaterial("MailboxFlag", new Color(0.97f, 0.8f, 0.3f));
+
+        MailboxPart(box.transform, "Post", new Vector3(0f, 0.55f, 0f), new Vector3(0.14f, 1.1f, 0.14f), wood);
+        MailboxPart(box.transform, "Body", new Vector3(0f, 1.25f, 0f), new Vector3(0.5f, 0.36f, 0.72f), red);
+        MailboxPart(box.transform, "Roof", new Vector3(0f, 1.47f, 0f), new Vector3(0.56f, 0.07f, 0.78f), wood);
+        MailboxPart(box.transform, "FlagPole", new Vector3(0.3f, 1.4f, 0.12f), new Vector3(0.04f, 0.3f, 0.04f), wood);
+        MailboxPart(box.transform, "Flag", new Vector3(0.34f, 1.52f, 0.12f), new Vector3(0.13f, 0.1f, 0.03f), gold);
+    }
+
+    private static void MailboxPart(Transform parent, string name, Vector3 localPos, Vector3 scale, Material mat)
+    {
+        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = name;
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = localPos;
+        go.transform.localScale = scale;
+        go.GetComponent<Renderer>().sharedMaterial = mat;
     }
 
     private static GameObject PlaceKit(Transform parent, string name, Vector3 pos, float yaw)

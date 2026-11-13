@@ -179,12 +179,15 @@ public static class InteriorSetup
         // 러그: 방 가운데
         Cylinder(root, "Rug", new Vector3(0f, 0.012f, -0.4f), new Vector3(2.6f, 0.012f, 2.6f), rugMat, false);
 
-        // 침대 (동쪽 벽, 남쪽 절반)
-        Cube(root, "BedFrame", new Vector3(2.15f, 0.18f, -1.1f), new Vector3(1.1f, 0.36f, 2.1f), darkWood);
-        Cube(root, "BedMattress", new Vector3(2.15f, 0.46f, -1.1f), new Vector3(1.0f, 0.2f, 2.0f), cream);
-        Cube(root, "BedBlanket", new Vector3(2.15f, 0.6f, -1.55f), new Vector3(1.04f, 0.1f, 1.2f), blanket);
-        Cube(root, "BedPillow", new Vector3(2.15f, 0.62f, -0.35f), new Vector3(0.8f, 0.12f, 0.4f), pillow);
-        Cube(root, "BedHeadboard", new Vector3(2.15f, 0.55f, 0.0f), new Vector3(1.1f, 0.9f, 0.08f), wood);
+        // 침대 (동쪽 벽, 남쪽 절반). 바라보고 E를 누르면 잔다 (Bed).
+        GameObject bed = new GameObject("Bed");
+        bed.transform.SetParent(root.transform, false);
+        bed.AddComponent<Bed>();
+        Cube(bed, "BedFrame", new Vector3(2.15f, 0.18f, -1.1f), new Vector3(1.1f, 0.36f, 2.1f), darkWood);
+        Cube(bed, "BedMattress", new Vector3(2.15f, 0.46f, -1.1f), new Vector3(1.0f, 0.2f, 2.0f), cream);
+        Cube(bed, "BedBlanket", new Vector3(2.15f, 0.6f, -1.55f), new Vector3(1.04f, 0.1f, 1.2f), blanket);
+        Cube(bed, "BedPillow", new Vector3(2.15f, 0.62f, -0.35f), new Vector3(0.8f, 0.12f, 0.4f), pillow);
+        Cube(bed, "BedHeadboard", new Vector3(2.15f, 0.55f, 0.0f), new Vector3(1.1f, 0.9f, 0.08f), wood);
 
         // 책상과 편지 (서쪽 벽, 남쪽)
         Cube(root, "DeskTop", new Vector3(-2.3f, 0.76f, -1.7f), new Vector3(0.7f, 0.06f, 1.3f), wood);
