@@ -161,6 +161,10 @@ public static class UISetup
         newBottleButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         newBottleButton.gameObject.SetActive(false);
 
+        // 완성한 병을 선반에 전시하거나 내리는 버튼 (새 병 만들기 아래)
+        Button displayButton = MakeSmallButton(bWindow.transform, "DisplayButton", "선반에 전시하기", new Vector2(0f, 1f), new Vector2(30f, -200f), new Vector2(230f, 80f), 30);
+        displayButton.gameObject.SetActive(false);
+
         // 재료 칸: 가방 칸을 가로로 늘어놓는다
         GameObject strip = Rect(edit.transform, "MaterialStrip");
         Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(1440f, 100f));
@@ -441,6 +445,7 @@ public static class UISetup
         SetRef(bp, "dragRotate", drag); SetRef(bp, "decorator", decorator);
         SetRef(bp, "groundSelector", groundSelector); SetRef(bp, "completeButton", complete); SetRef(bp, "chooser", chooser);
         SetRef(bp, "bottleView", view); SetRef(bp, "newBottleButton", newBottleButton);
+        SetRef(bp, "displayButton", displayButton); SetRef(bp, "displayLabel", displayButton.GetComponentInChildren<TextMeshProUGUI>());
         SetRef(bp, "editTools", edit); SetRef(bp, "completedLabel", completedLabel);
         SetRef(complete, "button", completeButton);
         SetRef(complete, "label", completeButton.GetComponentInChildren<TextMeshProUGUI>());

@@ -71,6 +71,33 @@ public static class BottleStore
     /// <summary>선반의 칸 수. 처음에는 6칸이고, 완성한 병이 6개, 12개, 18개가 될 때 6칸씩 늘어 최대 24칸이다. (기획서 6.3)</summary>
     public static int ShelfCapacity => Mathf.Min(24, 6 + (CompletedCount / 6) * 6);
 
+    /// <summary>이 병이 지금 선반에 전시되어 있는가</summary>
+    public static bool IsDisplayed(string bottleId)
+    {
+        BottleRecord record = Get(bottleId);
+        return record.completed && record.shelfSlot >= 0;
+    }
+
+    /// <summary>완성한 병을 선반의 가장 앞 빈 칸에 전시한다. 완성하지 않았거나 선반이 가득 차면 false.</summary>
+    public static bool TryDisplay(string bottleId)
+    {
+        BottleRecord record = Get(bottleId);
+        if (!record.completed) return false;
+        if (record.shelfSlot >= 0) return true; // 이미 전시 중
+        int slot = FirstFreeShelfSlot();
+        if (slot < 0) return false;
+        record.shelfSlot = slot;
+        Changed?.Invoke();
+        return true;
+    }
+
+    /// <summary>선반에서 병을 내린다. (병은 그대로 남고, 선반 칸만 비워진다)</summary>
+    public static void Undisplay(string bottleId)
+    {
+        Get(bottleId).shelfSlot = -1;
+        Changed?.Invoke();
+    }
+
     /// <summary>선반의 비어 있는 가장 앞 칸 번호. 모두 차 있으면 -1.</summary>
     public static int FirstFreeShelfSlot()
     {

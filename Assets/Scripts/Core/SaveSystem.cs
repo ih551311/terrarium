@@ -106,7 +106,7 @@ public static class SaveSystem
                     created = b.created,
                     completed = b.completed,
                     soilLevel = b.soilLevel,
-                    shelfSlot = b.shelfSlot,
+                    shelfSlot = data.version >= 2 ? b.shelfSlot : -1, // 예전 저장은 자동으로 올라가 있던 병을 모두 내린 상태로 연다
                     ground = db.Find(b.groundId)
                 };
                 foreach (PlacedSave p in b.items)

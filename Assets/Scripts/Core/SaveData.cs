@@ -6,7 +6,8 @@ using UnityEngine;
 [Serializable]
 public class SaveData
 {
-    public int version = 1;
+    // 2: 병은 사용자가 골라서 전시한다 (1에서는 완성하면 선반에 자동으로 올라갔다)
+    public int version = 2;
 
     // 하루와 지갑
     public int day = 1;

@@ -73,7 +73,7 @@ public class BottleChooser : MonoBehaviour
             BottleContents bottle = station.Get(i);
             string status;
             if (!bottle.IsCreated) { status = "\n만들기"; anyCreatable = true; }
-            else if (bottle.IsCompleted) status = "\n(완성) 흙 " + SoilNames[bottle.SoilLevelIndex];
+            else if (bottle.IsCompleted) status = "\n(완성) 흙 " + SoilNames[bottle.SoilLevelIndex] + (BottleStore.IsDisplayed(bottle.BottleId) ? "\n선반에 전시 중" : string.Empty);
             else status = "\n(꾸미는 중)";
             labels[i].text = bottle.DisplayName + status;
 

@@ -30,6 +30,9 @@ public class BottlePanel : MonoBehaviour
     [SerializeField] private GameObject bottleView;
     [Tooltip("완성한 병을 보고 있을 때 나오는, 새 병을 만들러 가는 버튼")]
     [SerializeField] private Button newBottleButton;
+    [Tooltip("완성한 병을 보고 있을 때 나오는, 선반에 전시하거나 내리는 버튼")]
+    [SerializeField] private Button displayButton;
+    [SerializeField] private TMPro.TMP_Text displayLabel;
 
     [Header("꾸미는 중 / 완성 후 모드")]
     [Tooltip("재료 칸, 바닥재, 완성 버튼 등 꾸밀 때만 보이는 것을 담은 오브젝트")]
@@ -49,6 +52,28 @@ public class BottlePanel : MonoBehaviour
         closeButton.onClick.AddListener(Close);
         chooser.Chosen += OnBottleChosen;
         newBottleButton.onClick.AddListener(ShowChooser);
+        displayButton.onClick.AddListener(ToggleDisplay);
+    }
+
+    /// <summary>보고 있는 완성한 병을 선반에 전시하거나, 이미 전시 중이면 내린다.</summary>
+    private void ToggleDisplay()
+    {
+        if (contents == null || !contents.IsCompleted) return;
+        string id = contents.BottleId;
+        if (BottleStore.IsDisplayed(id))
+        {
+            BottleStore.Undisplay(id);
+            decorator.ShowMessage("선반에서 내렸어요");
+        }
+        else if (BottleStore.TryDisplay(id))
+        {
+            decorator.ShowMessage("선반에 전시했어요");
+        }
+        else
+        {
+            decorator.ShowMessage("선반이 가득 찼어요");
+        }
+        RefreshMode();
     }
 
     private void OnDisable()
@@ -104,6 +129,7 @@ public class BottlePanel : MonoBehaviour
         editTools.SetActive(false);
         completedLabel.SetActive(false);
         newBottleButton.gameObject.SetActive(false);
+        displayButton.gameObject.SetActive(false);
     }
 
     /// <summary>병 카드를 눌렀다. 아직 안 만든 병이면 지금 고른 흙의 양으로 만들고(이때 정해진다), 그 병을 연다.</summary>
@@ -157,5 +183,8 @@ public class BottlePanel : MonoBehaviour
         editTools.SetActive(!done);
         completedLabel.SetActive(done);
         newBottleButton.gameObject.SetActive(done);
+        displayButton.gameObject.SetActive(done);
+        if (done && displayLabel != null)
+            displayLabel.text = BottleStore.IsDisplayed(contents.BottleId) ? "선반에서 내리기" : "선반에 전시하기";
     }
 }

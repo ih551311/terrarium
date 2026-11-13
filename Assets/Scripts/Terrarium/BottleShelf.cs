@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 집 안 선반. 완성한 병이 생기면 비어 있는 가장 앞 칸에 자동으로 올라가고, 병 속(재료와 식물)이 그대로 보인다.
+/// 집 안 선반. 사용자가 전시하기로 고른 완성한 병이 비어 있는 가장 앞 칸에 올라가고, 병 속이 그대로 보인다.
 /// 칸 자리(slots)는 InteriorSetup이 선반 위에 놓아 둔다. 병은 작업대의 병과 같은 병 프리팹을 작게 줄여 복사해서 올린다.
 /// 선반은 완성한 병을 전시하는 곳이다. (식물은 자라지 않는다)
 /// </summary>
@@ -34,7 +34,10 @@ public class BottleShelf : MonoBehaviour
         BottleStore.Changed -= Refresh;
     }
 
-    /// <summary>완성한 병 중 아직 선반에 없는 것을 올린다.</summary>
+    /// <summary>
+    /// 전시하기로 한 병(완성했고 칸 번호가 있는 병)만 선반에 올리고, 내린 병은 치운다.
+    /// 병을 전시하고 내리는 것은 병 꾸미기 화면의 버튼이나 선반 병에서 E를 눌러 한다.
+    /// </summary>
     private void Refresh()
     {
         if (station == null) return;
@@ -43,11 +46,18 @@ public class BottleShelf : MonoBehaviour
             BottleContents bottle = station.Get(i);
             string id = bottle.BottleId;
             BottleRecord record = BottleStore.Get(id);
-            if (!record.completed || shown.ContainsKey(id)) continue;
+            bool shouldShow = record.completed && record.shelfSlot >= 0 && record.shelfSlot < slots.Length;
 
-            if (record.shelfSlot < 0) record.shelfSlot = BottleStore.FirstFreeShelfSlot();
-            if (record.shelfSlot < 0 || record.shelfSlot >= slots.Length) continue; // 선반이 가득 참
-
+            if (!shouldShow)
+            {
+                if (shown.TryGetValue(id, out GameObject old))
+                {
+                    if (old != null) { old.SetActive(false); Destroy(old); }
+                    shown.Remove(id);
+                }
+                continue;
+            }
+            if (shown.ContainsKey(id)) continue;
             shown[id] = Place(bottle, record.shelfSlot);
         }
     }
@@ -71,6 +81,8 @@ public class BottleShelf : MonoBehaviour
         copy.transform.localScale = Vector3.one * bottleScale;
         if (copy.GetComponent<BottleContents>().IsSideways)
             copy.transform.rotation = slot.rotation * Quaternion.Euler(0f, 90f, 0f);
+
+        copy.AddComponent<ShelfBottle>().Init(source.BottleId, source.DisplayName);
         return copy;
     }
 }
