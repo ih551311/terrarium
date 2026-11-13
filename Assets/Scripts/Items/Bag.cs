@@ -67,6 +67,15 @@ public class Bag : MonoBehaviour
         return false;
     }
 
+    /// <summary>가방에 든 이 재료의 총 개수</summary>
+    public int CountOf(MaterialData material)
+    {
+        int total = 0;
+        foreach (Slot slot in slots)
+            if (slot.material == material) total += slot.count;
+        return total;
+    }
+
     /// <summary>이 재료를 넣을 자리가 있는지 (넣지는 않는다).</summary>
     public bool CanAdd(MaterialData material)
     {

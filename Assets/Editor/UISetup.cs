@@ -86,11 +86,20 @@ public static class UISetup
         raw.texture = AssetDatabase.LoadAssetAtPath<RenderTexture>(RenderTexturePath);
         DragRotate drag = view.AddComponent<DragRotate>();
 
-        Label(bWindow.transform, "Hint", "클릭: 놓기  ·  재료에 마우스 올리고  휠: 돌리기  ·  Q/R: 작게/크게  ·  우클릭: 빼기  ·  끌기: 병 돌리기",
+        // 꾸밀 때만 보이는 것들은 EditTools 안에 모은다 (완성한 병을 열면 통째로 숨긴다)
+        GameObject edit = Rect(bWindow.transform, "EditTools");
+        Stretch(edit);
+
+        Label(edit.transform, "Hint", "클릭: 놓기  ·  재료에 마우스 올리고  휠: 돌리기  ·  Q/R: 작게/크게  ·  우클릭: 빼기  ·  끌기: 병 돌리기",
             32, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 175f), new Vector2(1240f, 50f), TextAlignmentOptions.Center);
 
+        // 완성한 병을 열었을 때 보이는 글자 (평소엔 꺼 둔다)
+        GameObject completedLabel = Label(bWindow.transform, "CompletedLabel", "완성한 병이에요\n끌어서 돌려 볼 수 있어요", 48,
+            new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(1000f, 160f), TextAlignmentOptions.Center).gameObject;
+        completedLabel.SetActive(false);
+
         // 재료 칸: 가방 칸을 가로로 늘어놓는다
-        GameObject strip = Rect(bWindow.transform, "MaterialStrip");
+        GameObject strip = Rect(edit.transform, "MaterialStrip");
         Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(1220f, 130f));
         HorizontalLayoutGroup hlg = strip.AddComponent<HorizontalLayoutGroup>();
         hlg.spacing = 8f; hlg.childAlignment = TextAnchor.MiddleCenter;
@@ -121,6 +130,26 @@ public static class UISetup
 
         BottleDecorator decorator = view.AddComponent<BottleDecorator>();
         SetRef(decorator, "bag", bag); SetRef(decorator, "strip", materialStrip); SetRef(decorator, "messageText", message);
+
+        // 바닥재 고르기 (병 그림 오른쪽)
+        GameObject groundBox = Rect(edit.transform, "GroundSelector");
+        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -170f), new Vector2(290f, 360f));
+        Label(groundBox.transform, "Title", "바닥재", 48, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(290f, 70f), TextAlignmentOptions.Center);
+        Button soilButton = MakeButton(groundBox.transform, "SoilButton", "흙", new Vector2(0.5f, 1f), new Vector2(0f, -90f), new Vector2(290f, 100f));
+        Button sandButton = MakeButton(groundBox.transform, "SandButton", "모래 x0", new Vector2(0.5f, 1f), new Vector2(0f, -210f), new Vector2(290f, 100f));
+        GroundSelector groundSelector = groundBox.AddComponent<GroundSelector>();
+        SetRef(groundSelector, "bag", bag); SetRef(groundSelector, "decorator", decorator);
+        SetRef(groundSelector, "sand", BottleSetup.EnsureSandAsset());
+        SetRef(groundSelector, "soilButton", soilButton); SetRef(groundSelector, "sandButton", sandButton);
+        SetRef(groundSelector, "soilBackground", soilButton.GetComponent<Image>());
+        SetRef(groundSelector, "sandBackground", sandButton.GetComponent<Image>());
+        SetRef(groundSelector, "sandLabel", sandButton.GetComponentInChildren<TextMeshProUGUI>());
+
+        // 완성 버튼 (병 그림 왼쪽)
+        Button completeButton = MakeButton(edit.transform, "CompleteButton", "완성", new Vector2(0f, 1f), new Vector2(50f, -170f), new Vector2(290f, 140f));
+        completeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 40;
+        completeButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
+        CompleteBottleButton complete = completeButton.gameObject.AddComponent<CompleteBottleButton>();
 
         // ── 가방 패널
         GameObject invRoot = Rect(ui.transform, "InventoryPanel");
@@ -157,6 +186,11 @@ public static class UISetup
         BottlePanel bp = ui.AddComponent<BottlePanel>();
         SetRef(bp, "root", bottleRoot); SetRef(bp, "closeButton", closeButton);
         SetRef(bp, "dragRotate", drag); SetRef(bp, "decorator", decorator);
+        SetRef(bp, "groundSelector", groundSelector); SetRef(bp, "completeButton", complete);
+        SetRef(bp, "editTools", edit); SetRef(bp, "completedLabel", completedLabel);
+        SetRef(complete, "button", completeButton);
+        SetRef(complete, "label", completeButton.GetComponentInChildren<TextMeshProUGUI>());
+        SetRef(complete, "panel", bp); SetRef(complete, "decorator", decorator);
         InventoryPanel ip = ui.AddComponent<InventoryPanel>();
         SetRef(ip, "bag", bag); SetRef(ip, "root", invRoot);
         SetArray(ip, "slotTexts", slotTexts);

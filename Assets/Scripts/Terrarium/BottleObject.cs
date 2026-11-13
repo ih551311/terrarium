@@ -10,7 +10,14 @@ public class BottleObject : MonoBehaviour, IInteractable
     [Tooltip("이 병만 비추는 카메라 (RenderTexture로 출력). 평소엔 꺼 둔다.")]
     [SerializeField] private Camera bottleCamera;
 
-    public string Prompt => "[E] 병 꾸미기";
+    public string Prompt
+    {
+        get
+        {
+            BottleContents contents = GetComponent<BottleContents>();
+            return contents != null && contents.IsCompleted ? "[E] 완성한 병 보기" : "[E] 병 꾸미기";
+        }
+    }
 
     public void Interact(Interactor who)
     {

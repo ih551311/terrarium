@@ -2,9 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 병 하나의 속(바닥재 표면 위에 놓인 재료들)을 관리한다.
+/// 병 하나의 속(바닥재와, 그 표면 위에 놓인 재료들)을 관리한다.
 /// 병 뿌리 오브젝트(Bottle)에 붙인다. 놓은 재료는 병의 자식이라 병과 함께 돈다.
 /// 규칙: 재료는 바닥재 표면 위에만 놓이고, 물리 효과는 없고, 서로 겹쳐도 되고, 병 하나에 12개까지다.
+/// 완성하면 뚜껑이 닫히고 더는 고칠 수 없다.
 /// </summary>
 public class BottleContents : MonoBehaviour
 {
@@ -19,10 +20,18 @@ public class BottleContents : MonoBehaviour
 
     [SerializeField] private int maxItems = 12;
 
+    [Header("연결")]
+    [Tooltip("바닥재 원판의 Renderer. 바닥재를 바꾸면 색이 바뀐다.")]
+    [SerializeField] private Renderer groundRenderer;
+
+    [Tooltip("완성하면 켜지는 뚜껑 오브젝트. 평소엔 꺼 둔다.")]
+    [SerializeField] private GameObject lid;
+
     [Tooltip("놓을 자리를 미리 보여 주는 반투명 재질 (Transparent). 비워 두면 미리보기가 나오지 않는다.")]
     [SerializeField] private Material ghostMaterial;
 
     private readonly List<PlacedMaterial> items = new List<PlacedMaterial>();
+    private Color soilColor;
 
     // 미리보기(그림자) 상태
     private GameObject ghost;
@@ -30,12 +39,30 @@ public class BottleContents : MonoBehaviour
     private readonly List<Material> ghostMaterials = new List<Material>();
 
     public bool IsFull => items.Count >= maxItems;
+    public int ItemCount => items.Count;
+
+    /// <summary>바닥재. null이면 흙(기본).</summary>
+    public MaterialData Ground { get; private set; }
+
+    /// <summary>완성해서 닫았으면 true. 그때부터 고칠 수 없다.</summary>
+    public bool IsCompleted { get; private set; }
+
+    private void Awake()
+    {
+        if (groundRenderer != null) soilColor = groundRenderer.sharedMaterial.color;
+    }
 
     private void Start()
     {
-        // 씬을 옮겼다 돌아왔을 때 기억해 둔 재료를 다시 놓는다.
-        foreach (PlacedData data in BottleStore.Get(bottleId))
+        // 씬을 옮겼다 돌아왔을 때 기억해 둔 상태를 다시 만든다.
+        BottleRecord record = BottleStore.Get(bottleId);
+        foreach (PlacedData data in record.items)
             Spawn(data.material, data.localPosition, data.yaw, data.scaleFactor);
+
+        Ground = record.ground;
+        ApplyGround();
+        IsCompleted = record.completed;
+        if (lid != null) lid.SetActive(IsCompleted);
     }
 
     /// <summary>
@@ -54,10 +81,10 @@ public class BottleContents : MonoBehaviour
         return new Vector2(localPoint.x, localPoint.z).magnitude <= soilRadius;
     }
 
-    /// <summary>재료를 놓는다. 가득 찼으면 null.</summary>
+    /// <summary>재료를 놓는다. 가득 찼거나 완성한 병이면 null.</summary>
     public PlacedMaterial Place(MaterialData material, Vector3 localPosition)
     {
-        if (IsFull) return null;
+        if (IsFull || IsCompleted) return null;
         PlacedMaterial placed = Spawn(material, localPosition, 0f, 1f);
         SaveState();
         return placed;
@@ -66,8 +93,28 @@ public class BottleContents : MonoBehaviour
     /// <summary>놓은 재료를 뺀다.</summary>
     public void Remove(PlacedMaterial placed)
     {
+        if (IsCompleted) return;
         items.Remove(placed);
         Destroy(placed.gameObject);
+        SaveState();
+    }
+
+    /// <summary>바닥재를 바꾼다. null이면 흙. (가방의 모래를 쓰고 돌려주는 일은 부르는 쪽이 한다.)</summary>
+    public void SetGround(MaterialData ground)
+    {
+        if (IsCompleted) return;
+        Ground = ground;
+        ApplyGround();
+        SaveState();
+    }
+
+    /// <summary>병을 완성한다. 뚜껑이 닫히고 더는 고칠 수 없다.</summary>
+    public void Complete()
+    {
+        if (IsCompleted) return;
+        IsCompleted = true;
+        HideGhost();
+        if (lid != null) lid.SetActive(true);
         SaveState();
     }
 
@@ -92,6 +139,29 @@ public class BottleContents : MonoBehaviour
     public void HideGhost()
     {
         if (ghost != null) ghost.SetActive(false);
+    }
+
+    /// <summary>돌리거나 키운 뒤에 불러서 기록을 새로 한다.</summary>
+    public void SaveState()
+    {
+        BottleRecord record = new BottleRecord { ground = Ground, completed = IsCompleted };
+        foreach (PlacedMaterial placed in items)
+        {
+            record.items.Add(new PlacedData
+            {
+                material = placed.Material,
+                localPosition = placed.transform.localPosition,
+                yaw = placed.Yaw,
+                scaleFactor = placed.ScaleFactor
+            });
+        }
+        BottleStore.Set(bottleId, record);
+    }
+
+    private void ApplyGround()
+    {
+        if (groundRenderer == null) return;
+        groundRenderer.material.color = Ground != null ? Ground.placeholderColor : soilColor;
     }
 
     private GameObject BuildGhost(MaterialData material)
@@ -128,23 +198,6 @@ public class BottleContents : MonoBehaviour
     private void OnDestroy()
     {
         DestroyGhost();
-    }
-
-    /// <summary>돌리거나 키운 뒤에 불러서 기록을 새로 한다.</summary>
-    public void SaveState()
-    {
-        List<PlacedData> list = new List<PlacedData>();
-        foreach (PlacedMaterial placed in items)
-        {
-            list.Add(new PlacedData
-            {
-                material = placed.Material,
-                localPosition = placed.transform.localPosition,
-                yaw = placed.Yaw,
-                scaleFactor = placed.ScaleFactor
-            });
-        }
-        BottleStore.Set(bottleId, list);
     }
 
     private PlacedMaterial Spawn(MaterialData material, Vector3 localPosition, float yaw, float scaleFactor)

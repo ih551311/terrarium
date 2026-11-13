@@ -59,7 +59,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
         // Q / R: 마우스를 올린 재료를 작게 / 크게
         Keyboard keyboard = Keyboard.current;
-        if (keyboard == null) return;
+        if (keyboard == null || contents.IsCompleted) return;
         bool smaller = keyboard.qKey.wasPressedThisFrame;
         bool bigger = keyboard.rKey.wasPressedThisFrame;
         if (!smaller && !bigger) return;
@@ -77,7 +77,8 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     private void UpdateGhost(Vector2? screenPosition)
     {
         MaterialData selected = strip != null ? strip.Selected : null;
-        if (selected != null && !contents.IsFull && screenPosition.HasValue &&
+        if (selected != null && selected.kind != MaterialKind.Ground &&
+            !contents.IsFull && !contents.IsCompleted && screenPosition.HasValue &&
             TryGetRay(screenPosition.Value, out Ray ray) &&
             contents.TryGetSurfacePoint(ray, out Vector3 localPoint))
         {
@@ -96,7 +97,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (contents == null || bottleCamera == null) return;
+        if (contents == null || bottleCamera == null || contents.IsCompleted) return;
         // 많이 움직였다면 끌기(병 돌리기)였으니 놓지 않는다.
         if (Vector2.Distance(eventData.position, downPosition) > clickMaxPixels) return;
         if (!RectTransformUtility.RectangleContainsScreenPoint(rect, eventData.position, null)) return;
@@ -107,7 +108,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     public void OnScroll(PointerEventData eventData)
     {
-        if (contents == null) return;
+        if (contents == null || contents.IsCompleted) return;
         PlacedMaterial hovered = FindHovered();
         if (hovered == null) return;
 
@@ -119,6 +120,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     {
         MaterialData selected = strip != null ? strip.Selected : null;
         if (selected == null) { ShowMessage("아래에서 재료를 먼저 골라 주세요"); return; }
+        if (selected.kind == MaterialKind.Ground) { ShowMessage("바닥재는 오른쪽 바닥재에서 골라 주세요"); return; }
         if (contents.IsFull) { ShowMessage("병이 가득 찼어요"); return; }
 
         if (!TryGetRay(screenPosition, out Ray ray) ||
@@ -185,7 +187,8 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         return true;
     }
 
-    private void ShowMessage(string text)
+    /// <summary>화면 위쪽에 안내 글자를 잠깐 보여 준다.</summary>
+    public void ShowMessage(string text)
     {
         if (messageText == null) return;
         messageText.text = text;

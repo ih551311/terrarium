@@ -1,0 +1,78 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// "완성" 버튼. 실수로 누르지 않게 두 번 눌러야 완성된다. (처음 누르면 안내가 바뀌고, 3초 안에 다시 누른다)
+/// 완성하면 병이 닫히고(뚜껑) 더는 고칠 수 없다. 재료는 몇 개든 상관없다.
+/// 패널 화면(UISetup이 만든다) 안에 있는 오브젝트에 붙인다.
+/// </summary>
+public class CompleteBottleButton : MonoBehaviour
+{
+    private const string NormalText = "완성";
+    private const string ConfirmText = "한 번 더 누르면 완성";
+
+    [SerializeField] private Button button;
+    [SerializeField] private TMP_Text label;
+    [SerializeField] private BottlePanel panel;
+    [SerializeField] private BottleDecorator decorator;
+    [SerializeField] private float confirmSeconds = 3f;
+
+    private BottleContents contents;
+    private float confirmUntil;
+    private bool listenerAdded;
+
+    private void Awake()
+    {
+        AddListener();
+    }
+
+    private void OnEnable()
+    {
+        AddListener();
+        ResetLabel();
+    }
+
+    private void AddListener()
+    {
+        if (listenerAdded) return;
+        listenerAdded = true;
+        button.onClick.AddListener(OnClicked);
+    }
+
+    /// <summary>다룰 병을 받는다. 닫을 때는 null.</summary>
+    public void SetTarget(BottleContents bottleContents)
+    {
+        contents = bottleContents;
+        ResetLabel();
+    }
+
+    private void Update()
+    {
+        // 3초 안에 다시 누르지 않으면 원래 글자로 돌아간다.
+        if (confirmUntil > 0f && Time.time > confirmUntil) ResetLabel();
+    }
+
+    private void OnClicked()
+    {
+        if (contents == null || contents.IsCompleted) return;
+
+        if (confirmUntil <= 0f)
+        {
+            confirmUntil = Time.time + confirmSeconds;
+            label.text = ConfirmText;
+            return;
+        }
+
+        contents.Complete();
+        ResetLabel();
+        panel.RefreshMode();
+        decorator.ShowMessage("병을 완성했어요!");
+    }
+
+    private void ResetLabel()
+    {
+        confirmUntil = 0f;
+        if (label != null) label.text = NormalText;
+    }
+}
