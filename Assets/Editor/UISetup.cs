@@ -200,13 +200,13 @@ public static class UISetup
         Label(chooseBox.transform, "Title", "병을 만들어요", 56, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(1000f, 80f), TextAlignmentOptions.Center);
         Label(chooseBox.transform, "Subtitle", "병 종류와 흙의 양은 만들 때 정하고, 그 뒤로는 바꿀 수 없어요", 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -140f), new Vector2(1300f, 50f), TextAlignmentOptions.Center);
 
-        Label(chooseBox.transform, "SoilLabel", "흙의 양", 38, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-330f, -230f), new Vector2(200f, 70f), TextAlignmentOptions.Center);
+        Label(chooseBox.transform, "SoilLabel", "흙의 양", 32, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-290f, -230f), new Vector2(160f, 56f), TextAlignmentOptions.Center);
         string[] soilNames = { "적게", "보통", "많이" };
         Button[] soilButtons = new Button[3];
         Image[] soilBackgrounds = new Image[3];
         for (int i = 0; i < 3; i++)
         {
-            Button b = MakeSmallButton(chooseBox.transform, "Soil" + i, soilNames[i], new Vector2(0.5f, 1f), new Vector2(-110f + i * 220f, -230f), new Vector2(200f, 70f), 34);
+            Button b = MakeSmallButton(chooseBox.transform, "Soil" + i, soilNames[i], new Vector2(0.5f, 1f), new Vector2(-90f + i * 180f, -230f), new Vector2(160f, 56f), 28);
             soilButtons[i] = b; soilBackgrounds[i] = b.GetComponent<Image>();
         }
 
@@ -216,10 +216,23 @@ public static class UISetup
         Image[] choiceBackgrounds = new Image[ChoiceCount];
         for (int i = 0; i < ChoiceCount; i++)
         {
-            Button b = MakeSmallButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 0.5f), new Vector2((i - 1.5f) * 340f, -130f), new Vector2(320f, 560f), 40);
+            // 카드: 위에 병 예시 그림, 아래에 이름과 상태
+            Button b = MakeSmallButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 0.5f), new Vector2((i - 1.5f) * 290f, -110f), new Vector2(270f, 400f), 30);
             choiceButtons[i] = b;
             choiceLabels[i] = b.GetComponentInChildren<TextMeshProUGUI>();
             choiceBackgrounds[i] = b.GetComponent<Image>();
+
+            RectTransform labelRect = choiceLabels[i].rectTransform;
+            labelRect.anchorMin = new Vector2(0f, 0f); labelRect.anchorMax = new Vector2(1f, 0f);
+            labelRect.pivot = new Vector2(0.5f, 0f);
+            labelRect.anchoredPosition = new Vector2(0f, 8f); labelRect.sizeDelta = new Vector2(0f, 120f);
+
+            GameObject icon = Rect(b.transform, "Icon");
+            Anchor(icon, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(240f, 240f));
+            Image iconImage = icon.AddComponent<Image>();
+            iconImage.sprite = BottleIconMaker.Load(i);
+            iconImage.color = iconImage.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+            iconImage.raycastTarget = false;
         }
         GameObject noneLeft = Label(chooseBox.transform, "NoneLeft", "만들 수 있는 병이 없어요 (병은 나중에 살 수 있어요)", 34, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1300f, 60f), TextAlignmentOptions.Center).gameObject;
         noneLeft.SetActive(false);
