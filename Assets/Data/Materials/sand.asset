@@ -16,7 +16,14 @@ MonoBehaviour:
   displayName: "\uBAA8\uB798"
   kind: 2
   icon: {fileID: 0}
+  zone: 2
+  acquire: 0
+  condition: 0
+  isRare: 0
+  sellPrice: 1
+  buyPrice: 0
   placedPrefab: {fileID: 0}
   placeholderShape: 0
   placeholderColor: {r: 0.87, g: 0.78, b: 0.55, a: 1}
   placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

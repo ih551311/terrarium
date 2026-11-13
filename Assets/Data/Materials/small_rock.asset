@@ -16,6 +16,12 @@ MonoBehaviour:
   displayName: "\uC791\uC740 \uBC14\uC704"
   kind: 1
   icon: {fileID: 0}
+  zone: 3
+  acquire: 2
+  condition: 0
+  isRare: 0
+  sellPrice: 2
+  buyPrice: 0
   placedPrefab: {fileID: 919132149155446097, guid: 3751946022227814e8b38bc3e7df34b1, type: 3}
   placeholderShape: 0
   placeholderColor: {r: 0.62, g: 0.62, b: 0.65, a: 1}
