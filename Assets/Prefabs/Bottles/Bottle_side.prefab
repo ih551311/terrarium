@@ -207,7 +207,7 @@ Transform:
   m_Children:
   - {fileID: 4006008841518735902}
   - {fileID: 1561745955973093666}
-  - {fileID: 3886514702602901893}
+  - {fileID: 3631332841121906287}
   - {fileID: 1827454734244594463}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -223,6 +223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed0bdb720c5280846844b98056d43fa3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleViewer
+  tiltDegrees: 0
 --- !u!65 &52564369907627578
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -457,7 +458,7 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: b41cdd12e2dc2f64bbc7626ba8b84c70, type: 2}
   viewCamera: {fileID: 198076754444630514}
   groundRenderer: {fileID: 1812188808969129681}
-  lid: {fileID: 4383096990913542308}
+  lid: {fileID: 4120447682835096789}
   ghostMaterial: {fileID: 2100000, guid: d5cf84ff824b63b4cbd8317bdb4e0058, type: 2}
 --- !u!1001 &3463983536677127669
 PrefabInstance:
@@ -622,12 +623,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fb6b82f13077f8546b1170d97b1a4513, type: 3}
---- !u!4 &3886514702602901893 stripped
+--- !u!4 &3631332841121906287 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: fb6b82f13077f8546b1170d97b1a4513, type: 3}
   m_PrefabInstance: {fileID: 3886514702602901892}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &4383096990913542308 stripped
+--- !u!1 &4120447682835096789 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: fb6b82f13077f8546b1170d97b1a4513, type: 3}
   m_PrefabInstance: {fileID: 3886514702602901892}

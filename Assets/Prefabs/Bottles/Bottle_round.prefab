@@ -223,6 +223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed0bdb720c5280846844b98056d43fa3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottleViewer
+  tiltDegrees: 28
 --- !u!65 &8649199985688401515
 BoxCollider:
   m_ObjectHideFlags: 0

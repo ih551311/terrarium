@@ -28,6 +28,7 @@ public static class JarSetup
     private const string SoilMaterialPath = "Assets/Data/Placeholder/SoilBrown.mat";
 
     private const int SoilSegments = 32;
+    private const float ViewTilt = 28f; // 서 있는 병을 카메라 쪽으로 기울이는 각도(도)
     private const float ProfileStep = 0.002f; // 안쪽 반지름 표의 간격(모델 크기 기준, 미터)
 
     private struct Jar
@@ -227,7 +228,8 @@ public static class JarSetup
 
         // 3) 병 프리팹
         GameObject root = new GameObject("Bottle_" + jar.id);
-        root.AddComponent<BottleViewer>();
+        BottleViewer viewer = root.AddComponent<BottleViewer>();
+        SetFloat(viewer, "tiltDegrees", alongX ? 0f : ViewTilt); // 서 있는 병은 입구를 카메라 쪽으로 살짝 기울여 흙 윗면이 보이게
 
         GameObject glass = (GameObject)PrefabUtility.InstantiatePrefab(glassModel);
         glass.name = "Glass";
