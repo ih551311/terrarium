@@ -11,7 +11,7 @@ using UnityEngine;
 /// </summary>
 public static class CabinBuilder
 {
-    private const string Kit = "Assets/Low Poly Nature Pack/Prefabs/Cabin/";
+    private const string Kit = "Assets/ThirdParty/LowPolyNaturePack/Prefabs/Cabin/";
     private const float WallOffset = 2.8f;   // 가운데에서 벽 가운데까지 (에셋 팩 데모와 같은 값)
     private const float RoofHeight = 4.12f;  // 바닥 윗면에서 지붕 기준점까지
 

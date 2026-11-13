@@ -13,7 +13,7 @@ public static class InteriorSetup
 {
     private const string InteriorPath = "Assets/Scenes/HutInterior.unity";
     private const string IslandPath = "Assets/Scenes/Island.unity";
-    private const string Kit = "Assets/Low Poly Nature Pack/Prefabs/Cabin/";
+    private const string Kit = "Assets/ThirdParty/LowPolyNaturePack/Prefabs/Cabin/";
     private const string DecoFolder = "Assets/Models/Deco/";
 
     [MenuItem("유리병 정원/집 안 꾸미기")]

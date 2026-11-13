@@ -6,7 +6,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>
-/// 섬(Island 씬)을 만든다. 지름 약 400m의 섬:
+/// 섬(Island 씬)을 만든다. 지름 약 300m의 섬:
 ///   가운데 평평한 언덕 위의 오두막, 남쪽 바닷가, 북쪽 작은 숲, 북동쪽 꽃 언덕, 구역 사이의 흙길.
 /// 지형(Terrain)과 바다, 오두막(CabinBuilder), 나무, 바위, 풀, 버섯, 재료 줍는 자리를 만든다.
 /// 재료는 각 재료 데이터(MaterialData)의 구역(zone)과 얻는 방법(acquire)에 따라 놓는다. 상점 품목은 놓지 않는다.
@@ -16,31 +16,31 @@ using UnityEngine;
 public static class IslandSetup
 {
     // ───────── 섬 모양 (미터) ─────────
-    private const float TerrainSize = 800f;          // 지형 한 변
+    private const float TerrainSize = 640f;          // 지형 한 변
     private const float TerrainHeight = 60f;         // 지형 높이 범위
     private const float TerrainBaseY = -8f;          // 지형 맨 아래의 세계 높이 (바다 밑바닥). 바다 높이는 0
     private const int HeightmapResolution = 513;
     private const int AlphamapResolution = 512;
 
-    private static readonly Vector2 IslandCenter = new Vector2(0f, 40f);
-    private const float IslandRadius = 200f;         // 섬 지름 약 400m
+    private static readonly Vector2 IslandCenter = new Vector2(0f, 30f);
+    private const float IslandRadius = 150f;         // 섬 지름 약 300m (걷기 약 1분 30초, 달리기 약 45초)
     private static readonly Vector2 HutPlateau = new Vector2(0f, 10f);
     private const float HutHeight = 11f;             // 오두막이 있는 언덕 높이
-    private static readonly Vector2 FlowerHill = new Vector2(120f, 110f);
-    private const float FlowerHillRadius = 55f;
+    private static readonly Vector2 FlowerHill = new Vector2(90f, 85f);
+    private const float FlowerHillRadius = 45f;
     private static readonly Vector3 HutPosition = new Vector3(0f, 0f, 14f); // y는 지형에서 읽는다
 
     private static readonly Vector2[][] Paths =
     {
-        new[] { new Vector2(0f, 6f), new Vector2(0f, -40f), new Vector2(-8f, -90f), new Vector2(-5f, -150f) },        // 바닷가로
-        new[] { new Vector2(0f, 28f), new Vector2(6f, 60f), new Vector2(-10f, 100f), new Vector2(-25f, 140f) },       // 작은 숲으로
-        new[] { new Vector2(12f, 8f), new Vector2(45f, 35f), new Vector2(80f, 70f), new Vector2(112f, 100f) },        // 꽃 언덕으로
+        new[] { new Vector2(0f, 6f), new Vector2(0f, -28f), new Vector2(-6f, -68f), new Vector2(-4f, -112f) },       // 바닷가로
+        new[] { new Vector2(0f, 28f), new Vector2(5f, 55f), new Vector2(-8f, 85f), new Vector2(-18f, 115f) },        // 작은 숲으로
+        new[] { new Vector2(12f, 8f), new Vector2(34f, 28f), new Vector2(62f, 52f), new Vector2(82f, 74f) },         // 꽃 언덕으로
     };
 
     private const string RootName = "IslandContent";
     private const string IslandPath = "Assets/Scenes/Island.unity";
     private const string TerrainFolder = "Assets/Terrain";
-    private const string Pack = "Assets/Low Poly Nature Pack/";
+    private const string Pack = "Assets/ThirdParty/LowPolyNaturePack/";
     private const string DecoFolder = "Assets/Models/Deco/";
     private const string MaterialFolder = "Assets/Data/Materials/";
 
@@ -125,8 +125,8 @@ public static class IslandSetup
         float r = Vector2.Distance(p, IslandCenter) / IslandRadius;
 
         // 섬 모양: 가운데가 높고 가장자리로 갈수록 낮아져 바다로 들어간다
-        float land = 1f - Smooth(0.5f, 1.0f, r);
-        float h = land * 13f;
+        float land = 1f - Smooth(0.45f, 1.0f, r);
+        float h = Mathf.Pow(land, 1.35f) * 13f; // 거듭제곱으로 해안 쪽을 완만하게 (작은 섬에서도 모래사장이 넓게)
         if (r > 1f) h = -(r - 1f) * IslandRadius * 0.12f;
 
         // 완만한 굴곡 (해안선 근처는 줄인다)
@@ -136,7 +136,7 @@ public static class IslandSetup
 
         // 꽃 언덕: 섬에서 가장 높은 곳
         float dh = Vector2.Distance(p, FlowerHill);
-        h += 24f * Mathf.Exp(-(dh * dh) / (2f * 40f * 40f));
+        h += 20f * Mathf.Exp(-(dh * dh) / (2f * 32f * 32f));
 
         // 오두막 언덕: 평평하게 고른다
         float dp = Vector2.Distance(p, HutPlateau);

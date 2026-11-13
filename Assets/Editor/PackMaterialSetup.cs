@@ -11,8 +11,8 @@ public static class PackMaterialSetup
 {
     private static readonly string[] Folders =
     {
-        "Assets/Low Poly Nature Pack/Materials",
-        "Assets/Donthrukat",
+        "Assets/ThirdParty/LowPolyNaturePack/Materials",
+        "Assets/ThirdParty/Donthrukat",
     };
 
     [MenuItem("유리병 정원/에셋 팩 재질을 URP로 바꾸기")]
