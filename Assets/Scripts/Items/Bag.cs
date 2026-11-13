@@ -1,0 +1,63 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// 가방. 10칸이고, 같은 재료는 한 칸에 5개까지 겹친다.
+/// Player 오브젝트에 붙인다.
+/// </summary>
+public class Bag : MonoBehaviour
+{
+    [System.Serializable]
+    public class Slot
+    {
+        public MaterialData material;
+        public int count;
+    }
+
+    [SerializeField] private int slotCount = 10;
+    [SerializeField] private int maxStack = 5;
+
+    private readonly List<Slot> slots = new List<Slot>();
+
+    public IReadOnlyList<Slot> Slots => slots;
+    public int SlotCount => slotCount;
+
+    /// <summary>가방 내용이 바뀔 때마다 호출된다. (화면 갱신용)</summary>
+    public event System.Action Changed;
+
+    /// <summary>재료 1개를 넣는다. 자리가 없으면 false.</summary>
+    public bool TryAdd(MaterialData material)
+    {
+        if (material == null) return false;
+
+        // 1) 같은 재료가 있고 아직 덜 찬 칸에 먼저 겹친다.
+        foreach (Slot slot in slots)
+        {
+            if (slot.material == material && slot.count < maxStack)
+            {
+                slot.count++;
+                Changed?.Invoke();
+                return true;
+            }
+        }
+
+        // 2) 없으면 새 칸을 쓴다.
+        if (slots.Count < slotCount)
+        {
+            slots.Add(new Slot { material = material, count = 1 });
+            Changed?.Invoke();
+            return true;
+        }
+
+        return false; // 가방이 가득 참
+    }
+
+    /// <summary>이 재료를 넣을 자리가 있는지 (넣지는 않는다).</summary>
+    public bool CanAdd(MaterialData material)
+    {
+        if (material == null) return false;
+        foreach (Slot slot in slots)
+            if (slot.material == material && slot.count < maxStack) return true;
+        return slots.Count < slotCount;
+    }
+}
