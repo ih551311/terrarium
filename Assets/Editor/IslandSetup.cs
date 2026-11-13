@@ -96,7 +96,7 @@ public static class IslandSetup
         int pickups = PlacePickups(root.transform);
 
         // 7) 하늘의 구름과 먼 곳의 안개 (바다 끝이 부드럽게 하늘과 이어지게)
-        AddClouds(root.transform);
+        // (구름은 만들지 않는다. 하늘은 낮과 밤 하늘 그림이 맡는다 - SkySetup)
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.Linear;
         RenderSettings.fogColor = new Color(0.78f, 0.87f, 0.92f);
