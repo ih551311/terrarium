@@ -382,8 +382,9 @@ public static class JarSetup
                 int s1 = (s + 1) % SoilSegments;
                 int o00 = capBase + c * SoilSegments + s, o01 = capBase + c * SoilSegments + s1;
                 int i00 = capBase + (c + 1) * SoilSegments + s, i01 = capBase + (c + 1) * SoilSegments + s1;
-                triangles.Add(o00); triangles.Add(o01); triangles.Add(i00);
-                triangles.Add(o01); triangles.Add(i01); triangles.Add(i00);
+                // Unity에서 삼각형의 앞면은 cross(b-a, c-a) 방향이다. 윗면이 위(+y)를 보게 이 순서로 쓴다.
+                triangles.Add(o00); triangles.Add(i00); triangles.Add(o01);
+                triangles.Add(o01); triangles.Add(i00); triangles.Add(i01);
             }
         }
 
@@ -395,7 +396,7 @@ public static class JarSetup
         for (int s = 0; s < SoilSegments; s++)
         {
             int s1 = (s + 1) % SoilSegments;
-            triangles.Add(bottomCenter); triangles.Add(bottomRing + s1); triangles.Add(bottomRing + s);
+            triangles.Add(bottomCenter); triangles.Add(bottomRing + s); triangles.Add(bottomRing + s1); // 바닥면은 아래(-y)를 본다
         }
 
         Mesh mesh = new Mesh { name = "SoilMesh" };
