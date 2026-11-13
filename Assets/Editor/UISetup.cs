@@ -145,6 +145,27 @@ public static class UISetup
         SetRef(groundSelector, "sandBackground", sandButton.GetComponent<Image>());
         SetRef(groundSelector, "sandLabel", sandButton.GetComponentInChildren<TextMeshProUGUI>());
 
+        // 병 고르기 (병 그림 왼쪽, 완성 버튼 아래). 완성한 병도 보러 갈 수 있게 꾸미기 도구 밖에 둔다.
+        GameObject chooseBox = Rect(bWindow.transform, "BottleChooser");
+        Anchor(chooseBox, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -340f), new Vector2(290f, 340f));
+        Label(chooseBox.transform, "Title", "병 고르기", 48, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(290f, 70f), TextAlignmentOptions.Center);
+        const int ChoiceCount = 3;
+        Button[] choiceButtons = new Button[ChoiceCount];
+        TMP_Text[] choiceLabels = new TMP_Text[ChoiceCount];
+        Image[] choiceBackgrounds = new Image[ChoiceCount];
+        for (int i = 0; i < ChoiceCount; i++)
+        {
+            Button b = MakeButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 1f), new Vector2(0f, -85f - i * 95f), new Vector2(290f, 85f));
+            b.GetComponentInChildren<TextMeshProUGUI>().fontSize = 38;
+            choiceButtons[i] = b;
+            choiceLabels[i] = b.GetComponentInChildren<TextMeshProUGUI>();
+            choiceBackgrounds[i] = b.GetComponent<Image>();
+        }
+        BottleChooser chooser = chooseBox.AddComponent<BottleChooser>();
+        SetArray(chooser, "buttons", choiceButtons);
+        SetArray(chooser, "labels", choiceLabels);
+        SetArray(chooser, "backgrounds", choiceBackgrounds);
+
         // 완성 버튼 (병 그림 왼쪽)
         Button completeButton = MakeButton(edit.transform, "CompleteButton", "완성", new Vector2(0f, 1f), new Vector2(50f, -170f), new Vector2(290f, 140f));
         completeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 40;
@@ -186,7 +207,7 @@ public static class UISetup
         BottlePanel bp = ui.AddComponent<BottlePanel>();
         SetRef(bp, "root", bottleRoot); SetRef(bp, "closeButton", closeButton);
         SetRef(bp, "dragRotate", drag); SetRef(bp, "decorator", decorator);
-        SetRef(bp, "groundSelector", groundSelector); SetRef(bp, "completeButton", complete);
+        SetRef(bp, "groundSelector", groundSelector); SetRef(bp, "completeButton", complete); SetRef(bp, "chooser", chooser);
         SetRef(bp, "editTools", edit); SetRef(bp, "completedLabel", completedLabel);
         SetRef(complete, "button", completeButton);
         SetRef(complete, "label", completeButton.GetComponentInChildren<TextMeshProUGUI>());

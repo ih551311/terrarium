@@ -3,7 +3,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// 병 꾸미기 패널. 집 안의 병(BottleObject)이 Open()을 불러 열고, 닫기 버튼이나 Esc로 닫는다.
+/// 병 꾸미기 패널. 작업대(BottleStation)가 Open()을 불러 열고, 닫기 버튼이나 Esc로 닫는다.
+/// 패널 안의 "병 고르기"에서 둥근 병, 긴 병, 넓은 병 중 꾸밀 병을 고른다.
 /// 병은 병 옆 카메라가 RenderTexture에 그려서 패널 안 RawImage로 보여 준다.
 /// 패널은 GameRoot 안에 있어서 씬을 옮겨도 남고, 병과 카메라는 열 때마다 받는다.
 /// 완성한 병을 열면 꾸미기 도구는 숨기고 "완성한 병" 글자만 보여 준다(보기만 가능).
@@ -19,6 +20,8 @@ public class BottlePanel : MonoBehaviour
     [SerializeField] private BottleDecorator decorator;
     [SerializeField] private GroundSelector groundSelector;
     [SerializeField] private CompleteBottleButton completeButton;
+    [Tooltip("꾸밀 병을 고르는 버튼들")]
+    [SerializeField] private BottleChooser chooser;
 
     [Header("꾸미는 중 / 완성 후 모드")]
     [Tooltip("재료 칸, 바닥재, 완성 버튼 등 꾸밀 때만 보이는 것을 담은 오브젝트")]
@@ -27,13 +30,15 @@ public class BottlePanel : MonoBehaviour
     [SerializeField] private GameObject completedLabel;
 
     private bool isOpen;
-    private Camera bottleCamera;
+    private BottleStation station;
     private BottleContents contents;
+    private Camera bottleCamera;
 
     private void Awake()
     {
         root.SetActive(false);
         closeButton.onClick.AddListener(Close);
+        chooser.Chosen += ShowBottle;
     }
 
     private void OnDisable()
@@ -49,22 +54,15 @@ public class BottlePanel : MonoBehaviour
             Close();
     }
 
-    /// <summary>어떤 병을, 어떤 카메라로 보여 줄지 받아서 연다.</summary>
-    public void Open(BottleViewer bottle, Camera camera)
+    /// <summary>작업대의 병들을 받아서 열고, 작업대에 올려 둔 병부터 보여 준다.</summary>
+    public void Open(BottleStation bottleStation)
     {
         if (isOpen) return;
         isOpen = true;
-
-        bottleCamera = camera;
-        contents = bottle.GetComponent<BottleContents>();
-        dragRotate.SetTarget(bottle);
-        decorator.SetTarget(contents, camera);
-        groundSelector.SetTarget(contents);
-        completeButton.SetTarget(contents);
-        if (bottleCamera != null) bottleCamera.enabled = true;
+        station = bottleStation;
 
         root.SetActive(true);
-        RefreshMode();
+        ShowBottle(station.SelectedIndex);
         UIFocus.Open();
     }
 
@@ -73,15 +71,42 @@ public class BottlePanel : MonoBehaviour
         if (!isOpen) return;
         isOpen = false;
 
+        ReleaseBottle();
+        station = null;
+
+        root.SetActive(false);
+        UIFocus.Close();
+    }
+
+    /// <summary>번호의 병을 작업대에 올리고 패널에 보여 준다.</summary>
+    private void ShowBottle(int index)
+    {
+        if (station == null) return;
+        ReleaseBottle();
+
+        station.Select(index);
+        contents = station.Get(index);
+        bottleCamera = contents.ViewCamera;
+
+        dragRotate.SetTarget(contents.GetComponent<BottleViewer>());
+        decorator.SetTarget(contents, bottleCamera);
+        groundSelector.SetTarget(contents);
+        completeButton.SetTarget(contents);
+        if (bottleCamera != null) bottleCamera.enabled = true;
+
+        chooser.Refresh(station);
+        RefreshMode();
+    }
+
+    /// <summary>보고 있던 병을 놓는다. (카메라를 끄고 도구들의 대상을 비운다)</summary>
+    private void ReleaseBottle()
+    {
         if (bottleCamera != null) bottleCamera.enabled = false;
         bottleCamera = null;
         contents = null;
         decorator.SetTarget(null, null);
         groundSelector.SetTarget(null);
         completeButton.SetTarget(null);
-
-        root.SetActive(false);
-        UIFocus.Close();
     }
 
     /// <summary>병이 완성됐는지에 따라 꾸미기 도구를 보이거나 숨긴다.</summary>
@@ -90,5 +115,6 @@ public class BottlePanel : MonoBehaviour
         bool done = contents != null && contents.IsCompleted;
         editTools.SetActive(!done);
         completedLabel.SetActive(done);
+        if (station != null) chooser.Refresh(station); // (완성) 표시를 갱신한다
     }
 }

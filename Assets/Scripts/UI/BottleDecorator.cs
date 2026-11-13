@@ -30,8 +30,6 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     [SerializeField] private float maxFieldOfView = 75f;
     [Tooltip("클수록 빨리 따라간다")]
     [SerializeField] private float zoomSmoothing = 14f;
-    [Tooltip("가장 크게 확대했을 때 바라보는 높이(병 기준). 확대할수록 시선이 이 높이(흙 쪽)로 내려온다.")]
-    [SerializeField] private float zoomedLookHeight = 0.12f;
 
     private RectTransform rect;
     private BottleContents contents;
@@ -88,7 +86,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             if (contents != null)
             {
                 float zoomIn = Mathf.InverseLerp(defaultFieldOfView, minFieldOfView, bottleCamera.fieldOfView);
-                Vector3 lookAt = contents.transform.TransformPoint(0f, zoomedLookHeight, 0f);
+                Vector3 lookAt = contents.transform.TransformPoint(0f, contents.ZoomLookHeight, 0f); // 병마다 다르다
                 Quaternion toGround = Quaternion.LookRotation(lookAt - bottleCamera.transform.position);
                 bottleCamera.transform.rotation = Quaternion.Slerp(defaultRotation, toGround, zoomIn);
             }

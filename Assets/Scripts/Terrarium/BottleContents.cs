@@ -20,7 +20,16 @@ public class BottleContents : MonoBehaviour
 
     [SerializeField] private int maxItems = 12;
 
+    [Tooltip("병 화면을 가장 크게 확대했을 때 바라보는 높이(병 기준). 흙 위를 크게 볼 수 있는 높이.")]
+    [SerializeField] private float zoomLookHeight = 0.06f;
+
     [Header("연결")]
+    [Tooltip("이 병의 종류 정보 (이름 등)")]
+    [SerializeField] private BottleData data;
+
+    [Tooltip("이 병만 비추는 카메라 (RenderTexture로 출력). 평소엔 꺼 둔다.")]
+    [SerializeField] private Camera viewCamera;
+
     [Tooltip("바닥재 원판의 Renderer. 바닥재를 바꾸면 색이 바뀐다.")]
     [SerializeField] private Renderer groundRenderer;
 
@@ -39,6 +48,9 @@ public class BottleContents : MonoBehaviour
     private readonly List<Material> ghostMaterials = new List<Material>();
 
     public bool IsFull => items.Count >= maxItems;
+    public float ZoomLookHeight => zoomLookHeight;
+    public Camera ViewCamera => viewCamera;
+    public string DisplayName => data != null ? data.displayName : bottleId;
     public int ItemCount => items.Count;
 
     /// <summary>바닥재. null이면 흙(기본).</summary>
@@ -47,17 +59,16 @@ public class BottleContents : MonoBehaviour
     /// <summary>완성해서 닫았으면 true. 그때부터 고칠 수 없다.</summary>
     public bool IsCompleted { get; private set; }
 
+    // 처음 켜지는 순간(Awake)에 기억해 둔 상태를 되살린다. 숨겨 뒀다가 나중에 켜지는 병도
+    // 켜지자마자 완성 여부와 바닥재가 맞게 보이도록, Start가 아니라 Awake에서 한다.
     private void Awake()
     {
         if (groundRenderer != null) soilColor = groundRenderer.sharedMaterial.color;
-    }
 
-    private void Start()
-    {
         // 씬을 옮겼다 돌아왔을 때 기억해 둔 상태를 다시 만든다.
         BottleRecord record = BottleStore.Get(bottleId);
-        foreach (PlacedData data in record.items)
-            Spawn(data.material, data.localPosition, data.yaw, data.scaleFactor);
+        foreach (PlacedData placed in record.items)
+            Spawn(placed.material, placed.localPosition, placed.yaw, placed.scaleFactor);
 
         Ground = record.ground;
         ApplyGround();
@@ -240,12 +251,22 @@ public class BottleContents : MonoBehaviour
 
         SetLayerRecursive(visual, gameObject.layer);
 
-        // 바닥이 바닥재 표면에 닿도록 올린다.
         Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)
         {
             Bounds bounds = renderers[0].bounds;
             foreach (Renderer r in renderers) bounds.Encapsulate(r.bounds);
+
+            // 모델(프리팹)에는 Collider가 없어서, 병 안에서 마우스로 고를 수 있게 모델을 감싸는 상자를 붙인다.
+            if (material.placedPrefab != null && visual.GetComponentInChildren<Collider>() == null)
+            {
+                BoxCollider box = visual.AddComponent<BoxCollider>();
+                box.isTrigger = true;
+                box.center = visual.transform.InverseTransformPoint(bounds.center);
+                box.size = bounds.size; // 만들 때는 회전과 크기가 그대로라 월드 크기와 같다
+            }
+
+            // 바닥이 바닥재 표면에 닿도록 올린다.
             float lift = parent.position.y - bounds.min.y;
             visual.transform.position += Vector3.up * lift;
         }
