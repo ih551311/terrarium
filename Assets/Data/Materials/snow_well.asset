@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: snow_well
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: snow_well
+  displayName: "\uB208 \uC6B0\uBB3C"
+  kind: 1
+  icon: {fileID: 21300000, guid: 96c104af5ff53dd469e1559a550fe4c3, type: 3}
+  zone: 4
+  acquire: 3
+  condition: 0
+  isRare: 0
+  plantGroup: 0
+  sellPrice: 4
+  buyPrice: 24
+  placedPrefab: {fileID: 578842784349277355, guid: 22cdc9044a242ba4a9da74992df090fc, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.8, g: 0.72, b: 0.6, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

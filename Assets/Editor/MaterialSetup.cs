@@ -122,6 +122,11 @@ public static class MaterialSetup
         new Entry("ladder",           "사다리",     Deco,  "deco_ladder",          new Color(0.69f, 0.51f, 0.35f), Shop, Buy, 2, 12),
         new Entry("fairy_door",       "요정 문",    Deco,  "deco_fairy_door",      new Color(0.62f, 0.62f, 0.65f), Shop, Buy, 3, 30),
         new Entry("hot_air_balloon",  "열기구",     Deco,  "deco_hot_air_balloon", new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 3, 40),
+        // 눈 에셋의 건물을 작게 줄인 꾸밈 재료 (BuildingMaterialSetup이 모델을 만든다)
+        new Entry("snow_cottage1",    "눈 오두막 1", Deco, "deco_snow_cottage1",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 30),
+        new Entry("snow_cottage2",    "눈 오두막 2", Deco, "deco_snow_cottage2",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 32),
+        new Entry("snow_cottage3",    "눈 오두막 3", Deco, "deco_snow_cottage3",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 35),
+        new Entry("snow_well",        "눈 우물",     Deco, "deco_snow_well",       new Color(0.80f, 0.72f, 0.60f), Shop, Buy, 4, 24),
     };
 
     // 괭이로 캘 때 꽃에서 나오는 재료 (나머지 식물, 이끼, 잎, 열매, 버섯은 풀에서 나온다)
@@ -164,6 +169,7 @@ public static class MaterialSetup
             data.kind = e.kind;
             data.placeholderColor = e.color;
             data.placedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelFolder + "/" + e.model + ".obj");
+            if (data.placedPrefab == null) data.placedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelFolder + "/" + e.model + ".prefab"); // 눈 에셋 건물은 줄여 놓은 프리팹이다
             if (data.placedPrefab == null) missingModel++;
             data.zone = e.zone; data.acquire = e.acquire; data.condition = e.condition; data.isRare = e.rare;
             data.plantGroup = GroupOf(e.id);

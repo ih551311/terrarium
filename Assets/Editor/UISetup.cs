@@ -420,8 +420,8 @@ public static class UISetup
         GameObject orderGrid = Rect(mailWindow.transform, "OrderGrid");
         Anchor(orderGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -340f), new Vector2(700f, 350f));
         GridLayoutGroup orderLayout = orderGrid.AddComponent<GridLayoutGroup>();
-        orderLayout.cellSize = new Vector2(167f, 80f); orderLayout.spacing = new Vector2(10f, 8f);
-        orderLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; orderLayout.constraintCount = 4; // 16개가 4줄에 들어간다
+        orderLayout.cellSize = new Vector2(167f, 66f); orderLayout.spacing = new Vector2(10f, 6f);
+        orderLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; orderLayout.constraintCount = 4; // 20개가 5줄에 들어간다 (칸 높이 66)
 
         var orderableList = new System.Collections.Generic.List<MaterialData>();
         foreach (string guid in AssetDatabase.FindAssets("t:MaterialData"))
@@ -435,13 +435,13 @@ public static class UISetup
         Image[] orderIcons = new Image[orderableList.Count];
         for (int i = 0; i < orderableList.Count; i++)
         {
-            Button b = MakeButton(orderGrid.transform, "Order" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(226f, 80f));
+            Button b = MakeButton(orderGrid.transform, "Order" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(226f, 66f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
             t.fontSize = 22;
             // 왼쪽에 재료 그림, 오른쪽에 이름과 가격
             RectTransform tr = t.rectTransform;
             tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = new Vector2(60f, 0f); tr.offsetMax = Vector2.zero;
-            orderIcons[i] = MakeSlotIcon(b.transform, new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(54f, 54f));
+            orderIcons[i] = MakeSlotIcon(b.transform, new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(48f, 48f));
             orderButtons[i] = b; orderLabels[i] = t;
         }
 

@@ -34,12 +34,34 @@ public class MapPanel : MonoBehaviour
 
     private bool isOpen;
     private float messageUntil;
+    private Texture defaultTexture;
+    private RectTransform dockMarker;
+    private TMPro.TMP_Text homeLabelText;
+
+    // 지금 씬의 지도 범위: 눈 섬처럼 지도 정보(SceneMapInfo)가 있는 씬은 그 값을, 원래 섬은 위의 값을 쓴다
+    private Vector2 Center { get { SceneMapInfo i = SceneMapInfo.Current; return i != null ? i.center : mapCenter; } }
+    private float Half { get { SceneMapInfo i = SceneMapInfo.Current; return i != null ? i.halfExtent : mapHalfExtent; } }
+    private bool HasMap => SceneManager.GetActiveScene().name == islandSceneName || SceneMapInfo.Current != null;
 
     private void Awake()
     {
         root.SetActive(false);
         closeButton.onClick.AddListener(Close);
         homeButton.onClick.AddListener(GoHome);
+
+        RawImage image = mapRect.GetComponent<RawImage>();
+        if (image != null) defaultTexture = image.texture;
+        homeLabelText = homeButton.GetComponentInChildren<TMPro.TMP_Text>();
+
+        // 선착장(배) 표시: 집 표시를 복사해서 만든다
+        GameObject copy = Instantiate(hutMarker.gameObject, hutMarker.parent);
+        copy.name = "DockMarker";
+        dockMarker = (RectTransform)copy.transform;
+        TMPro.TMP_Text label = copy.GetComponentInChildren<TMPro.TMP_Text>();
+        if (label != null) label.text = "배";
+        Image bg = copy.GetComponent<Image>();
+        if (bg != null) bg.color = new Color(0.25f, 0.5f, 0.75f, 1f);
+        copy.SetActive(false);
     }
 
     private void OnDisable()
@@ -55,7 +77,7 @@ public class MapPanel : MonoBehaviour
         if (keyboard.mKey.wasPressedThisFrame)
         {
             if (isOpen) Close();
-            else if (!UIFocus.IsOpen && SceneManager.GetActiveScene().name == islandSceneName) Open();
+            else if (!UIFocus.IsOpen && HasMap) Open();
         }
         else if (isOpen && !InventoryPanel.IsOpen && keyboard.escapeKey.wasPressedThisFrame)
         {
@@ -83,7 +105,7 @@ public class MapPanel : MonoBehaviour
         float v = (local.y - r.yMin) / r.height;
         if (u < 0f || u > 1f || v < 0f || v > 1f) return;
 
-        Vector2 world = new Vector2(mapCenter.x + (u - 0.5f) * 2f * mapHalfExtent, mapCenter.y + (v - 0.5f) * 2f * mapHalfExtent);
+        Vector2 world = new Vector2(Center.x + (u - 0.5f) * 2f * Half, Center.y + (v - 0.5f) * 2f * Half);
         if (GameRoot.Instance != null && GameRoot.Instance.TeleportTo(world))
         {
             Close();
@@ -98,6 +120,7 @@ public class MapPanel : MonoBehaviour
     private void Open()
     {
         isOpen = true;
+        ApplyScene();
         if (messageText != null) messageText.text = string.Empty;
         root.SetActive(true);
         UIFocus.Open();
@@ -114,8 +137,18 @@ public class MapPanel : MonoBehaviour
 
     private void GoHome()
     {
-        if (GameRoot.Instance != null) GameRoot.Instance.GoHome();
+        SceneMapInfo info = SceneMapInfo.Current;
+        if (GameRoot.Instance != null) GameRoot.Instance.GoHome(info != null ? info.homeSpawnId : "FromHut");
         Close();
+    }
+
+    /// <summary>씬에 맞는 지도 그림과 돌아가기 글자를 건다.</summary>
+    private void ApplyScene()
+    {
+        SceneMapInfo info = SceneMapInfo.Current;
+        RawImage image = mapRect.GetComponent<RawImage>();
+        if (image != null) image.texture = info != null && info.image != null ? info.image : defaultTexture;
+        if (homeLabelText != null) homeLabelText.text = info != null ? info.homeLabel : "집으로 돌아가기";
     }
 
     private void UpdateMarkers()
@@ -135,14 +168,19 @@ public class MapPanel : MonoBehaviour
             hutMarker.gameObject.SetActive(true);
             break;
         }
+
+        // 선착장(배) 표시
+        Dock dock = FindFirstObjectByType<Dock>();
+        dockMarker.gameObject.SetActive(dock != null);
+        if (dock != null) dockMarker.anchoredPosition = ToMap(new Vector2(dock.transform.position.x, dock.transform.position.z));
     }
 
     /// <summary>세계 좌표(x, z)를 지도 그림 위의 위치로 바꾼다. 지도의 왼쪽 아래가 기준이다.</summary>
     private Vector2 ToMap(Vector2 world)
     {
         Vector2 size = mapRect.rect.size;
-        float u = (world.x - mapCenter.x) / (mapHalfExtent * 2f) + 0.5f;
-        float v = (world.y - mapCenter.y) / (mapHalfExtent * 2f) + 0.5f;
+        float u = (world.x - Center.x) / (Half * 2f) + 0.5f;
+        float v = (world.y - Center.y) / (Half * 2f) + 0.5f;
         return new Vector2(Mathf.Clamp01(u) * size.x, Mathf.Clamp01(v) * size.y);
     }
 }

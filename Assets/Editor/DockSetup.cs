@@ -11,7 +11,7 @@ using UnityEngine;
 public static class DockSetup
 {
     private const string IslandPath = "Assets/Scenes/Island.unity";
-    private const float DeckY = 0.45f;      // 부두 윗면의 높이 (바다는 0). 모래 끝(높이 0.3m)에서 한 걸음으로 올라설 수 있게 낮다
+    private const float DeckY = 0.35f;      // 부두 윗면의 높이 (바다는 0). 물가 땅(높이 0.25m 안팎)에서 한 걸음으로 올라설 수 있게 낮다
     private static float PierLength = 16f;     // 부두 길이: 물가에서 물속으로 충분히 나가도록 만들 때마다 정한다
     private const float PierWidth = 2.4f;
 
@@ -201,17 +201,34 @@ public static class DockSetup
 
         // 섬 가운데(0, 30)에서 남쪽으로 뻗은 여러 방향 중, 물가가 있고 나무와 바위가 없는 곳을 고른다
         Vector2 center = new Vector2(0f, 30f);
-        float[] angles = { -90f, -70f, -110f, -55f, -125f, -40f, -140f };
-        foreach (float angle in angles)
+        float[] angles = { -90f, -80f, -100f, -70f, -110f, -60f, -120f, -50f, -130f, -40f, -140f };
+        // 각 방향의 부두 길이(물가에서 물속까지)를 재서, 가장 짧은(물가가 가파른) 방향부터 시도한다
+        var order = new System.Collections.Generic.List<(float angle, float length)>();
+        foreach (float a in angles)
         {
+            Vector2 d0 = new Vector2(Mathf.Cos(a * Mathf.Deg2Rad), Mathf.Sin(a * Mathf.Deg2Rad));
+            float l0 = 99f; bool seenLand = false;
+            for (float r = 60f; r < 200f; r += 0.5f)
+            {
+                Vector2 p = center + d0 * r;
+                float h = terrain.SampleHeight(new Vector3(p.x, 0f, p.y)) + terrain.transform.position.y;
+                if (!seenLand && h <= 0.25f) { seenLand = true; l0 = r; }
+                if (seenLand && h <= -0.6f) { l0 = r - l0; break; }
+            }
+            order.Add((a, l0));
+        }
+        order.Sort((x, y) => x.length.CompareTo(y.length));
+        foreach (var candidate in order)
+        {
+            float angle = candidate.angle;
             Vector2 dir = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
-            // 땅이 처음 0.35m 아래로 내려가는 자리(물가 바로 안쪽)를 찾는다
+            // 땅이 처음 0.25m 아래로 내려가는 자리(물가 바로 안쪽)를 찾는다
             Vector2 land = Vector2.zero; float landY = 0f; bool found = false;
             for (float r = 60f; r < 200f; r += 0.5f)
             {
                 Vector2 p = center + dir * r;
                 float h = terrain.SampleHeight(new Vector3(p.x, 0f, p.y)) + terrain.transform.position.y;
-                if (h <= 0.35f) { land = p; landY = h; found = true; break; }
+                if (h <= 0.25f) { land = p; landY = h; found = true; break; }
             }
             if (!found) continue;
 

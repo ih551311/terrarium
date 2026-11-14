@@ -98,11 +98,11 @@ public class GameRoot : MonoBehaviour
     /// 지금 있는 씬의 "집 앞"(id가 FromHut인 도착 지점)으로 바로 간다. 섬에서 쓴다.
     /// 그런 자리가 없는 씬(집 안)에서는 아무 일도 하지 않고 false를 돌려준다.
     /// </summary>
-    public bool GoHome()
+    public bool GoHome(string spawnId = "FromHut")
     {
         foreach (SpawnPoint spawn in FindObjectsByType<SpawnPoint>(FindObjectsSortMode.None))
         {
-            if (spawn.Id != "FromHut") continue;
+            if (spawn.Id != spawnId) continue;
             Teleport(spawn.transform);
             return true;
         }

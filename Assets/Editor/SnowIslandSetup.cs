@@ -6,7 +6,7 @@ using UnityEngine;
 
 /// <summary>
 /// 눈 섬(SnowIsland 씬)을 만든다. 지름 약 190m의 작은 눈 섬:
-///   가운데 평평한 눈 마을(집 세 채, 우물, 눈사람, 울타리, 팻말), 얼어붙은 연못, 북쪽 소나무 숲, 동쪽 선착장.
+///   가운데 평평한 눈 마을 터(눈사람, 울타리, 돌담, 팻말. 건물은 재료로 만들어 우체통에서 판다), 얼어붙은 연못, 북쪽 소나무 숲, 동쪽 선착장.
 /// 모양과 건물은 에셋 "Cozy Snowy Environment"(Assets/HobiSoloved)로 꾸미고, 지형(Terrain)과 바다는 코드로 만든다.
 /// 눈 섬은 언제나 눈이 내리고(SceneClimate), 눈 섬 재료(MaterialZone.Snow)가 소나무(도끼), 눈 더미(곡괭이), 바닥(줍기)에서 난다.
 /// 처음 만들 때는 Island 씬을 복사해서 시작한다(플레이어, 하늘, 조명, 후처리가 이미 들어 있다). 다시 누르면 눈 섬 내용만 새로 만든다.
@@ -47,7 +47,7 @@ public static class SnowIslandSetup
     [MenuItem("유리병 정원/눈 섬 만들기")]
     public static string Build()
     {
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(Prefabs + "Cottage1.prefab") == null)
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(Prefabs + "Snowman.prefab") == null)
             return "눈 에셋(Assets/HobiSoloved)을 찾지 못했어요. 먼저 에셋을 가져오세요.";
         SnowAssetSetup.ConvertMaterials();
 
@@ -62,16 +62,20 @@ public static class SnowIslandSetup
             while (old != null) { Object.DestroyImmediate(old); old = GameObject.Find(n); }
         }
 
+        // 선착장 자리(동쪽 물가)와 부두 길이를 먼저 정한다: 마을에서 선착장까지 가는 길의 끝이 되기 때문
+        Vector2 landing2 = FindShore(0f, 0.25f);
+        float pierLen = 16f;
+        for (float d = 0f; d < 60f; d += 0.5f)
+            if (HeightAt(landing2.x + d, landing2.y) <= -0.6f) { pierLen = Mathf.Clamp(d + 3f, 14f, 36f); break; }
+        Path[Path.Length - 1] = new Vector2(landing2.x - 5f, landing2.y);
+        Path[Path.Length - 2] = new Vector2(Mathf.Max(30f, landing2.x * 0.6f), -3f);
+
         GameObject root = new GameObject(RootName);
         Transform rt = root.transform;
         terrain = BuildTerrain(rt);
         BuildSea(rt);
 
         // 선착장: 동쪽 바닷가 (이미 열려 있다)
-        Vector2 landing2 = FindShore(0f, 0.35f);
-        float pierLen = 16f;
-        for (float d = 0f; d < 60f; d += 0.5f)
-            if (HeightAt(landing2.x + d, landing2.y) <= -0.6f) { pierLen = Mathf.Clamp(d + 3f, 14f, 36f); break; }
         Vector3 landingSpot;
         float landY = HeightAt(landing2.x, landing2.y);
         GameObject dockRoot = DockSetup.Build(rt, "Dock", landing2, Vector3.right, false, "Island", "FromSnow", "배 타고 돌아가기", out landingSpot, landY, pierLen);
@@ -95,8 +99,21 @@ public static class SnowIslandSetup
         int pines = ScatterForest(rt);
         int mounds = ScatterMounds(rt);
         int deco = ScatterDecor(rt);
+        int floes = ScatterFloes(rt, landing2);
         Physics.SyncTransforms();
         int pickups = PlacePickups(rt);
+
+        // 지도: 지도 그림을 만들고, 이 씬의 지도 정보(SceneMapInfo)를 둔다
+        Texture2D mapImage = BakeMap(rt, landing2, pierLen);
+        GameObject mapGo = new GameObject("SceneMapInfo");
+        SceneMapInfo mapInfo = mapGo.AddComponent<SceneMapInfo>();
+        SerializedObject mso = new SerializedObject(mapInfo);
+        mso.FindProperty("image").objectReferenceValue = mapImage;
+        mso.FindProperty("center").vector2Value = Vector2.zero;
+        mso.FindProperty("halfExtent").floatValue = MapHalf;
+        mso.FindProperty("homeSpawnId").stringValue = "FromDock";
+        mso.FindProperty("homeLabel").stringValue = "선착장으로 돌아가기";
+        mso.ApplyModifiedPropertiesWithoutUndo();
 
         // 플레이어를 선착장 도착 자리로
         foreach (GameRoot gr in Object.FindObjectsByType<GameRoot>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -116,7 +133,7 @@ public static class SnowIslandSetup
         EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
         AssetDatabase.SaveAssets();
-        return "눈 섬 만들기 완료: 소나무 " + pines + "그루, 눈 더미 " + mounds + "개, 소품 " + deco + "개, 재료 줍는 자리 " + pickups + "개";
+        return "눈 섬 만들기 완료: 소나무 " + pines + "그루, 눈 더미 " + mounds + "개, 소품 " + deco + "개, 얼음덩이 " + floes + "개, 재료 줍는 자리 " + pickups + "개. " + VerifyTerrainOnDisk();
     }
 
     private static void AddToBuildSettings()
@@ -135,10 +152,16 @@ public static class SnowIslandSetup
         return t * t * (3f - 2f * t);
     }
 
+    /// <summary>해안선이 동그랗지 않고 굽이치게 하는 값: 각도에 따라 섬의 반지름이 0.8배에서 1.2배 사이로 변한다.</summary>
+    private static float CoastFactor(float angle)
+    {
+        return 1f + 0.10f * Mathf.Sin(3f * angle + 1f) + 0.07f * Mathf.Sin(5f * angle + 2f) + 0.04f * Mathf.Sin(8f * angle + 4f);
+    }
+
     private static float HeightAt(float x, float z)
     {
         Vector2 p = new Vector2(x, z);
-        float r = p.magnitude / IslandRadius;
+        float r = p.magnitude / (IslandRadius * CoastFactor(Mathf.Atan2(z, x)));
 
         float land = 1f - Smooth(0.55f, 1.0f, r);
         float h = Mathf.Pow(land, 1.3f) * 7.5f;
@@ -150,7 +173,7 @@ public static class SnowIslandSetup
 
         // 북쪽 산등성이 (소나무 숲이 있는 곳)
         float dx = (x - Ridge.x) / 45f, dz = (z - Ridge.y) / 22f;
-        h += 9f * Mathf.Exp(-(dx * dx + dz * dz) / 2f);
+        h += 9f * Mathf.Exp(-(dx * dx + dz * dz) / 2f) * Smooth(0f, 0.45f, 1f - r); // 해안으로 가면 낮아진다 (절벽이 되지 않게)
 
         // 마을 터: 평평하게 고른다
         float dv = Vector2.Distance(p, Village);
@@ -236,7 +259,7 @@ public static class SnowIslandSetup
         td.size = new Vector3(TerrainSize, TerrainHeight, TerrainSize);
         string path = TerrainFolder + "/SnowIslandTerrain.asset";
         AssetDatabase.DeleteAsset(path);
-        AssetDatabase.CreateAsset(td, path);
+        // 높이와 칠을 메모리에서 모두 채운 다음 마지막에 파일로 저장한다. (파일을 먼저 만들고 채우면 높이가 파일에 안 남는 일이 있었다)
 
         float[,] heights = new float[HeightmapResolution, HeightmapResolution];
         for (int iz = 0; iz < HeightmapResolution; iz++)
@@ -247,6 +270,7 @@ public static class SnowIslandSetup
                 heights[iz, ix] = Mathf.Clamp01((HeightAt(x, z) - TerrainBaseY) / TerrainHeight);
             }
         td.SetHeights(0, 0, heights);
+        td.SyncHeightmap(); // 높이를 파일에 확실히 저장하려면 필요하다 (없으면 껐다 켰을 때 평평해진다)
 
         // 칠하는 층: 눈, 얼음, 다져진 눈(길). 층 이름의 snow/ice/path가 발소리를 정한다 (FootstepPlayer)
         TerrainLayer snow = MakeLayer("Snow_Layer", MakeTexture("snow_diffuse", new Color(0.95f, 0.97f, 1f), new Color(0.84f, 0.90f, 0.98f), 0.25f, 0.004f, 1), 9f, 0.25f);
@@ -272,7 +296,9 @@ public static class SnowIslandSetup
                 alpha[iz, ix, 0] = wSnow / sum; alpha[iz, ix, 1] = wIce / sum; alpha[iz, ix, 2] = wTrod / sum;
             }
         td.SetAlphamaps(0, 0, alpha);
+        AssetDatabase.CreateAsset(td, path);
         EditorUtility.SetDirty(td);
+        AssetDatabase.SaveAssetIfDirty(td);
         AssetDatabase.SaveAssets();
 
         GameObject go = Terrain.CreateTerrainGameObject(td);
@@ -410,24 +436,7 @@ public static class SnowIslandSetup
         group.transform.SetParent(parent, false);
         Transform g = group.transform;
 
-        // 우물: 마을 한가운데
-        GameObject well = Instantiate("Well", g, new Vector3(0f, GroundY(0f, 0f), 0f), 0f, 2.4f);
-        if (well != null) AddSolidBox(well, 0.85f);
-
-        // 집 세 채: 광장을 둘러싸고 우물을 바라본다 (모델은 키가 1.8m라 3.4배로 키워 6m 남짓)
-        Vector3[] house = { new Vector3(-17f, 0f, 9f), new Vector3(15f, 0f, 13f), new Vector3(-3f, 0f, -19f) };
-        float[] yaw = new float[3];
-        string[] names = { "Cottage1", "Cottage2", "Cottage3" };
-        for (int i = 0; i < 3; i++)
-        {
-            Vector3 p = new Vector3(house[i].x, GroundY(house[i].x, house[i].z), house[i].z);
-            Vector3 toWell = (Vector3.zero - p); toWell.y = 0f;
-            yaw[i] = Mathf.Atan2(p.x, p.z) * Mathf.Rad2Deg; // 집의 앞(창)은 -z 쪽이라, 우물을 바라보게 돌린다
-            GameObject c = Instantiate(names[i], g, p, yaw[i], 3.4f);
-            if (c == null) continue;
-            c.name = names[i];
-            AddSolidBox(c, 0.92f);
-        }
+        // 건물(집 3채, 우물)은 눈 섬에 놓지 않는다. 병 속에 놓는 꾸밈 재료로 우체통에서 산다 (BuildingMaterialSetup)
 
         // 눈사람과 팻말
         GameObject snowman = Instantiate("Snowman", g, new Vector3(8f, GroundY(8f, -7f), -7f), 200f, 4f);
@@ -648,5 +657,170 @@ public static class SnowIslandSetup
         box.center = go.transform.InverseTransformPoint(b.center);
         Vector3 size = b.size;
         box.size = new Vector3(Mathf.Max(size.x, 0.4f), Mathf.Max(size.y, 0.4f), Mathf.Max(size.z, 0.4f));
+    }
+
+    // ───────── 바다 위 얼음덩이 (섬이 바다에 떠 있는 느낌) ─────────
+
+    private static int ScatterFloes(Transform parent, Vector2 landing)
+    {
+        GameObject group = new GameObject("IceFloes");
+        group.transform.SetParent(parent, false);
+        var placedAt = new List<Vector2>();
+        int placed = 0, tries = 0;
+        while (placed < 22 && tries++ < 1200)
+        {
+            float ang = Rand() * Mathf.PI * 2f;
+            Vector2 dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));
+            float shore = 0f;
+            for (float r = 30f; r < 170f; r += 1f)
+                if (HeightAt(dir.x * r, dir.y * r) <= 0f) { shore = r; break; }
+            if (shore <= 0f) continue;
+            Vector2 p = dir * (shore + Range(10f, 55f));
+            if (Mathf.Abs(p.y - landing.y) < 16f && p.x > landing.x - 8f) continue; // 선착장 앞 바다는 비운다
+            bool tooClose = false;
+            foreach (Vector2 q in placedAt) if ((q - p).sqrMagnitude < 14f * 14f) { tooClose = true; break; }
+            if (tooClose) continue;
+            string prefab = "Snow" + (1 + (int)(Rand() * 4f));
+            GameObject f = Instantiate(prefab, group.transform, new Vector3(p.x, -0.5f, p.y), Rand() * 360f, Range(5f, 9f));
+            if (f == null) continue;
+            f.name = "Floe_" + placed;
+            placedAt.Add(p);
+            placed++;
+        }
+        return placed;
+    }
+
+    // ───────── 지도 그림 ─────────
+
+    private const string MapImagePath = "Assets/Data/SnowIslandMap.png";
+    private const int MapSize = 768;
+    private const float MapHalf = 125f;
+
+    private static Vector2 ToPx(float wx, float wz)
+    {
+        return new Vector2((wx / (MapHalf * 2f) + 0.5f) * MapSize, (wz / (MapHalf * 2f) + 0.5f) * MapSize);
+    }
+
+    private static void PutPx(Color[] px, int x, int y, Color c, float alpha = 1f)
+    {
+        if (x < 0 || y < 0 || x >= MapSize || y >= MapSize) return;
+        px[y * MapSize + x] = Color.Lerp(px[y * MapSize + x], c, alpha);
+    }
+
+    private static Texture2D BakeMap(Transform root, Vector2 landing, float pierLen)
+    {
+        var px = new Color[MapSize * MapSize];
+        Color snow = new Color(0.96f, 0.975f, 1f), ice = new Color(0.78f, 0.92f, 0.97f), pondC = new Color(0.66f, 0.85f, 0.95f), trod = new Color(0.84f, 0.86f, 0.90f);
+        for (int y = 0; y < MapSize; y++)
+        {
+            float wz = ((y + 0.5f) / MapSize - 0.5f) * 2f * MapHalf;
+            for (int x = 0; x < MapSize; x++)
+            {
+                float wx = ((x + 0.5f) / MapSize - 0.5f) * 2f * MapHalf;
+                float h = HeightAt(wx, wz);
+                Color c;
+                if (h < 0.25f)
+                {
+                    float depth = Mathf.Clamp01(-h / 6f);
+                    c = Color.Lerp(new Color(0.66f, 0.86f, 0.93f), new Color(0.30f, 0.52f, 0.72f), depth);
+                }
+                else
+                {
+                    float dx = HeightAt(wx + 2f, wz) - HeightAt(wx - 2f, wz), dz = HeightAt(wx, wz + 2f) - HeightAt(wx, wz - 2f);
+                    float shade = Mathf.Clamp((dx * 0.7f - dz * 0.7f) * 0.04f, -0.10f, 0.10f);
+                    c = snow;
+                    c = Color.Lerp(c, ice, 1f - Smooth(0.6f, 1.9f, h)); // 얼어붙은 물가
+                    Vector2 wp = new Vector2(wx, wz);
+                    if (DistanceToPath(wx, wz) < 1.8f || Vector2.Distance(wp, Village) < 9f) c = trod;
+                    if (Vector2.Distance(wp, Pond) < PondRadius + 0.5f) c = pondC;
+                    c = new Color(Mathf.Clamp01(c.r + shade), Mathf.Clamp01(c.g + shade), Mathf.Clamp01(c.b + shade), 1f);
+                }
+                px[y * MapSize + x] = c;
+            }
+        }
+
+        // 해안선 둘레의 어두운 윤곽 (섬이 바다에서 또렷하게 보이게)
+        var outlined = (Color[])px.Clone();
+        float step = MapHalf * 2f / MapSize * 2.5f;
+        for (int y = 2; y < MapSize - 2; y++)
+            for (int x = 2; x < MapSize - 2; x++)
+            {
+                float wx = ((x + 0.5f) / MapSize - 0.5f) * 2f * MapHalf, wz = ((y + 0.5f) / MapSize - 0.5f) * 2f * MapHalf;
+                if (HeightAt(wx, wz) >= 0.25f) continue;
+                bool near = HeightAt(wx + step, wz) >= 0.25f || HeightAt(wx - step, wz) >= 0.25f || HeightAt(wx, wz + step) >= 0.25f || HeightAt(wx, wz - step) >= 0.25f;
+                if (near) outlined[y * MapSize + x] = Color.Lerp(px[y * MapSize + x], new Color(0.2f, 0.42f, 0.62f), 0.75f);
+            }
+        px = outlined;
+
+        // 소나무 (짙은 초록 삼각형), 집 (갈색 네모), 우물, 선착장
+        Transform forest = root.Find("Forest");
+        if (forest != null)
+            foreach (Transform t in forest)
+            {
+                Vector2 c = ToPx(t.position.x, t.position.z);
+                for (int dy = -4; dy <= 4; dy++)
+                {
+                    float half = (4f - dy) * 0.45f;
+                    for (int dx = -3; dx <= 3; dx++)
+                    {
+                        if (Mathf.Abs(dx) > half) continue;
+                        PutPx(px, (int)c.x + dx + 1, (int)c.y + dy - 1, new Color(0.1f, 0.2f, 0.25f), 0.18f);
+                        PutPx(px, (int)c.x + dx, (int)c.y + dy, Mathf.Abs(dx) > half - 0.8f ? new Color(0.06f, 0.24f, 0.18f) : new Color(0.13f, 0.38f, 0.26f));
+                    }
+                }
+            }
+        Transform village = root.Find("Village");
+        if (village != null)
+            foreach (Transform t in village)
+            {
+                if (!t.name.StartsWith("Cottage") && t.name != "Well") continue;
+                Vector2 c = ToPx(t.position.x, t.position.z);
+                bool house = t.name.StartsWith("Cottage");
+                int r = house ? 6 : 3;
+                for (int dy = -r; dy <= r; dy++)
+                    for (int dx = -r; dx <= r; dx++)
+                    {
+                        bool edge = Mathf.Abs(dx) == r || Mathf.Abs(dy) == r;
+                        PutPx(px, (int)c.x + dx, (int)c.y + dy, house ? (edge ? new Color(0.36f, 0.2f, 0.12f) : new Color(0.7f, 0.42f, 0.25f)) : (edge ? new Color(0.3f, 0.3f, 0.35f) : new Color(0.55f, 0.58f, 0.65f)));
+                    }
+            }
+        for (float d = 0f; d < pierLen; d += 0.3f) // 부두
+        {
+            Vector2 c = ToPx(landing.x + d, landing.y);
+            for (int dy = -2; dy <= 2; dy++) PutPx(px, (int)c.x, (int)c.y + dy, new Color(0.45f, 0.3f, 0.18f));
+        }
+
+        var tex = new Texture2D(MapSize, MapSize, TextureFormat.RGB24, false);
+        tex.SetPixels(px);
+        tex.Apply();
+        File.WriteAllBytes(MapImagePath, tex.EncodeToPNG());
+        Object.DestroyImmediate(tex);
+        AssetDatabase.ImportAsset(MapImagePath);
+        TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(MapImagePath);
+        importer.mipmapEnabled = false;
+        importer.wrapMode = TextureWrapMode.Clamp;
+        importer.filterMode = FilterMode.Bilinear;
+        importer.textureCompression = TextureImporterCompression.Uncompressed;
+        importer.maxTextureSize = 1024;
+        importer.SaveAndReimport();
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(MapImagePath);
+    }
+
+    /// <summary>
+    /// 지형 파일을 디스크에서 새로 읽어 높이가 정말 저장됐는지 확인한다. (메모리에만 남아 있고 파일에는 평평하게 저장되는 문제가 있었다)
+    /// </summary>
+    private static string VerifyTerrainOnDisk()
+    {
+        Object[] objs = UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(TerrainFolder + "/SnowIslandTerrain.asset");
+        foreach (Object o in objs)
+        {
+            TerrainData d = o as TerrainData;
+            if (d == null) continue;
+            float[,] h = d.GetHeights(0, 0, d.heightmapResolution, d.heightmapResolution);
+            float max = 0f;
+            for (int i = 0; i < d.heightmapResolution; i++) for (int j = 0; j < d.heightmapResolution; j++) if (h[i, j] > max) max = h[i, j];
+            return max > 0f ? "지형 높이 저장 확인 OK(최고 " + (max * TerrainHeight + TerrainBaseY).ToString("F1") + "m)" : "경고: 지형 높이가 파일에 저장되지 않았어요!";
+        }
+        return "경고: 지형 파일을 읽지 못했어요.";
     }
 }
