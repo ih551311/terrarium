@@ -126,6 +126,27 @@ public class BottleContents : MonoBehaviour
         SaveState();
     }
 
+    /// <summary>
+    /// 병을 비운다: 안의 재료와 바닥재는 모두 사라지고, 병은 만들기 전 상태로 돌아간다(같은 종류를 다시 만들 수 있다).
+    /// 선반에서도 내려진다. (기획서 6.3: 선반이 다 찼을 때 병을 비워 빈 병으로 되돌린다. 안의 재료는 사라진다.)
+    /// </summary>
+    public void ResetToEmpty()
+    {
+        BottleStore.Undisplay(bottleId); // 선반 칸 번호를 먼저 지운다 (아래 Set이 이어 받지 않게)
+        HideGhost();
+        foreach (PlacedMaterial placed in items)
+            if (placed != null) Destroy(placed.gameObject);
+        items.Clear();
+
+        Ground = null;
+        ApplyGround();
+        IsCompleted = false;
+        IsCreated = false;
+        if (lid != null) lid.SetActive(false);
+        ApplySoilLevel(1);
+        BottleStore.Set(bottleId, new BottleRecord());
+    }
+
     /// <summary>흙의 양에 맞는 흙 모양과 표면 높이로 바꾼다.</summary>
     private void ApplySoilLevel(int level)
     {

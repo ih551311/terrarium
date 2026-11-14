@@ -129,6 +129,15 @@ public static class GameState
     /// <summary>값이 바뀔 때마다 호출된다. (화면 갱신용)</summary>
     public static event Action Changed;
 
+    /// <summary>코인을 낸다. 모자라면 false (코인은 그대로).</summary>
+    public static bool TrySpend(int amount)
+    {
+        if (amount < 0 || Coins < amount) return false;
+        Coins -= amount;
+        Changed?.Invoke();
+        return true;
+    }
+
     /// <summary>재료 1개를 우체통에 넣는다. (가방에서 빼는 일은 부르는 쪽이 한다)</summary>
     public static void Send(MaterialData material)
     {

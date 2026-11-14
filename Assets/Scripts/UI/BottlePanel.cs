@@ -33,6 +33,11 @@ public class BottlePanel : MonoBehaviour
     [Tooltip("완성한 병을 보고 있을 때 나오는, 선반에 전시하거나 내리는 버튼")]
     [SerializeField] private Button displayButton;
     [SerializeField] private TMPro.TMP_Text displayLabel;
+    [Tooltip("완성한 병을 비우는 버튼. 실수로 안 누르게 두 번 눌러야 한다.")]
+    [SerializeField] private Button emptyButton;
+    [SerializeField] private TMPro.TMP_Text emptyLabel;
+
+    private float emptyConfirmUntil;
 
     [Header("꾸미는 중 / 완성 후 모드")]
     [Tooltip("재료 칸, 바닥재, 완성 버튼 등 꾸밀 때만 보이는 것을 담은 오브젝트")]
@@ -53,6 +58,24 @@ public class BottlePanel : MonoBehaviour
         chooser.Chosen += OnBottleChosen;
         newBottleButton.onClick.AddListener(ShowChooser);
         displayButton.onClick.AddListener(ToggleDisplay);
+        emptyButton.onClick.AddListener(EmptyBottle);
+    }
+
+    /// <summary>보고 있는 완성한 병을 비운다. 안의 재료가 모두 사라지니, 3초 안에 한 번 더 눌러야 한다.</summary>
+    private void EmptyBottle()
+    {
+        if (contents == null || !contents.IsCompleted) return;
+        if (Time.unscaledTime > emptyConfirmUntil)
+        {
+            emptyConfirmUntil = Time.unscaledTime + 3f;
+            emptyLabel.text = "한 번 더 누르면 비워요\n(재료가 사라져요)";
+            return;
+        }
+
+        emptyConfirmUntil = 0f;
+        contents.ResetToEmpty();
+        ShowChooser(); // 비운 병은 다시 만들 수 있다
+        decorator.ShowMessage("병을 비웠어요. 다시 만들 수 있어요");
     }
 
     /// <summary>보고 있는 완성한 병을 선반에 전시하거나, 이미 전시 중이면 내린다.</summary>
@@ -130,6 +153,7 @@ public class BottlePanel : MonoBehaviour
         completedLabel.SetActive(false);
         newBottleButton.gameObject.SetActive(false);
         displayButton.gameObject.SetActive(false);
+        emptyButton.gameObject.SetActive(false);
     }
 
     /// <summary>병 카드를 눌렀다. 아직 안 만든 병이면 지금 고른 흙의 양으로 만들고(이때 정해진다), 그 병을 연다.</summary>
@@ -137,7 +161,16 @@ public class BottlePanel : MonoBehaviour
     {
         if (station == null) return;
         BottleContents bottle = station.Get(index);
-        if (!bottle.IsCreated) bottle.Create(chooser.SelectedSoil);
+        if (!bottle.IsCreated)
+        {
+            // 병 가격이 켜져 있으면 코인을 낸다
+            if (chooser.RequirePurchase && !GameState.TrySpend(chooser.PriceOf(index)))
+            {
+                decorator.ShowMessage("코인이 모자라요 (" + chooser.PriceOf(index) + "코인 필요)");
+                return;
+            }
+            bottle.Create(chooser.SelectedSoil);
+        }
         ShowBottle(index);
     }
 
@@ -184,6 +217,9 @@ public class BottlePanel : MonoBehaviour
         completedLabel.SetActive(done);
         newBottleButton.gameObject.SetActive(done);
         displayButton.gameObject.SetActive(done);
+        emptyButton.gameObject.SetActive(done);
+        emptyConfirmUntil = 0f;
+        if (emptyLabel != null) emptyLabel.text = "병 비우기";
         if (done && displayLabel != null)
             displayLabel.text = BottleStore.IsDisplayed(contents.BottleId) ? "선반에서 내리기" : "선반에 전시하기";
     }

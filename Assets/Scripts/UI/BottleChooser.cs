@@ -22,6 +22,15 @@ public class BottleChooser : MonoBehaviour
     [Tooltip("만들 수 있는 병이 하나도 없을 때 보이는 안내 글자")]
     [SerializeField] private GameObject noneLeftNotice;
 
+    [Header("병 가격")]
+    [Tooltip("켜면 병을 만들 때 코인을 낸다. 지금은 개발 중이라 꺼 둔다(무료). 나중에 병을 사게 할 때 켠다.")]
+    [SerializeField] private bool requirePurchase;
+    [Tooltip("병 카드 순서(둥근, 긴, 넓은, 누운)대로의 가격(코인). 임시 값.")]
+    [SerializeField] private int[] prices = { 20, 20, 30, 40 };
+
+    public bool RequirePurchase => requirePurchase;
+    public int PriceOf(int index) => prices != null && index < prices.Length ? prices[index] : 0;
+
     [SerializeField] private Color normalColor = new Color(0.82f, 0.88f, 0.82f, 1f);
     [SerializeField] private Color selectedColor = new Color(0.98f, 0.82f, 0.45f, 1f);
     [SerializeField] private Color disabledColor = new Color(0.88f, 0.9f, 0.87f, 1f);
@@ -72,7 +81,7 @@ public class BottleChooser : MonoBehaviour
 
             BottleContents bottle = station.Get(i);
             string status;
-            if (!bottle.IsCreated) { status = "\n만들기"; anyCreatable = true; }
+            if (!bottle.IsCreated) { status = "\n만들기" + (requirePurchase ? " (" + PriceOf(i) + "코인)" : string.Empty); anyCreatable = true; }
             else if (bottle.IsCompleted) status = "\n(완성) 흙 " + SoilNames[bottle.SoilLevelIndex] + (BottleStore.IsDisplayed(bottle.BottleId) ? "\n선반에 전시 중" : string.Empty);
             else status = "\n(꾸미는 중)";
             labels[i].text = bottle.DisplayName + status;
