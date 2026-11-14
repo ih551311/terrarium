@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: cat
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: cat
+  displayName: "\uACE0\uC591\uC774"
+  kind: 1
+  icon: {fileID: 21300000, guid: 2e32eaecf26ef1049b534f45baa766fe, type: 3}
+  zone: 4
+  acquire: 3
+  condition: 0
+  isRare: 0
+  plantGroup: 0
+  sellPrice: 5
+  buyPrice: 24
+  placedPrefab: {fileID: 919132149155446097, guid: b1ff69ebdd081304daac1f9ac8b608f0, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.94, g: 0.56, b: 0.4, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

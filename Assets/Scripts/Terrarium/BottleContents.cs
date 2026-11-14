@@ -101,6 +101,40 @@ public class BottleContents : MonoBehaviour
     /// <summary>이 병의 프리팹 (선반에 올릴 복사본을 만들 때 쓴다)</summary>
     public GameObject Prefab => data != null ? data.prefab : null;
 
+    /// <summary>바닥재 표면의 높이 (병 기준)</summary>
+    public float SurfaceLocalY => surfaceLocalY;
+
+    /// <summary>
+    /// 병 안쪽의 넓은 부분(병 기준)을 알려 준다: 가운데, 절반 크기(가로 세로 높이). 병 속 효과(눈 내리기 등)가 이 안을 채운다.
+    /// 목처럼 좁은 부분은 뺀다. 표를 읽지 못하면 false.
+    /// </summary>
+    public bool TryGetInterior(out Vector3 center, out Vector3 halfSize)
+    {
+        center = halfSize = Vector3.zero;
+        if (profileRadii == null || profileRadii.Length < 3) return false;
+
+        float maxR = 0f;
+        foreach (float r in profileRadii) maxR = Mathf.Max(maxR, r);
+        int lo = -1, hi = -1;
+        for (int i = 0; i < profileRadii.Length; i++)
+            if (profileRadii[i] >= maxR * 0.75f) { if (lo < 0) lo = i; hi = i; }
+        if (lo < 0) return false;
+
+        float a0 = profileStart + lo * profileStep, a1 = profileStart + hi * profileStep;
+        float radius = maxR * interiorMargin * 0.8f;
+        if (axisAlongX)
+        {
+            center = new Vector3((a0 + a1) * 0.5f, axisOrigin.y, axisOrigin.z);
+            halfSize = new Vector3((a1 - a0) * 0.5f * 0.9f, radius, radius);
+        }
+        else
+        {
+            center = new Vector3(axisOrigin.x, (a0 + a1) * 0.5f, axisOrigin.z);
+            halfSize = new Vector3(radius, (a1 - a0) * 0.5f, radius);
+        }
+        return true;
+    }
+
     /// <summary>누워 있는 병인가</summary>
     public bool IsSideways => axisAlongX;
     public int ItemCount => items.Count;
@@ -500,6 +534,7 @@ public class BottleContents : MonoBehaviour
 
         SetLayerRecursive(visual, gameObject.layer);
         NightGlow.Attach(visual, material.id); // 밤에 빛나는 재료(초, 별, 반딧불이 등)
+        BottleEffect.Attach(visual, material.id); // 병 속 효과 재료(눈 내리기, 반짝이 가루 등)
 
         Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)

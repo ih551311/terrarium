@@ -407,12 +407,12 @@ public static class UISetup
         }
 
         // 1~4쪽 공통: 메뉴로 돌아가기 버튼과 제목
-        string[] pageTitles = { null, "판매하기  (내일 아침 코인이 와요)", "업그레이드  (내일 아침 도착해요)", "구매하기  (내일 아침 도착해요)", "받기  (도착한 것을 가방과 지갑으로)" };
+        string[] pageTitles = { null, "판매하기  (내일 아침 코인이 와요)", "업그레이드  (내일 아침 도착해요)", "구매하기  (내일 아침 도착)", "받기  (도착한 것을 가방과 지갑으로)" };
         Button[] backButtons = new Button[4];
         for (int p = 1; p <= 4; p++)
         {
             backButtons[p - 1] = MakeSmallButton(mailPages[p].transform, "BackButton", "< 우체통 메뉴", new Vector2(0f, 1f), new Vector2(10f, -5f), new Vector2(380f, 72f), 34);
-            Label(mailPages[p].transform, "PageTitle", pageTitles[p], 46, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(430f, -12f), new Vector2(1000f, 60f), TextAlignmentOptions.TopLeft);
+            Label(mailPages[p].transform, "PageTitle", pageTitles[p], 46, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(430f, -12f), new Vector2(p == 3 ? 560f : 1000f, 60f), TextAlignmentOptions.TopLeft);
         }
 
         // 1쪽 판매하기: 가방 칸마다 하나씩 (8열 x 4행 = 32칸), 누르면 1개 넣기
@@ -462,10 +462,11 @@ public static class UISetup
             if (md != null && md.buyPrice > 0) orderableList.Add(md);
         }
         orderableList.Sort((a, b) => a.buyPrice != b.buyPrice ? a.buyPrice.CompareTo(b.buyPrice) : string.CompareOrdinal(a.id, b.id));
-        Button[] orderButtons = new Button[orderableList.Count];
-        TMP_Text[] orderLabels = new TMP_Text[orderableList.Count];
-        Image[] orderIcons = new Image[orderableList.Count];
-        for (int i = 0; i < orderableList.Count; i++)
+        const int OrderPageSize = 25; // 한 쪽에 25칸 (5열 x 5행). 물건이 더 많으면 이전/다음 버튼으로 쪽을 넘긴다
+        Button[] orderButtons = new Button[OrderPageSize];
+        TMP_Text[] orderLabels = new TMP_Text[OrderPageSize];
+        Image[] orderIcons = new Image[OrderPageSize];
+        for (int i = 0; i < OrderPageSize; i++)
         {
             Button b = MakeButton(orderGrid.transform, "Order" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(284f, 76f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
@@ -476,6 +477,9 @@ public static class UISetup
             orderIcons[i] = MakeSlotIcon(b.transform, new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(56f, 56f));
             orderButtons[i] = b; orderLabels[i] = t;
         }
+        Button orderPrev = MakeSmallButton(mailPages[3].transform, "OrderPrev", "< 이전", new Vector2(1f, 1f), new Vector2(-300f, -5f), new Vector2(190f, 72f), 34);
+        Button orderNext = MakeSmallButton(mailPages[3].transform, "OrderNext", "다음 >", new Vector2(1f, 1f), new Vector2(-100f, -5f), new Vector2(190f, 72f), 34);
+        TextMeshProUGUI orderPageLabel = Label(mailPages[3].transform, "OrderPage", "1/1쪽", 34, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-520f, -22f), new Vector2(200f, 50f), TextAlignmentOptions.Right);
         TextMeshProUGUI orderSummary = Label(mailPages[3].transform, "Summary", string.Empty, 32, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -570f), new Vector2(1400f, 80f), TextAlignmentOptions.TopLeft);
 
         // 4쪽 받기: 큰 버튼 하나와, 도착한 것의 목록
@@ -648,6 +652,7 @@ public static class UISetup
         SetArray(mailPanel, "pages", mailPages);
         SetArray(mailPanel, "hubButtons", hubButtons); SetArray(mailPanel, "hubLabels", hubLabels);
         SetArray(mailPanel, "backButtons", backButtons);
+        SetRef(mailPanel, "orderPrev", orderPrev); SetRef(mailPanel, "orderNext", orderNext); SetRef(mailPanel, "orderPageLabel", orderPageLabel);
         SetRef(mailPanel, "orderSummaryText", orderSummary); SetRef(mailPanel, "collectInfoText", collectInfo);
 
         // ── 병 자세히 보기 패널 (선반의 병에서 E, 또는 Tab 가방의 병 탭에서 병을 누르면 열린다). 가장 위에 그려지게 마지막에 만든다.

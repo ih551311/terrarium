@@ -25,6 +25,8 @@ public class NightGlow : MonoBehaviour
         { "campfire",         new Glow(1.00f, 0.50f, 0.18f, 1.0f) },
         { "fairy_door",       new Glow(1.00f, 0.82f, 0.50f, 0.6f) },
         { "snow_flower",      new Glow(0.70f, 0.90f, 1.00f, 0.4f) },
+        { "lantern",          new Glow(1.00f, 0.78f, 0.38f, 1.0f) },
+        { "lighthouse",       new Glow(1.00f, 0.92f, 0.55f, 0.8f) },
     };
 
     private Material[] materials;

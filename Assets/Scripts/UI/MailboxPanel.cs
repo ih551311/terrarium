@@ -56,12 +56,17 @@ public class MailboxPanel : MonoBehaviour
     [SerializeField] private Button[] backButtons;
     [Tooltip("구매하기 화면 아래의 주문 요약")]
     [SerializeField] private TMP_Text orderSummaryText;
+    [Tooltip("구매하기 화면의 쪽 넘기기 (물건이 한 쪽 칸 수보다 많을 때)")]
+    [SerializeField] private Button orderPrev;
+    [SerializeField] private Button orderNext;
+    [SerializeField] private TMP_Text orderPageLabel;
 
     /// <summary>다른 패널이 Esc 처리를 양보할 때 쓴다.</summary>
     public static bool IsOpen { get; private set; }
 
     private float messageUntil;
     private int page;
+    private int orderPage; // 구매하기 화면의 쪽 (0부터)
 
     private void Awake()
     {
@@ -81,9 +86,11 @@ public class MailboxPanel : MonoBehaviour
         }
         for (int i = 0; i < orderButtons.Length; i++)
         {
-            int index = i;
-            orderButtons[i].onClick.AddListener(() => Order(index));
+            int slot = i;
+            orderButtons[i].onClick.AddListener(() => Order(orderPage * orderButtons.Length + slot)); // 쪽을 감안한 물건 번호
         }
+        if (orderPrev != null) orderPrev.onClick.AddListener(() => { orderPage = Mathf.Max(0, orderPage - 1); Refresh(); });
+        if (orderNext != null) orderNext.onClick.AddListener(() => { orderPage = Mathf.Min(OrderPageCount - 1, orderPage + 1); Refresh(); });
         for (int i = 0; i < upgradeButtons.Length; i++)
         {
             int index = i;
@@ -163,8 +170,11 @@ public class MailboxPanel : MonoBehaviour
         Say(material.displayName + "을(를) 넣었어요. 내일 아침 " + material.sellPrice + "코인이 와요");
     }
 
+    private int OrderPageCount => Mathf.Max(1, (orderables.Length + orderButtons.Length - 1) / orderButtons.Length);
+
     private void Order(int index)
     {
+        if (index < 0 || index >= orderables.Length) return;
         MaterialData material = orderables[index];
         if (GameState.TryOrder(material))
         {
@@ -282,13 +292,22 @@ public class MailboxPanel : MonoBehaviour
             SetIcon(sendIcons, i, has ? bag.Slots[i].material : null);
         }
 
+        orderPage = Mathf.Clamp(orderPage, 0, OrderPageCount - 1);
         for (int i = 0; i < orderButtons.Length; i++)
         {
-            MaterialData m = orderables[i];
+            int index = orderPage * orderButtons.Length + i;
+            bool has = index < orderables.Length;
+            orderButtons[i].gameObject.SetActive(has);
+            if (!has) continue;
+            MaterialData m = orderables[index];
             orderButtons[i].interactable = GameState.Coins >= m.buyPrice;
             orderLabels[i].text = m.displayName + "\n" + m.buyPrice + "코인";
             SetIcon(orderIcons, i, m);
         }
+        bool paged = OrderPageCount > 1;
+        if (orderPrev != null) { orderPrev.gameObject.SetActive(paged); orderPrev.interactable = orderPage > 0; }
+        if (orderNext != null) { orderNext.gameObject.SetActive(paged); orderNext.interactable = orderPage < OrderPageCount - 1; }
+        if (orderPageLabel != null) orderPageLabel.text = paged ? (orderPage + 1) + "/" + OrderPageCount + "쪽" : string.Empty;
 
         for (int i = 0; i < upgradeButtons.Length; i++)
         {
