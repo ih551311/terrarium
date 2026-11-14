@@ -127,7 +127,7 @@ public class GameAudio : MonoBehaviour
         }
         Fade(waves, outdoors ? Mathf.Lerp(0.05f, 0.55f, shore) : 0.02f);
         Fade(wind, outdoors ? 0.10f + 0.12f * rain : 0.02f);
-        Fade(rainLoop, rain * (outdoors ? 0.45f : 0.14f));
+        Fade(rainLoop, 0f); // 빗소리와 폭풍 소리는 날씨 에셋(AudioModule)이 낸다
         Fade(crickets, outdoors ? 0.14f * night * (1f - rain) : 0f);
         Fade(roomTone, outdoors ? 0f : 0.10f);
 

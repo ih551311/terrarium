@@ -205,5 +205,5 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 
 ## 분위기: 편지, 날씨, 소리 (구현됨)
 - **시작 편지**: 처음 시작하고 2.5초 뒤 LetterPanel이 저절로 열려 섬에서 하는 일을 알려 줌(E/Esc/스페이스/닫기로 닫음, 읽음은 GameState.LetterRead로 저장). 집 책상 위 편지(DeskLetter)를 보고 E로 다시 읽음.
-- **날씨**: Weather(날짜로 정해짐, 첫날은 맑음, 비 올 확률 약 1/3). 비 오는 날 WeatherEffects가 플레이어 위에 빗방울 파티클을 내리고 SkyController가 하늘, 해, 안개를 회색빛으로 어둡게 함(집 안에서는 빗방울 없음). 비가 온 날과 그다음 날(Weather.MushroomDay)에만 버섯(MaterialCondition.AfterRain) 픽업이 나타남. 아침에 날씨 알림 메시지. F9 키로 날씨를 맑음/비/날짜대로 바꿔 볼 수 있음(개발용).
+- **날씨(8종)**: 맑음, 흐림, 바람, 이슬비, 비, 폭풍우(천둥번개), 안개, 눈. 날짜로 정해짐(`Weather.KindOf`, 첫날은 맑음, 확률 34/14/8/10/14/5/9/6%). 모습과 소리는 에셋 **URP Dynamic Weather System**(`Assets/DynamicWeatherSystem`, 유료 에셋이라 저장소에 올리지 않음)의 비, 눈, 바람, 번개, 소리 모듈을 `WeatherEffects`가 런타임에 꾸려서 씀. 에셋의 조명, 안개, 하늘 모듈은 쓰지 않고 `GameWeatherModule`이 섞인 값(어두운 정도, 하늘 색과 밝기, 안개, 비, 눈, 바람)을 정적 값으로 내놓으면 `SkyController`가 낮밤 위에 덧씌움. 날씨 상태 파일은 `Assets/Resources/Weather/WS_(종류).asset`(메뉴 유리병 정원 > 날씨 상태 만들기). 집 안에서는 비와 눈 입자를 숨기고 날씨 소리를 먹먹하게(저역 통과) 낮춤. 이슬비, 비, 폭풍우인 날과 그다음 날(`Weather.MushroomDay`)에만 버섯(`AfterRain`) 픽업이 나타남. F9 키로 날씨를 하나씩 바꿔 볼 수 있음(개발용). 날씨가 바뀌면 6초에 걸쳐 부드럽게 변하고 알림 메시지가 뜸.
 - **소리**: 소리 파일 없이 코드로 만든 소리(GameAudio). 낮/밤 배경 음악(시간에 따라 섞임, P 키로 켜기/끄기), 파도(바닷가에 가까울수록 큼), 바람, 낮의 새 소리, 밤의 풀벌레, 빗소리, 집 안 방 소리, 발소리, 효과음(줍기, 놓기, 빼기, 완성 종소리, 코인, 종이, 버튼). 진짜 소리 파일을 구하면 GameAudio의 clip만 바꿔 끼우면 됨.
