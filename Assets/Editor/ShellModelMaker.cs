@@ -21,14 +21,28 @@ public static class ShellModelMaker
     private const int White = 2, Brown = 6, Tan = 7, Pink = 17, Purple = 18, Lavender = 22, Peach = 23, Orange = 24, Coral = 25, Sand = 27, Cream = 30, Yellow = 31;
 
     /// <summary>삼각형 모음. 면마다 따로 점을 두어 각진 모양이 되게 한다.</summary>
-    private class Builder
+    public class Builder
     {
         public readonly List<Vector3> pos = new List<Vector3>();
         public readonly List<int> colors = new List<int>(); // 삼각형마다 하나
 
+        /// <summary>이후에 더하는 점들에 곱해지는 변환. (꽃송이만 기울이는 등, 한 덩어리를 통째로 옮길 때 쓴다. 끝나면 identity로 되돌린다)</summary>
+        public Matrix4x4 xf = Matrix4x4.identity;
+
+        /// <summary>앞뒤 양면이 모두 보이는 얇은 면(꽃잎, 잎, 풀잎)을 더한다.</summary>
+        public void DoubleTri(Vector3 a, Vector3 b, Vector3 c, int color)
+        {
+            a = xf.MultiplyPoint3x4(a); b = xf.MultiplyPoint3x4(b); c = xf.MultiplyPoint3x4(c);
+            if (Vector3.Cross(b - a, c - a).sqrMagnitude < 1e-14f) return;
+            pos.Add(a); pos.Add(b); pos.Add(c); colors.Add(color);
+            pos.Add(a); pos.Add(c); pos.Add(b); colors.Add(color);
+        }
+
         /// <summary>삼각형을 더한다. inside(모델 안쪽 한 점)에서 멀어지는 쪽이 앞면이 되게 감는 방향을 맞춘다.</summary>
         public void Tri(Vector3 a, Vector3 b, Vector3 c, int color, Vector3 inside)
         {
+            a = xf.MultiplyPoint3x4(a); b = xf.MultiplyPoint3x4(b); c = xf.MultiplyPoint3x4(c);
+            inside = xf.MultiplyPoint3x4(inside);
             Vector3 n = Vector3.Cross(b - a, c - a);
             if (n.sqrMagnitude < 1e-14f) return; // 너무 작은 면(점으로 모인 곳)은 버린다
             Vector3 center = (a + b + c) / 3f;

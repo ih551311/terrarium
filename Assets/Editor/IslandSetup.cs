@@ -679,7 +679,7 @@ public static class IslandSetup
             if (Rand() > prob) return;
             string[] pool = Rand() < 0.45f ? leafy : tufts;
             GameObject go = Spawn(parent.Find("Plants"), "Plants", pool[rng.Next(pool.Length)], x, z, Range(0.9f, 1.6f));
-            if (go != null) count++;
+            if (go != null) { count++; MakeWildPlant(go, zone); }
         });
 
         Grid(16f, (x, z, h, zone) =>
@@ -690,6 +690,54 @@ public static class IslandSetup
             if (go != null) count++;
         });
         return count;
+    }
+
+    /// <summary>섬의 풀 하나를 뜯을 수 있게 한다. (바라볼 수 있는 상자 Collider와 WildPlant를 붙인다)</summary>
+    private static void MakeWildPlant(GameObject go, Zone zone)
+    {
+        if (go.GetComponent<WildPlant>() != null) return;
+        Renderer[] renderers = go.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return;
+        Bounds b = renderers[0].bounds;
+        foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
+
+        BoxCollider box = go.GetComponent<BoxCollider>();
+        if (box == null) box = go.AddComponent<BoxCollider>();
+        box.isTrigger = true; // 걸어 다니는 데 걸리지 않게. 바라보는 광선은 Trigger도 맞는다.
+        Vector3 s = go.transform.lossyScale;
+        box.center = go.transform.InverseTransformPoint(b.center);
+        box.size = new Vector3(Mathf.Max(b.size.x, 0.5f) / s.x, Mathf.Max(b.size.y, 0.5f) / s.y, Mathf.Max(b.size.z, 0.5f) / s.z);
+
+        WildPlant plant = go.AddComponent<WildPlant>();
+        SerializedObject so = new SerializedObject(plant);
+        so.FindProperty("zone").enumValueIndex = (int)(zone == Zone.Forest ? MaterialZone.Forest : zone == Zone.Hill ? MaterialZone.FlowerHill : MaterialZone.Anywhere);
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    /// <summary>
+    /// 섬은 그대로 두고, 이미 놓인 풀(IslandContent/Plants)을 모두 뜯을 수 있게 한다.
+    /// 이미 된 풀은 건너뛴다. (메뉴: 유리병 정원 > 섬의 풀 뜯을 수 있게)
+    /// </summary>
+    [MenuItem("유리병 정원/섬의 풀 뜯을 수 있게")]
+    public static string MakePlantsHarvestable()
+    {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != IslandPath)
+            EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
+        GameObject root = GameObject.Find(RootName);
+        Transform group = root != null ? root.transform.Find("Plants") : null;
+        if (group == null) return "IslandContent/Plants를 찾지 못했어요. 먼저 섬 만들기를 하세요.";
+
+        int made = 0;
+        foreach (Transform child in group)
+        {
+            if (child.GetComponent<WildPlant>() != null || child.name.StartsWith("Mushroom")) continue; // 버섯은 풀이 아니다
+            Vector3 p = child.position;
+            MakeWildPlant(child.gameObject, ZoneAt(p.x, p.z, HeightAt(p.x, p.z)));
+            made++;
+        }
+        EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        EditorSceneManager.SaveOpenScenes();
+        return "풀 " + made + "개를 뜯을 수 있게 했어요";
     }
 
     private static void AddClouds(Transform parent)
@@ -724,8 +772,8 @@ public static class IslandSetup
             MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(AssetDatabase.GUIDToAssetPath(guid));
             // 상점 품목과 희귀 재료는 섬에 놓지 않는다 (희귀 재료는 도끼와 곡괭이로 칠 때 나온다)
             if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Anywhere || data.isRare) continue;
-            // 도끼와 곡괭이로 얻는 재료는 바닥에 놓지 않고, 나무와 돌(Harvestable)에서 나온다
-            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe) continue;
+            // 도끼와 곡괭이로 얻는 재료는 바닥에 놓지 않고, 나무와 돌(Harvestable)에서 나온다. 풀을 뜯어 얻는 재료(Wild)는 풀(WildPlant)에서 나온다.
+            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe || data.acquire == AcquireMethod.Wild) continue;
 
             count += PlaceMaterialPickups(group.transform, data, 9);
         }
@@ -772,7 +820,7 @@ public static class IslandSetup
         {
             MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(AssetDatabase.GUIDToAssetPath(guid));
             if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Anywhere || data.isRare) continue;
-            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe) continue;
+            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe || data.acquire == AcquireMethod.Wild) continue;
             if (group.Find("Pickup_" + data.id + "_0") != null) continue; // 이미 있다
 
             int n = PlaceMaterialPickups(group, data, 6);

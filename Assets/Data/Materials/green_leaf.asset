@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: green_leaf
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: green_leaf
+  displayName: "\uB098\uBB47\uC78E"
+  kind: 1
+  icon: {fileID: 21300000, guid: d3f021dc98df0974997dcf7add6d994e, type: 3}
+  zone: 1
+  acquire: 4
+  condition: 0
+  isRare: 0
+  sellPrice: 1
+  buyPrice: 0
+  placedPrefab: {fileID: 919132149155446097, guid: f8214199d7ec4854b9b4722f0895a6fb, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.4, g: 0.7, b: 0.4, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4
