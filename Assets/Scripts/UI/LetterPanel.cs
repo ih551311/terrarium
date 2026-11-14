@@ -34,6 +34,9 @@ public class LetterPanel : MonoBehaviour
 
     private void Awake()
     {
+        // 씬마다 들어 있는 GameRoot 복사본의 편지 화면은 곧 지워지므로, 이미 있으면 등록하지 않는다
+        // (등록했다가 지워지면 책상 위 편지가 열리지 않는다)
+        if (Instance != null && Instance != this) return;
         Instance = this;
         root.SetActive(false);
         bodyLabel.text = Letter;
@@ -42,6 +45,7 @@ public class LetterPanel : MonoBehaviour
 
     private void Start()
     {
+        if (Instance != this) return;
         if (!GameState.LetterRead) StartCoroutine(AutoOpen());
     }
 

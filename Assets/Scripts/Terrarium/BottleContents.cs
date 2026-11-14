@@ -154,7 +154,7 @@ public class BottleContents : MonoBehaviour
         if (soilLevels == null || soilLevels.Length == 0) return;
 
         SoilLevel s = soilLevels[Mathf.Min(SoilLevelIndex, soilLevels.Length - 1)];
-        if (soilFilter != null && s.mesh != null) soilFilter.sharedMesh = s.mesh;
+        if (soilFilter != null && s.mesh != null) soilFilter.sharedMesh = SoilLook.Styled(s.mesh); // 흙 그림을 입힐 수 있게 UV를 단 복사본
         surfaceLocalY = s.surfaceY;
         zoomLookPoint = s.zoomLookPoint;
     }
@@ -421,7 +421,7 @@ public class BottleContents : MonoBehaviour
     private void ApplyGround()
     {
         if (groundRenderer == null) return;
-        groundRenderer.material.color = Ground != null ? Ground.placeholderColor : soilColor;
+        SoilLook.Apply(groundRenderer, Ground); // 흙 또는 모래의 그림과 윤기 없는 재질을 입힌다
     }
 
     private GameObject BuildGhost(MaterialData material)
