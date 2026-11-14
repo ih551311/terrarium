@@ -133,6 +133,14 @@ public static class GameState
     /// <summary>값이 바뀔 때마다 호출된다. (화면 갱신용)</summary>
     public static event Action Changed;
 
+    /// <summary>시작 편지를 읽었는가 (처음 시작하면 편지가 자동으로 열리고, 닫으면 읽은 것으로 적는다)</summary>
+    public static bool LetterRead { get; private set; }
+
+    public static void MarkLetterRead()
+    {
+        LetterRead = true;
+    }
+
     /// <summary>처음 시작할 때 받는 공짜 병의 수. 병을 만들 때 먼저 이것을 쓰고, 다 쓰면 코인을 낸다.</summary>
     public static int FreeBottles { get; private set; } = 1;
 
@@ -244,6 +252,7 @@ public static class GameState
         data.axeLevel = AxeLevel;
         data.pickaxeLevel = PickaxeLevel;
         data.hoeLevel = HoeLevel;
+        data.letterRead = LetterRead;
         data.freeBottles = FreeBottles;
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
@@ -261,6 +270,7 @@ public static class GameState
         AxeLevel = data.axeLevel;
         PickaxeLevel = data.pickaxeLevel;
         HoeLevel = data.hoeLevel;
+        LetterRead = data.letterRead;
         FreeBottles = Mathf.Max(0, data.freeBottles);
 
         outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
@@ -286,6 +296,7 @@ public static class GameState
         AxeLevel = 0;
         PickaxeLevel = 0;
         HoeLevel = 0;
+        LetterRead = false;
         FreeBottles = 1;
         DayStarted = null;
         Day = 1;

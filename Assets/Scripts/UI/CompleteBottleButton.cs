@@ -65,6 +65,7 @@ public class CompleteBottleButton : MonoBehaviour
         }
 
         contents.Complete();
+        GameAudio.Play(GameAudio.Sfx.Chime);
         ResetLabel();
         panel.OnBottleCompleted(); // 완성한 병은 병 인벤토리로 들어가고, 병 만들기 화면으로 돌아간다
     }

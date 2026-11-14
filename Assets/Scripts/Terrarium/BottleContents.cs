@@ -214,6 +214,7 @@ public class BottleContents : MonoBehaviour
         if (IsFull || IsCompleted || !IsCreated) return null;
         PlacedMaterial placed = Spawn(material, localPosition, 0f, 1f);
         SaveState();
+        GameAudio.Play(GameAudio.Sfx.Place);
         return placed;
     }
 
@@ -224,6 +225,7 @@ public class BottleContents : MonoBehaviour
         items.Remove(placed);
         Destroy(placed.gameObject);
         SaveState();
+        GameAudio.Play(GameAudio.Sfx.Remove);
     }
 
     /// <summary>놓은 재료를 돌린다. 돌린 모습이 병 밖으로 나가면 안쪽으로 밀어 보고, 그래도 안 되면 돌리지 않는다(false).</summary>

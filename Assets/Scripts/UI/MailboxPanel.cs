@@ -125,6 +125,7 @@ public class MailboxPanel : MonoBehaviour
         if (!bag.TryRemove(material)) return;
 
         GameState.Send(material);
+        GameAudio.Play(GameAudio.Sfx.Paper, 0.6f);
         Say(material.displayName + "을(를) 넣었어요. 내일 아침 " + material.sellPrice + "코인이 와요");
     }
 
@@ -132,9 +133,14 @@ public class MailboxPanel : MonoBehaviour
     {
         MaterialData material = orderables[index];
         if (GameState.TryOrder(material))
+        {
+            GameAudio.Play(GameAudio.Sfx.Coin);
             Say(material.displayName + "을(를) 주문했어요. 내일 아침 도착해요");
+        }
         else
+        {
             Say("코인이 모자라요 (" + material.buyPrice + "코인 필요)");
+        }
     }
 
     private void Upgrade(int toolIndex)
@@ -144,7 +150,7 @@ public class MailboxPanel : MonoBehaviour
         int cost = GameState.NextUpgradeCost(tool);
         if (cost < 0) { Say(name + "는 이미 최대 단계예요"); return; }
         if (GameState.UpgradePending(tool)) { Say(name + " 강화를 이미 주문했어요"); return; }
-        if (GameState.TryOrderUpgrade(tool)) Say(name + " 강화를 주문했어요. 내일 아침 도착해요");
+        if (GameState.TryOrderUpgrade(tool)) { GameAudio.Play(GameAudio.Sfx.Coin); Say(name + " 강화를 주문했어요. 내일 아침 도착해요"); }
         else Say("코인이 모자라요 (" + cost + "코인 필요)");
     }
 
@@ -174,6 +180,7 @@ public class MailboxPanel : MonoBehaviour
     {
         if (!GameState.HasMail) return;
         GameState.Collect(bag, out int coins, out int items, out int left);
+        if (coins > 0) GameAudio.Play(GameAudio.Sfx.Coin);
 
         string text = string.Empty;
         if (coins > 0) text += "코인 " + coins + "개 ";

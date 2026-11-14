@@ -644,6 +644,23 @@ public static class UISetup
         SetArray(detailPanel, "bottlePrefabs", bottlePrefabList.ToArray());
         SetRef(detailPanel, "shelfButton", detailShelf); SetRef(detailPanel, "shelfLabel", detailShelf.GetComponentInChildren<TextMeshProUGUI>());
 
+        // ── 편지 (처음 시작하면 저절로 열린다. 집 책상 위 편지에서 E로 다시 본다). 가장 위에 그려지게 마지막에 만든다.
+        GameObject letterRoot = Rect(ui.transform, "LetterPanel");
+        Stretch(letterRoot);
+        Image letterDim = letterRoot.AddComponent<Image>(); letterDim.color = new Color(0f, 0f, 0f, 0.6f);
+        GameObject paper = Rect(letterRoot.transform, "Paper");
+        Center(paper, 1100f, 940f);
+        Image paperBg = paper.AddComponent<Image>(); paperBg.color = new Color(0.98f, 0.95f, 0.85f, 1f);
+        Label(paper.transform, "Title", "편지", 60, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(600f, 80f), TextAlignmentOptions.Center);
+        TextMeshProUGUI letterBody = Label(paper.transform, "Body", string.Empty, 27, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -115f), new Vector2(980f, 700f), TextAlignmentOptions.TopLeft);
+        letterBody.lineSpacing = 4f;
+        letterBody.color = new Color(0.25f, 0.2f, 0.15f, 1f);
+        Button letterClose = MakeSmallButton(paper.transform, "CloseButton", "닫기 (E)", new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(300f, 80f), 36);
+        letterClose.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
+        letterRoot.SetActive(false);
+        LetterPanel letterPanel = ui.AddComponent<LetterPanel>();
+        SetRef(letterPanel, "root", letterRoot); SetRef(letterPanel, "bodyLabel", letterBody); SetRef(letterPanel, "closeButton", letterClose);
+
         // GameRoot가 새 병 패널과 우체통 패널을 가리키도록 다시 연결한다
         SetRef(root.GetComponent<GameRoot>(), "bottleDetailPanel", detailPanel);
         SetRef(root.GetComponent<GameRoot>(), "bottlePanel", bp);

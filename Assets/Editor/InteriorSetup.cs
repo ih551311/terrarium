@@ -193,7 +193,7 @@ public static class InteriorSetup
         Cube(root, "DeskTop", new Vector3(-2.3f, 0.76f, -1.7f), new Vector3(0.7f, 0.06f, 1.3f), wood);
         foreach (Vector2 leg in new[] { new Vector2(-2.58f, -2.28f), new Vector2(-2.02f, -2.28f), new Vector2(-2.58f, -1.12f), new Vector2(-2.02f, -1.12f) })
             Cube(root, "DeskLeg", new Vector3(leg.x, 0.37f, leg.y), new Vector3(0.06f, 0.74f, 0.06f), darkWood);
-        Cube(root, "Letter", new Vector3(-2.3f, 0.795f, -1.7f), new Vector3(0.3f, 0.006f, 0.21f), paper, false);
+        MakeLetterReadable(Cube(root, "Letter", new Vector3(-2.3f, 0.795f, -1.7f), new Vector3(0.3f, 0.006f, 0.21f), paper, false));
 
         // 책상 위 촛불 (모델 + 불빛)
         GameObject candle = Deco(root, "deco_candle", new Vector3(-2.3f, 0.79f, -2.1f), 6f);
@@ -212,6 +212,36 @@ public static class InteriorSetup
         // 천장에 매단 랜턴 (작업대 위)
         GameObject lantern = Kitpiece(root, "Lantern", new Vector3(0f, 2.3f, 1.2f), 0f, false);
         PointLight(lantern.transform, "LanternLight", new Vector3(0f, 0.3f, 0f), new Color(1f, 0.78f, 0.45f), 1.0f, 5f);
+    }
+
+    /// <summary>책상 위 편지를 바라보고 E로 읽을 수 있게 한다. (얇은 편지라서 바라보기 쉽게 Collider를 크게 둔다)</summary>
+    private static void MakeLetterReadable(GameObject letter)
+    {
+        if (letter == null || letter.GetComponent<DeskLetter>() != null) return;
+        BoxCollider box = letter.GetComponent<BoxCollider>();
+        if (box == null) box = letter.AddComponent<BoxCollider>();
+        box.isTrigger = true;
+        box.size = new Vector3(1.4f, 45f, 1.5f); // 편지 칸이 얇아서(0.006m) 세로를 크게 키웠다 (약 0.27m)
+        box.center = new Vector3(0f, 22f, 0f);
+        letter.AddComponent<DeskLetter>();
+    }
+
+    /// <summary>집 안의 다른 것은 그대로 두고 책상 위 편지만 읽을 수 있게 한다. (메뉴: 유리병 정원 > 책상 편지 읽게 하기)</summary>
+    [MenuItem("유리병 정원/책상 편지 읽게 하기")]
+    public static string AddLetterInteraction()
+    {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != InteriorPath)
+        {
+            EditorSceneManager.SaveOpenScenes();
+            EditorSceneManager.OpenScene(InteriorPath, OpenSceneMode.Single);
+        }
+        GameObject furniture = GameObject.Find("Furniture");
+        Transform letter = furniture != null ? furniture.transform.Find("Letter") : null;
+        if (letter == null) return "책상 위 편지(Furniture/Letter)를 찾지 못했어요.";
+        MakeLetterReadable(letter.gameObject);
+        EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        EditorSceneManager.SaveOpenScenes();
+        return "책상 위 편지를 읽을 수 있게 했어요";
     }
 
     // 선반: 서쪽 벽을 따라 긴 선반 하나. 4단 x 6칸 = 24칸이고 아래 단부터 6칸씩 열린다. (완성한 병 6개마다 한 단씩. BottleStore.ShelfCapacity)

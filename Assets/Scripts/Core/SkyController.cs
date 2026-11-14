@@ -39,6 +39,14 @@ public class SkyController : MonoBehaviour
     [SerializeField] private Color sunsetFog = new Color(0.92f, 0.7f, 0.55f);
     [SerializeField] private Color nightFog = new Color(0.06f, 0.08f, 0.17f);
 
+    [Header("비 오는 날")]
+    [Tooltip("비가 올 때 해의 밝기가 줄어드는 정도 (1이면 완전히 꺼진다)")]
+    [SerializeField] private float rainSunDim = 0.6f;
+    [SerializeField] private Color rainFog = new Color(0.52f, 0.57f, 0.62f);
+    [SerializeField] private float fogStart = 260f, fogEnd = 1100f;
+    [Tooltip("비가 올 때 안개가 끝나는 거리 (가까워져서 먼 곳이 뿌옇다)")]
+    [SerializeField] private float rainFogEnd = 380f;
+
     private Material skyInstance;
 
     private void Start()
@@ -72,16 +80,18 @@ public class SkyController : MonoBehaviour
         else if (t < 0.88f) { float u = (t - 0.72f) / 0.16f; height = Mathf.Lerp(0.35f, 0f, u); warm = 1f - u; }
         else { height = 0f; warm = 0f; }
         float night = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.72f, 0.86f, t)); // 0 낮 하늘 ~ 1 밤 하늘 (Pickup.NightStart 0.78은 이 한가운데쯤)
+        float rain = WeatherEffects.Amount;                                         // 0 맑음 ~ 1 비
 
         // 하늘: 낮 하늘은 아침과 노을에 따뜻한 색과 낮은 밝기, 밤 하늘은 섞이면서 밝아진다
         if (skyInstance != null)
         {
             Color neutral = new Color(0.5f, 0.5f, 0.5f, 0.5f);
             Color warmTint = new Color(0.72f, 0.45f, 0.3f, 0.5f);
-            skyInstance.SetColor("_TintA", Color.Lerp(neutral, warmTint, warm));
-            skyInstance.SetFloat("_ExposureA", Mathf.Lerp(0.5f, 1f, height));
-            skyInstance.SetColor("_TintB", neutral);
-            skyInstance.SetFloat("_ExposureB", Mathf.Lerp(0.8f, 1f, night));
+            Color grayTint = new Color(0.42f, 0.44f, 0.47f, 0.5f);
+            skyInstance.SetColor("_TintA", Color.Lerp(Color.Lerp(neutral, warmTint, warm), grayTint, rain)); // 비 오는 날은 회색빛
+            skyInstance.SetFloat("_ExposureA", Mathf.Lerp(0.5f, 1f, height) * (1f - 0.35f * rain));
+            skyInstance.SetColor("_TintB", Color.Lerp(neutral, grayTint, rain * 0.8f));
+            skyInstance.SetFloat("_ExposureB", Mathf.Lerp(0.8f, 1f, night) * (1f - 0.4f * rain));
             skyInstance.SetFloat("_Blend", night);
         }
 
@@ -89,7 +99,7 @@ public class SkyController : MonoBehaviour
         if (sun != null)
         {
             float moon = night;
-            float sunPower = sunIntensity * Mathf.Pow(height, 0.8f);
+            float sunPower = sunIntensity * Mathf.Pow(height, 0.8f) * (1f - rainSunDim * rain);
             float moonPower = moonIntensity * moon;
             Color daylight = Color.Lerp(sunColor, sunsetColor, warm);
             sun.color = Color.Lerp(daylight, moonColor, moon);
@@ -104,6 +114,9 @@ public class SkyController : MonoBehaviour
         RenderSettings.ambientSkyColor = Color.Lerp(nightSky, daySky, day);
         RenderSettings.ambientEquatorColor = Color.Lerp(nightEquator, dayEquator, day);
         RenderSettings.ambientGroundColor = Color.Lerp(nightGround, dayGround, day);
-        RenderSettings.fogColor = Color.Lerp(nightFog, Color.Lerp(dayFog, sunsetFog, warm), day);
+        Color clearFog = Color.Lerp(nightFog, Color.Lerp(dayFog, sunsetFog, warm), day);
+        RenderSettings.fogColor = Color.Lerp(clearFog, rainFog * Mathf.Lerp(0.25f, 1f, day), rain);
+        RenderSettings.fogStartDistance = Mathf.Lerp(fogStart, 40f, rain);
+        RenderSettings.fogEndDistance = Mathf.Lerp(fogEnd, rainFogEnd, rain);
     }
 }

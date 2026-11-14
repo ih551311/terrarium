@@ -4,6 +4,7 @@ using UnityEngine;
 /// 섬에 놓인, 채취하거나 주울 수 있는 재료. 재료 오브젝트(또는 그 부모)에 붙이고 Collider가 있어야 한다.
 /// - 식물과 이끼는 "채취"하고, 조개나 모래 같은 것은 "줍는다". 얻으면 "고사리 +1"처럼 알림이 뜬다.
 /// - 달맞이꽃처럼 밤에만 나는 재료는 밤이 되어야 나타나고, 아침이 되면 사라진다. (하늘 시간과 연결)
+/// - 버섯처럼 비 온 뒤에만 나는 재료는 비가 온 날과 그다음 날에만 나타난다. (Weather)
 /// - 채취한 자리는 비어 있다가 다음 날 아침에 다시 채워진다. 집에 들어갔다 나와도 비어 있는 채로 남는다.
 /// 모델은 나중에 이 오브젝트의 자식을 바꿔 끼우면 된다.
 /// </summary>
@@ -23,8 +24,21 @@ public class Pickup : MonoBehaviour, IInteractable
     public MaterialData Material => material;
 
     /// <summary>지금 채취할 수 있는가. 밤에만 나는 재료는 밤에만 true다.</summary>
-    public bool Available => material != null && !collected &&
-        (material.condition != MaterialCondition.NightOnly || GameState.TimeOfDay >= NightStart);
+    public bool Available => material != null && !collected && ConditionMet;
+
+    /// <summary>나오는 때가 맞는가: 달맞이꽃은 밤에만, 버섯은 비가 온 날과 그다음 날에만 난다.</summary>
+    private bool ConditionMet
+    {
+        get
+        {
+            switch (material.condition)
+            {
+                case MaterialCondition.NightOnly: return GameState.TimeOfDay >= NightStart;
+                case MaterialCondition.AfterRain: return Weather.MushroomDay;
+                default: return true;
+            }
+        }
+    }
 
     private bool IsPlantLike => material != null && (material.kind == MaterialKind.Plant || material.kind == MaterialKind.Cover);
 
