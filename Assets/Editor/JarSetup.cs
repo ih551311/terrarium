@@ -85,7 +85,7 @@ public static class JarSetup
         new Jar("flask", "넓은 병", "jar_flask", "bottle2", 0.034f, false),
         new Jar("side",  "누운 병", "jar_side",  "bottle3", 0f,     true),
         // 눈 섬 전용 병 (선착장을 고쳐야 만들 수 있다). 모델은 BottleModelMaker가 만든다
-        new Jar("snowglobe", "스노우볼", "jar_snowglobe", "bottle4", 0.030f, false),
+        new Jar("snowglobe", "스노우볼", "jar_snowglobe", "bottle4", 0.046f, false), // 받침이 좁아서 흙을 조금 더 두껍게
         new Jar("lantern",   "눈꽃 병",  "jar_lantern",   "bottle5", 0.032f, false, 0.95f),
     };
 
@@ -247,9 +247,8 @@ public static class JarSetup
             soilMeshes[level] = alongX
                 ? BuildSideSoilMesh(profile, axisOrigin, levelSurfaceY, seed)
                 : BuildSoilMesh(profile, floorY, levelSurfaceY, S, seed, out surfaceRadius, 0.98f * jar.fit);
-            string levelPath = DataFolder + "/" + jar.id + "_soil" + level + ".asset";
-            AssetDatabase.DeleteAsset(levelPath);
-            AssetDatabase.CreateAsset(soilMeshes[level], levelPath);
+            // 파일을 지우고 다시 만들면 GUID가 바뀌어 병 프리팹의 흙 연결이 끊어질 수 있다(흙이 사라지는 오류). 같은 파일에 덮어써서 GUID를 지킨다.
+            soilMeshes[level] = SaveMeshAsset(DataFolder + "/" + jar.id + "_soil" + level + ".asset", soilMeshes[level]);
         }
         Mesh soilMesh = soilMeshes[1]; // 보통
         surfaceY = soilSurfaceYs[1];
@@ -354,6 +353,22 @@ public static class JarSetup
         data.prefab = prefab;
         EditorUtility.SetDirty(data);
         return data;
+    }
+
+    /// <summary>메쉬를 에셋 파일로 저장한다. 같은 이름의 파일이 있으면 지우지 않고 내용만 덮어써서 GUID(다른 에셋의 연결)를 지킨다.</summary>
+    private static Mesh SaveMeshAsset(string path, Mesh fresh)
+    {
+        Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (existing != null)
+        {
+            existing.Clear();
+            EditorUtility.CopySerialized(fresh, existing);
+            EditorUtility.SetDirty(existing);
+            Object.DestroyImmediate(fresh);
+            return existing;
+        }
+        AssetDatabase.CreateAsset(fresh, path);
+        return fresh;
     }
 
     /// <summary>병 안쪽 바닥의 높이. 중심축에 있는 정점 중 맨 아래(바깥 바닥)를 뺀 가장 낮은 것.</summary>

@@ -100,7 +100,7 @@ public static class BottleModelMaker
         };
         var inner = new List<Vector2>
         {
-            new Vector2(0f, 0.006f), new Vector2(0.044f, 0.006f), new Vector2(0.057f, 0.016f), new Vector2(0.058f, 0.032f),
+            new Vector2(0f, 0.006f), new Vector2(0.054f, 0.006f), new Vector2(0.058f, 0.014f), new Vector2(0.058f, 0.032f), // 안쪽 아래 모서리는 거의 곧게 (흙 옆면이 층져 보이지 않게)
             new Vector2(0.058f, 0.128f), new Vector2(0.048f, 0.162f), new Vector2(0.031f, 0.186f), new Vector2(0.031f, 0.222f)
         };
         b = new Builder();
