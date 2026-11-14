@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77babfa0e8a5c064f871e488ff0de7f2, type: 3}
+  m_Name: MusicSet
+  m_EditorClassIdentifier: Assembly-CSharp::MusicSet
+  tracks:
+  - id: tone
+    clip: {fileID: 8300000, guid: b5bc3721836be8047a3c4865b631ffd3, type: 3}
+    gain: 0.65
+  - id: icecream
+    clip: {fileID: 8300000, guid: 5b60ee5f20fbded4fb57a6c08e616af0, type: 3}
+    gain: 1
+  - id: lost
+    clip: {fileID: 8300000, guid: 4116402025adc5d469c02a663f805487, type: 3}
+    gain: 1.15
+  - id: oddity
+    clip: {fileID: 8300000, guid: 62ee6fe3f089ea548ba3bcc2e9ae01c1, type: 3}
+    gain: 1.15
+  - id: tone2
+    clip: {fileID: 8300000, guid: 7152939cca89a464c8b5751e3e215697, type: 3}
+    gain: 0.85
+  - id: purgatory
+    clip: {fileID: 8300000, guid: c5272f92c62f6f3469f8cdc20c8df649, type: 3}
+    gain: 0.85
+  - id: winter
+    clip: {fileID: 8300000, guid: e8dab991ecff350448b77c680893b448, type: 3}
+    gain: 1
+  - id: fragments
+    clip: {fileID: 8300000, guid: d67da28a8c495ee49b3f3b75d28c7f9c, type: 3}
+    gain: 1

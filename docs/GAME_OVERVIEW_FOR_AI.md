@@ -209,3 +209,5 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **소리**: 소리 파일 없이 코드로 만든 소리(GameAudio). 낮/밤 배경 음악(시간에 따라 섞임, P 키로 켜기/끄기), 파도(바닷가에 가까울수록 큼), 바람, 낮의 새 소리, 밤의 풀벌레, 빗소리, 집 안 방 소리, 발소리, 효과음(줍기, 놓기, 빼기, 완성 종소리, 코인, 종이, 버튼). 진짜 소리 파일을 구하면 GameAudio의 clip만 바꿔 끼우면 됨.
 
 - **병 속 흙과 모래의 겉모습**: SoilLook이 코드로 흙 그림(갈색 얼룩, 알갱이, 작은 자갈)과 울퉁불퉁한 법선 그림, 모래 그림을 만들어 병 속 흙(BottleContents.groundRenderer)에 입힘. 흙 메시는 쓸 때 복사해서 UV와 접선을 붙임(원래 메시 에셋은 그대로). 윤기 없는 재질.
+
+- **음악과 발소리는 사신 에셋 사용** (유료라 저장소에 올리지 않음): 배경 음악은 Dreamcore Music Vol. 1의 LOOP 곡 8개를 MusicPlayer가 때와 날씨에 맞게 고름(눈=Winter, 폭풍우=Purgatory/Oddity, 비=Fragments/Tone/Tone 2, 안개/흐림=Oddity/Tone/Tone 2, 밤=Lost/Tone 2/Fragments, 낮=Ice Cream/Tone 2/Tone. 6초 섞어 넘어가고 한 곡은 약 2분 반 뒤 같은 모음의 다른 곡으로). 곡 연결은 MusicSet(Resources, 메뉴 배경 음악 연결). 발소리는 Footsteps Sounds - Volume 02를 FootstepPlayer가 걷는 거리마다 내고, 서 있는 땅(Terrain 재질 Grass/Sand/Soil, 집 안은 나무)에 맞는 소리를 고름. 비 오는 날은 젖은 땅 소리가 섞임. 연결은 FootstepSet(Resources, 메뉴 발소리 연결). 에셋이 없으면 GameAudio가 코드로 만든 음악과 발소리를 씀.

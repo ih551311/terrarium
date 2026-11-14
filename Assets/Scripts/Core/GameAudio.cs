@@ -48,6 +48,8 @@ public class GameAudio : MonoBehaviour
     private AudioClip[] steps, sandSteps, birds;
     private AudioSource sfxSource, waves, wind, rainLoop, crickets, roomTone, musicDay, musicNight;
 
+    private MusicPlayer music;
+    private FootstepPlayer footsteps;
     private CharacterController controller;
     private float stepTimer, birdTimer;
     private float musicLevel;
@@ -72,8 +74,20 @@ public class GameAudio : MonoBehaviour
         rainLoop = NewSource("Rain", Loop("Rain", RainData(), Rate), 0f, true);
         crickets = NewSource("Crickets", Loop("Crickets", CricketData(), Rate), 0f, true);
         roomTone = NewSource("Room", Loop("Room", RoomData(), Rate), 0f, true);
-        musicDay = NewSource("MusicDay", Music("MusicDay", day: true), 0f, true);
-        musicNight = NewSource("MusicNight", Music("MusicNight", day: false), 0f, true);
+
+        // 발소리: 사신 소리 모음(Footsteps Sounds)이 있으면 바닥에 맞는 진짜 소리를, 없으면 코드로 만든 소리를 쓴다
+        footsteps = gameObject.AddComponent<FootstepPlayer>();
+        if (!footsteps.Load()) { Destroy(footsteps); footsteps = null; }
+
+        // 배경 음악: 사신 곡 모음(Dreamcore Music)이 있으면 그것을, 없으면 코드로 만든 음악을 쓴다
+        music = gameObject.AddComponent<MusicPlayer>();
+        if (!music.Load())
+        {
+            Destroy(music);
+            music = null;
+            musicDay = NewSource("MusicDay", Music("MusicDay", day: true), 0f, true);
+            musicNight = NewSource("MusicNight", Music("MusicNight", day: false), 0f, true);
+        }
     }
 
     private AudioSource NewSource(string name, AudioClip clip, float volume, bool loop)
@@ -116,8 +130,15 @@ public class GameAudio : MonoBehaviour
         // 음악: 낮과 밤을 섞는다. 비 오는 날은 조금 작게.
         float musicTarget = musicOn ? 0.32f * (1f - 0.35f * rain) : 0f;
         musicLevel = Mathf.MoveTowards(musicLevel, musicTarget, Time.deltaTime * 0.3f);
-        musicDay.volume = musicLevel * (1f - night);
-        musicNight.volume = musicLevel * night;
+        if (music != null)
+        {
+            music.Tick(musicLevel, night, Weather.Today);
+        }
+        else
+        {
+            musicDay.volume = musicLevel * (1f - night);
+            musicNight.volume = musicLevel * night;
+        }
 
         // 파도: 섬 가장자리(바닷가)에 가까울수록 크게. 집 안에서는 안 들린다.
         float shore = 0f;
@@ -145,7 +166,8 @@ public class GameAudio : MonoBehaviour
             }
         }
 
-        UpdateFootsteps(player);
+        if (footsteps != null) footsteps.Tick(player);
+        else UpdateFootsteps(player);
     }
 
     private static void Fade(AudioSource s, float target)
