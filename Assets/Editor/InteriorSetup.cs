@@ -120,6 +120,22 @@ public static class InteriorSetup
         Cube(door.transform.parent.gameObject, "DoorFrameR", new Vector3(DoorWidth / 2f + 0.07f, DoorHeight / 2f, -Half + 0.02f), new Vector3(0.14f, DoorHeight, 0.18f), timber, false);
         Cube(door.transform.parent.gameObject, "DoorFrameTop", new Vector3(0f, DoorHeight + 0.07f, -Half + 0.02f), new Vector3(DoorWidth + 0.28f, 0.14f, 0.18f), timber, false);
 
+        // 널문 꾸밈: 판자 사이 홈, 쇠 띠 두 개, 손잡이 (문 앞면이 밋밋한 갈색 판으로 보이지 않게)
+        {
+            GameObject parent = door.transform.parent.gameObject;
+            Material groove = Mat("MedDoorGroove", new Color(0.22f, 0.13f, 0.07f));
+            Material iron = Mat("MedIron", new Color(0.16f, 0.16f, 0.18f));
+            Material knob = Mat("MedKnob", new Color(0.78f, 0.62f, 0.28f));
+            float faceZ = -Half + 0.03f; // 문 앞면 (방 안쪽은 +z 쪽)
+            float inner = DoorWidth - 0.05f;
+            for (int i = 1; i < 5; i++) // 판자 5장 사이의 홈 4줄
+                Cube(parent, "DoorGroove", new Vector3(-inner / 2f + inner * i / 5f, DoorHeight / 2f, faceZ + 0.002f), new Vector3(0.02f, DoorHeight - 0.1f, 0.012f), groove, false);
+            foreach (float y in new[] { 0.45f, 1.85f })
+                Cube(parent, "DoorStrap", new Vector3(0f, y, faceZ + 0.012f), new Vector3(inner - 0.06f, 0.11f, 0.02f), iron, false);
+            GameObject handle = Cube(parent, "DoorKnob", new Vector3(inner / 2f - 0.16f, 1.1f, faceZ + 0.03f), new Vector3(0.09f, 0.09f, 0.06f), knob, false);
+            handle.transform.rotation = Quaternion.Euler(0f, 0f, 45f);
+        }
+
         // 벽 안쪽 장식: 돌 밑단, 가로 보, 모서리 기둥, 세로 기둥
         float face = Half - 0.02f;
         foreach (int side in new[] { 0, 1, 2, 3 }) // 0 북, 1 동, 2 남, 3 서
@@ -129,8 +145,22 @@ public static class InteriorSetup
             wall.transform.SetParent(room.transform, false);
             wall.transform.rotation = rot;
             // 이 벽을 바라볼 때 +z가 벽 쪽: 벽의 안쪽 면은 z = face
-            Cube(wall, "StoneBase", new Vector3(0f, 0.45f, face), new Vector3(Half * 2f, 0.9f, 0.05f), stone, false);
-            Cube(wall, "BeamLow", new Vector3(0f, 0.93f, face - 0.01f), new Vector3(Half * 2f, 0.12f, 0.1f), timber, false);
+            if (side == 2)
+            {
+                // 남쪽 벽은 문 자리를 비운다 (돌 밑단과 보가 문 아래쪽을 가리지 않게 문틀 양옆만 놓는다)
+                float gap = DoorWidth / 2f + 0.14f;
+                float segLen = Half - gap, segCenter = gap + segLen / 2f;
+                foreach (float sx in new[] { -segCenter, segCenter })
+                {
+                    Cube(wall, "StoneBase", new Vector3(sx, 0.45f, face), new Vector3(segLen, 0.9f, 0.05f), stone, false);
+                    Cube(wall, "BeamLow", new Vector3(sx, 0.93f, face - 0.01f), new Vector3(segLen, 0.12f, 0.1f), timber, false);
+                }
+            }
+            else
+            {
+                Cube(wall, "StoneBase", new Vector3(0f, 0.45f, face), new Vector3(Half * 2f, 0.9f, 0.05f), stone, false);
+                Cube(wall, "BeamLow", new Vector3(0f, 0.93f, face - 0.01f), new Vector3(Half * 2f, 0.12f, 0.1f), timber, false);
+            }
             Cube(wall, "BeamHigh", new Vector3(0f, Height - 0.2f, face - 0.01f), new Vector3(Half * 2f, 0.2f, 0.1f), timber, false);
             foreach (float s in new[] { -2f, 2f })
                 Cube(wall, "Stud", new Vector3(s, Height / 2f, face - 0.01f), new Vector3(0.15f, Height, 0.1f), timber, false);
