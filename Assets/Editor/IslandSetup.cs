@@ -282,38 +282,130 @@ public static class IslandSetup
         return terrain.SampleHeight(new Vector3(x, 0f, z)) + terrain.transform.position.y;
     }
 
+    // 바다는 두 겹이다.
+    //  - 해안 물 "SeaCoast": 에셋 팩(Bitgem)의 물. 섬 둘레만 덮는다. 얕은 곳은 연하고 해안선에는 거품이 생긴다. 높이 0
+    //  - 먼 바다 "SeaFar": 단색 판. 해안 물의 깊은 색과 같은 색이고, 해안 물 가장자리(깊은 곳)와 이어진다. 높이 -3
+    private const float SeaCoastSize = 440f;   // 해안 물 한 변(미터). 섬 가장자리 밖 깊은 곳까지 덮는다
+    private const float SeaFarY = -3f;
+
     private static void BuildSea(Transform parent)
     {
-        GameObject sea = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        sea.name = "Sea";
-        sea.transform.SetParent(parent, false);
-        sea.transform.position = new Vector3(IslandCenter.x, 0f, IslandCenter.y);
-        sea.transform.localScale = new Vector3(600f, 1f, 600f); // 약 6km
-        Object.DestroyImmediate(sea.GetComponent<Collider>());
-        sea.GetComponent<Renderer>().sharedMaterial = GetOrCreateSeaMaterial();
+        // Bitgem 물 셰이더는 점의 색(빨강=거품)과 세계 좌표 UV를 읽는다. 기본 Plane은 점 색이 흰색이라 온통 하얗게 나오므로,
+        // 점 색이 검정(거품 없음)이고 UV가 세계 좌표인 격자 메쉬를 직접 만든다. (해안 거품은 셰이더가 깊이로 만든다)
+        GameObject coast = new GameObject("SeaCoast");
+        coast.transform.SetParent(parent, false);
+        coast.transform.position = new Vector3(IslandCenter.x, 0f, IslandCenter.y);
+        coast.AddComponent<MeshFilter>().sharedMesh = GetOrCreateCoastMesh();
+        MeshRenderer coastRenderer = coast.AddComponent<MeshRenderer>();
+        coastRenderer.sharedMaterial = GetOrCreateCoastMaterial();
+        coastRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+        GameObject far = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        far.name = "SeaFar";
+        far.transform.SetParent(parent, false);
+        far.transform.position = new Vector3(IslandCenter.x, SeaFarY, IslandCenter.y);
+        far.transform.localScale = new Vector3(600f, 1f, 600f); // 약 6km
+        Object.DestroyImmediate(far.GetComponent<Collider>());
+        far.GetComponent<Renderer>().sharedMaterial = GetOrCreateFarSeaMaterial();
+        far.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
     }
 
-    /// <summary>파란 반투명 바다 재질. (에셋 팩의 물 재질은 빛 무늬가 너무 밝아 넓은 바다가 하얗게 나온다)</summary>
-    private static Material GetOrCreateSeaMaterial()
+    /// <summary>해안 물 메쉬: 한 변 SeaCoastSize인 격자. 점 색 검정, UV는 세계 좌표(미터), 위를 본다.</summary>
+    private static Mesh GetOrCreateCoastMesh()
     {
-        const string path = "Assets/Data/Placeholder/SeaWater.mat";
+        const string path = "Assets/Data/Placeholder/SeaCoast.asset";
+        const int cells = 55;
+        float step = SeaCoastSize / cells;
+        int n = cells + 1;
+
+        Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (mesh == null) { mesh = new Mesh(); AssetDatabase.CreateAsset(mesh, path); }
+        mesh.Clear();
+
+        Vector3[] verts = new Vector3[n * n];
+        Vector3[] normals = new Vector3[n * n];
+        Vector2[] uvs = new Vector2[n * n];
+        Color[] colors = new Color[n * n];
+        for (int z = 0; z < n; z++)
+        for (int x = 0; x < n; x++)
+        {
+            float lx = -SeaCoastSize / 2f + x * step, lz = -SeaCoastSize / 2f + z * step;
+            int i = z * n + x;
+            verts[i] = new Vector3(lx, 0f, lz);
+            normals[i] = Vector3.up;
+            uvs[i] = new Vector2(lx + IslandCenter.x, lz + IslandCenter.y);
+            colors[i] = Color.black;
+        }
+        int[] tris = new int[cells * cells * 6];
+        int t = 0;
+        for (int z = 0; z < cells; z++)
+        for (int x = 0; x < cells; x++)
+        {
+            int v = z * n + x;
+            // Bitgem 메쉬와 같은 감는 방향: (x0,z0) (x0,z1) (x1,z1) / (x1,z1) (x1,z0) (x0,z0)
+            tris[t++] = v; tris[t++] = v + n; tris[t++] = v + n + 1;
+            tris[t++] = v + n + 1; tris[t++] = v + 1; tris[t++] = v;
+        }
+        mesh.vertices = verts; mesh.normals = normals; mesh.uv = uvs; mesh.colors = colors; mesh.triangles = tris;
+        mesh.RecalculateBounds();
+        EditorUtility.SetDirty(mesh);
+        return mesh;
+    }
+
+    /// <summary>씬은 그대로 두고 바다만 다시 만든다. (메뉴: 유리병 정원 > 바다 다시 만들기)</summary>
+    [MenuItem("유리병 정원/바다 다시 만들기")]
+    public static void RebuildSea()
+    {
+        GameObject root = GameObject.Find(RootName);
+        if (root == null) { Debug.LogError("IslandContent가 없어요. 먼저 Island 씬을 여세요."); return; }
+        foreach (string n in new[] { "Sea", "SeaCoast", "SeaFar" })
+        {
+            Transform old = root.transform.Find(n);
+            while (old != null) { Object.DestroyImmediate(old.gameObject); old = root.transform.Find(n); }
+        }
+        BuildSea(root.transform);
+        AssetDatabase.SaveAssets();
+        EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        EditorSceneManager.SaveOpenScenes();
+    }
+
+    /// <summary>해안 물 재질. Bitgem 물 재질을 복사해 색만 우리 바다에 맞춘다. (얕은 곳 연한 청록 → 깊은 곳 짙은 파랑)</summary>
+    private static Material GetOrCreateCoastMaterial()
+    {
+        const string path = "Assets/Data/Placeholder/SeaCoast.mat";
+        Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (m == null)
+        {
+            Material src = AssetDatabase.LoadAssetAtPath<Material>("Assets/Bitgem/StylisedWater/URP/Materials/example-water-01.mat");
+            m = new Material(src);
+            AssetDatabase.CreateAsset(m, path);
+        }
+        // 속성 이름은 셰이더 그래프 안의 참조 이름이다. (화면에 보이는 이름이 아니다)
+        m.SetColor("Color_F01C36BF", new Color(0.30f, 0.74f, 0.82f, 0.75f)); // 얕은 곳
+        m.SetColor("Color_7D9A58EC", FarSeaColor);                           // 깊은 곳
+        m.SetFloat("Vector1_17E53C12", 1.6f);                                // 깊이 배율 (클수록 빨리 깊은 색이 된다)
+        m.SetFloat("Vector1_47683D42", 0.3f);                                // 반짝임을 낮춰 하늘이 하얗게 비치지 않게
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    /// <summary>먼 바다의 단색. 해안 물의 깊은 색과 같아서 이어 보인다.</summary>
+    private static readonly Color FarSeaColor = new Color(0.12f, 0.40f, 0.62f, 1f);
+
+    /// <summary>먼 바다 재질: 불투명 단색.</summary>
+    private static Material GetOrCreateFarSeaMaterial()
+    {
+        const string path = "Assets/Data/Placeholder/SeaFar.mat";
         Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (m == null)
         {
             m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             AssetDatabase.CreateAsset(m, path);
         }
-        m.SetColor("_BaseColor", new Color(0.32f, 0.68f, 0.82f, 0.82f));
-        m.SetFloat("_Surface", 1f);    // Transparent
-        m.SetFloat("_Blend", 0f);      // Alpha
-        m.SetFloat("_SrcBlend", 5f);
-        m.SetFloat("_DstBlend", 10f);
-        m.SetFloat("_ZWrite", 0f);
-        m.SetFloat("_Smoothness", 0.92f);
+        m.shader = Shader.Find("Universal Render Pipeline/Lit"); // 빛을 받아야 저녁에 해안 물처럼 어두워진다
+        m.SetColor("_BaseColor", FarSeaColor);
+        m.SetFloat("_Smoothness", 0.25f);
         m.SetFloat("_Metallic", 0f);
-        m.SetOverrideTag("RenderType", "Transparent");
-        m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-        m.renderQueue = 3000;
         EditorUtility.SetDirty(m);
         return m;
     }
