@@ -122,7 +122,11 @@ public static class MaterialSetup
         new Entry("ladder",           "사다리",     Deco,  "deco_ladder",          new Color(0.69f, 0.51f, 0.35f), Shop, Buy, 2, 12),
         new Entry("fairy_door",       "요정 문",    Deco,  "deco_fairy_door",      new Color(0.62f, 0.62f, 0.65f), Shop, Buy, 3, 30),
         new Entry("hot_air_balloon",  "열기구",     Deco,  "deco_hot_air_balloon", new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 3, 40),
-        // ── 꾸밈 소품 11종, 동물 4종, 병 속 효과 5종 (우체통 구매하기). 효과 병은 병에 놓으면 병 속에 입자가 흩날린다 (BottleEffect, id가 fx_로 시작)
+        // ── 얼어붙은 연못 낚시(FishingSpot)로 얻는 물고기. 바닥에 놓여 있지 않다. 오로라 물고기는 밤에만 가끔 걸린다
+        new Entry("smelt",            "빙어",          Deco, "deco_smelt",           new Color(0.80f, 0.85f, 0.92f), Snow, Hand, 3),
+        new Entry("ice_trout",        "얼음 송어",     Deco, "deco_ice_trout",       new Color(0.45f, 0.70f, 0.85f), Snow, Hand, 5),
+        new Entry("goldfish",         "금붕어",        Deco, "deco_goldfish",        new Color(0.95f, 0.60f, 0.32f), Snow, Hand, 6),
+        new Entry("aurora_fish",      "오로라 물고기", Deco, "deco_aurora_fish",     new Color(0.70f, 0.58f, 0.90f), Snow, Hand, 20, 0, MaterialCondition.Always, true),        // ── 꾸밈 소품 11종, 동물 4종, 병 속 효과 5종 (우체통 구매하기). 효과 병은 병에 놓으면 병 속에 입자가 흩날린다 (BottleEffect, id가 fx_로 시작)
         new Entry("lantern",          "작은 랜턴",   Deco, "deco_lantern",         new Color(1.00f, 0.80f, 0.45f), Shop, Buy, 2, 10),
         new Entry("flag",             "깃발",        Deco, "deco_flag",            new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 1, 6),
         new Entry("kite",             "연",          Deco, "deco_kite",            new Color(0.96f, 0.68f, 0.75f), Shop, Buy, 2, 8),

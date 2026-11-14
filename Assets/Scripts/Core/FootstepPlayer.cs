@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// 발소리. 걷는 거리에 맞춰 발걸음마다 소리를 내고, 서 있는 바닥에 맞는 소리를 고른다.
 ///  - 집 안: 나무 바닥
-///  - 섬: 땅(Terrain)의 어느 재질 위에 서 있는지 읽어서 풀밭, 모래, 흙 중에서 고른다.
+///  - 섬: 땅(Terrain)의 어느 재질 위에 서 있는지 읽어서 풀밭, 모래, 흙, 눈(눈 섬) 중에서 고른다.
 ///  - 비 오는 날 풀밭과 흙에서는 가끔 젖은 땅의 철벅 소리가 섞인다.
 ///  - 걷기는 한 걸음이 짧고 달리면 길다. 점프하고 내려앉을 때는 한 번 더 크게 난다.
 ///  - 소리 크기는 바닥마다 달라서(풀밭 소리는 아주 작게 녹음되어 있다), 시작할 때 모든 소리의 크기를 맞춰 둔다.
@@ -11,16 +11,16 @@ using UnityEngine;
 /// </summary>
 public class FootstepPlayer : MonoBehaviour
 {
-    private enum Surface { Grass, Sand, Soil, Wood }
+    private enum Surface { Grass, Sand, Soil, Wood, Snow }
 
     private const float WalkStride = 1.1f, RunStride = 1.9f; // 한 걸음의 거리(미터)
 
-    private AudioClip[] grass, sand, soil, wood, wet;
+    private AudioClip[] grass, sand, soil, wood, wet, snow;
     private AudioSource source;
     private CharacterController controller;
     private float travelled;
     private bool wasGrounded = true;
-    private int lastGrass = -1, lastSand = -1, lastSoil = -1, lastWood = -1, lastWet = -1;
+    private int lastGrass = -1, lastSand = -1, lastSoil = -1, lastWood = -1, lastWet = -1, lastSnow = -1;
 
     public bool Load()
     {
@@ -33,6 +33,7 @@ public class FootstepPlayer : MonoBehaviour
         soil = Normalize(set.soil, 0.6f);
         wood = Normalize(set.wood, 0.65f);
         wet = Normalize(set.wet, 0.5f);
+        snow = set.snow != null && set.snow.Length > 0 ? Normalize(set.snow, 0.6f) : soil; // 눈 소리가 없으면 흙 소리
 
         source = gameObject.AddComponent<AudioSource>();
         source.playOnAwake = false;
@@ -76,6 +77,7 @@ public class FootstepPlayer : MonoBehaviour
             case Surface.Wood: list = wood; last = ref lastWood; break;
             case Surface.Sand: list = sand; last = ref lastSand; break;
             case Surface.Soil: list = soil; last = ref lastSoil; break;
+            case Surface.Snow: list = snow; last = ref lastSnow; break;
             default: list = grass; last = ref lastGrass; break;
         }
 
@@ -114,7 +116,7 @@ public class FootstepPlayer : MonoBehaviour
 
         TerrainLayer[] layers = data.terrainLayers;
         string layerName = best < layers.Length && layers[best] != null ? layers[best].name.ToLowerInvariant() : string.Empty;
-        if (layerName.Contains("snow") || layerName.Contains("ice")) return Surface.Soil; // 눈과 얼음 위: 부드러운 땅 소리 (눈 발소리 팩이 없어서)
+        if (layerName.Contains("snow") || layerName.Contains("ice")) return Surface.Snow; // 눈과 얼음 위: 뽀드득 눈 소리
         if (layerName.Contains("sand") || layerName.Contains("beach")) return Surface.Sand;
         if (layerName.Contains("soil") || layerName.Contains("dirt") || layerName.Contains("path")) return Surface.Soil;
         return Surface.Grass;

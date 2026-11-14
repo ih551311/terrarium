@@ -11,4 +11,5 @@ public class FootstepSet : ScriptableObject
     [Tooltip("마른 흙, 단단하고 푹신한 바닥")] public AudioClip[] soil = new AudioClip[0];
     [Tooltip("집 안 나무 바닥")] public AudioClip[] wood = new AudioClip[0];
     [Tooltip("비 오는 날의 젖은 땅 (철벅)")] public AudioClip[] wet = new AudioClip[0];
+    [Tooltip("눈 섬의 눈과 얼음 위 (뽀드득). 에셋 Footstep(Snow and Grass)의 눈 소리. 비어 있으면 흙 소리를 쓴다")] public AudioClip[] snow = new AudioClip[0];
 }

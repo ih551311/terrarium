@@ -100,6 +100,8 @@ public static class SnowIslandSetup
         int mounds = ScatterMounds(rt);
         int deco = ScatterDecor(rt);
         int floes = ScatterFloes(rt, landing2);
+        BuildFishing(rt);
+        BuildAurora(rt);
         Physics.SyncTransforms();
         int pickups = PlacePickups(rt);
 
@@ -680,6 +682,82 @@ public static class SnowIslandSetup
         box.center = go.transform.InverseTransformPoint(b.center);
         Vector3 size = b.size;
         box.size = new Vector3(Mathf.Max(size.x, 0.4f), Mathf.Max(size.y, 0.4f), Mathf.Max(size.z, 0.4f));
+    }
+
+    // ───────── 연못 낚시 ─────────
+
+    private static void BuildFishing(Transform parent)
+    {
+        GameObject group = new GameObject("Fishing");
+        group.transform.SetParent(parent, false);
+        Material rim = BottleSetup.GetOrCreateMaterial("FishHoleRim", new Color(0.82f, 0.93f, 0.98f));
+        Material water = BottleSetup.GetOrCreateMaterial("FishHoleWater", new Color(0.04f, 0.14f, 0.30f));
+        Material bobberMat = BottleSetup.GetOrCreateMaterial("FishBobber", new Color(0.92f, 0.22f, 0.20f));
+
+        // 연못 위의 낚시 구멍 세 곳 (얼음에 뚫은 구멍)
+        Vector2[] holes = { Pond + new Vector2(6f, 3f), Pond + new Vector2(-5f, 6f), Pond + new Vector2(0f, -7.5f) };
+        for (int i = 0; i < holes.Length; i++)
+        {
+            float gy = GroundY(holes[i].x, holes[i].y);
+            GameObject root = new GameObject("FishingHole_" + i);
+            root.transform.SetParent(group.transform, false);
+            root.transform.position = new Vector3(holes[i].x, gy, holes[i].y);
+
+            Disc(root.transform, "Rim", 1.8f, 0.012f, 0.008f, rim);
+            Disc(root.transform, "Water", 1.15f, 0.014f, 0.016f, water);
+
+            GameObject bobber = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            bobber.name = "Bobber";
+            bobber.transform.SetParent(root.transform, false);
+            bobber.transform.localPosition = new Vector3(0f, 0.08f, 0f);
+            bobber.transform.localScale = Vector3.one * 0.16f;
+            Object.DestroyImmediate(bobber.GetComponent<Collider>());
+            bobber.GetComponent<Renderer>().sharedMaterial = bobberMat;
+
+            SphereCollider hit = root.AddComponent<SphereCollider>();
+            hit.isTrigger = true; // 걸어 다니는 데 걸리지 않게. 바라보는 광선은 맞는다
+            hit.center = new Vector3(0f, 0.3f, 0f);
+            hit.radius = 1.3f;
+
+            FishingSpot spot = root.AddComponent<FishingSpot>();
+            SerializedObject so = new SerializedObject(spot);
+            so.FindProperty("bobber").objectReferenceValue = bobber.transform;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // 낚시터 팻말
+        Vector2 signPos = Pond + new Vector2(10f, -3f);
+        GameObject sign = Instantiate("Sign2", group.transform, new Vector3(signPos.x, GroundY(signPos.x, signPos.y), signPos.y), 120f, 3f);
+        if (sign != null) AddTrunk(sign, 0.2f, 2f);
+    }
+
+    private static void Disc(Transform parent, string name, float diameter, float thickness, float lift, Material mat)
+    {
+        GameObject d = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        d.name = name;
+        d.transform.SetParent(parent, false);
+        d.transform.localPosition = new Vector3(0f, lift, 0f);
+        d.transform.localScale = new Vector3(diameter, thickness, diameter);
+        Object.DestroyImmediate(d.GetComponent<Collider>());
+        d.GetComponent<Renderer>().sharedMaterial = mat;
+    }
+
+    // ───────── 오로라 하늘 ─────────
+
+    private static void BuildAurora(Transform parent)
+    {
+        const string matPath = "Assets/Resources/AuroraMat.mat";
+        Directory.CreateDirectory("Assets/Resources");
+        Material m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+        Shader shader = Shader.Find("유리병 정원/Aurora");
+        if (shader == null) { Debug.LogWarning("오로라 셰이더를 찾지 못했어요."); return; }
+        if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, matPath); }
+        m.shader = shader;
+        EditorUtility.SetDirty(m);
+
+        GameObject sky = new GameObject("AuroraSky");
+        sky.transform.SetParent(parent, false);
+        sky.AddComponent<AuroraSky>();
     }
 
     // ───────── 바다 위 얼음덩이 (섬이 바다에 떠 있는 느낌) ─────────

@@ -24,6 +24,10 @@ public static class PropModelMaker
     {
         Lantern(); Bench(); Fence(); StoneBridge(); Lighthouse(); Fountain(); Telescope(); Flag(); Kite(); Sailboat(); MushroomHouse();
         Bird(); Rabbit(); Cat(); Fox();
+        Fish("deco_smelt", LightGray, White, Ice, Blue, 0.016f);
+        Fish("deco_ice_trout", Teal, Ice, Blue, Coral, 0.019f);
+        Fish("deco_goldfish", Orange, Pale, Salmon, Red, 0.013f);
+        Fish("deco_aurora_fish", 18, 22, Cyan, Green, 0.018f);
         Vial("deco_fx_snow", Ice, White);
         Vial("deco_fx_glitter", Gold, Pale);
         Vial("deco_fx_petals", Pink, White);
@@ -304,6 +308,26 @@ public static class PropModelMaker
         Blob(V(0, 0.0125f, 0.0300f), V(0.0058f, 0.0058f, 0.0140f), 3, 7, Orange);
         Blob(V(0, 0.0125f, 0.0420f), V(0.0046f, 0.0046f, 0.0050f), 3, 6, White);
         b.Write("deco_fox");
+    }
+
+    // ───────── 물고기 (낚시) ─────────
+
+    /// <summary>작은 얼음 조각 위에 놓인 물고기. 몸은 x 방향(머리가 +x)이고 length는 몸의 반길이.</summary>
+    private static void Fish(string name, int body, int belly, int fin, int mark, float length)
+    {
+        b = new Builder();
+        Blob(V(0, 0.0085f, 0), V(length, 0.0065f, 0.0042f), 4, 8, body);
+        Blob(V(0.002f, 0.0062f, 0), V(length * 0.8f, 0.0035f, 0.0036f), 3, 7, belly);
+        Blob(V(-0.001f, 0.0092f, 0), V(length * 0.78f, 0.0012f, 0.0044f), 2, 8, mark); // 등의 줄무늬
+        b.DoubleTri(V(-length * 0.9f, 0.0085f, 0), V(-length * 1.55f, 0.0150f, 0), V(-length * 1.55f, 0.0020f, 0), fin); // 꼬리
+        b.DoubleTri(V(-0.003f, 0.0140f, 0), V(length * 0.4f, 0.0140f, 0), V(0.001f, 0.0195f, 0), fin);                  // 등지느러미
+        foreach (float s in new[] { -1f, 1f })
+        {
+            b.DoubleTri(V(0.004f, 0.0075f, s * 0.0038f), V(-0.004f, 0.0075f, s * 0.0038f), V(-0.002f, 0.0035f, s * 0.0078f), fin); // 가슴지느러미
+            Blob(V(length * 0.62f, 0.0098f, s * 0.0037f), V(0.0011f, 0.0011f, 0.0011f), 2, 4, Dark);                                 // 눈
+        }
+        Blob(V(0, 0.0010f, 0), V(length * 0.95f, 0.0012f, 0.0072f), 2, 8, Ice); // 받침 얼음
+        b.Write(name);
     }
 
     // ───────── 효과 병 ─────────
