@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -34,6 +35,12 @@ public class BottlePanel : MonoBehaviour
     [Tooltip("병을 완성했을 때 이름을 짓는 상자")]
     [SerializeField] private BottleNameDialog nameDialog;
 
+    [Header("만들다가 취소 (병 버리기)")]
+    [Tooltip("가방: 취소할 때 병 속 재료와 바닥재를 돌려받는다")]
+    [SerializeField] private Bag bag;
+    [SerializeField] private Button cancelButton;
+    [SerializeField] private TMP_Text cancelLabel;
+
     [Header("꾸미는 중")]
     [Tooltip("재료 칸, 바닥재, 완성 버튼 등 꾸밀 때만 보이는 것을 담은 오브젝트")]
     [SerializeField] private GameObject editTools;
@@ -49,6 +56,7 @@ public class BottlePanel : MonoBehaviour
         root.SetActive(false);
         closeButton.onClick.AddListener(Close);
         chooser.Chosen += OnBottleChosen;
+        if (cancelButton != null) cancelButton.onClick.AddListener(OnCancelClicked);
         chooser.OpenInventory += ShowInventory;
         inventoryView.Back += () => ShowChooser();
     }
@@ -151,21 +159,28 @@ public class BottlePanel : MonoBehaviour
     private void OnBottleChosen(int index)
     {
         if (station == null) return;
-        if (!BottleChooser.IsUnlocked(index)) return;
+        if (BottleChooser.IsRetired(index) || !BottleChooser.IsUnlocked(index)) return;
         BottleContents bottle = station.Get(index);
         if (!bottle.IsCreated)
         {
-            // 시작할 때 받은 공짜 병을 먼저 쓰고, 없으면 병 가격만큼 코인을 낸다
+            // 시작할 때 받은 공짜 병을 먼저 쓰고, 없으면 병 가격만큼 코인을 낸다. 낸 것은 병 기록에 적어 둔다(취소하면 돌려준다).
+            bool usedFree = false;
+            int paid = 0;
             if (GameState.FreeBottles > 0)
             {
                 GameState.UseFreeBottle();
+                usedFree = true;
             }
-            else if (chooser.RequirePurchase && !GameState.TrySpend(chooser.PriceOf(index)))
+            else if (chooser.RequirePurchase)
             {
-                chooser.Refresh(station, "코인이 모자라요 (" + chooser.PriceOf(index) + "코인 필요, 지금 " + GameState.Coins + "코인)");
-                return;
+                paid = chooser.PriceOf(index);
+                if (!GameState.TrySpend(paid))
+                {
+                    chooser.Refresh(station, "코인이 모자라요 (" + paid + "코인 필요, 지금 " + GameState.Coins + "코인)");
+                    return;
+                }
             }
-            bottle.Create(chooser.SelectedSoil);
+            bottle.Create(chooser.SelectedSoil, paid, usedFree);
         }
         ShowBottle(index);
     }
@@ -182,6 +197,8 @@ public class BottlePanel : MonoBehaviour
 
         station.Select(index);
         contents = station.Get(index);
+        cancelAsked = false;
+        RefreshCancelLabel();
         bottleCamera = contents.ViewCamera;
 
         dragRotate.SetTarget(contents.GetComponent<BottleViewer>());
@@ -189,6 +206,68 @@ public class BottlePanel : MonoBehaviour
         groundSelector.SetTarget(contents);
         completeButton.SetTarget(contents);
         if (bottleCamera != null) bottleCamera.enabled = true;
+    }
+
+    // ───────── 만들다가 취소 (병 버리기) ─────────
+
+    private bool cancelAsked;
+
+    private void RefreshCancelLabel()
+    {
+        if (cancelLabel == null) return;
+        cancelLabel.text = cancelAsked ? "정말 버릴까요?\n(코인 돌려받아요)" : "병 버리기";
+        if (cancelButton != null) cancelButton.gameObject.SetActive(contents != null && !contents.IsCompleted);
+    }
+
+    /// <summary>"병 버리기"를 눌렀다. 한 번 더 누르면 지금 꾸미는 병을 없애고 낸 코인(또는 공짜 병)과 병 속 재료를 돌려받는다.</summary>
+    private void OnCancelClicked()
+    {
+        if (contents == null || contents.IsCompleted || station == null) return;
+        if (!cancelAsked)
+        {
+            cancelAsked = true;
+            RefreshCancelLabel();
+            return;
+        }
+
+        string bottleId = contents.BottleId;
+        BottleRecord record = BottleStore.Get(bottleId);
+        int index = station.IndexOf(bottleId);
+
+        // 병 속 재료와 바닥재를 가방으로 돌려준다. 가방이 가득 차면 우체통으로 보낸다.
+        int toBag = 0, toMail = 0;
+        var returns = new System.Collections.Generic.List<MaterialData>();
+        foreach (PlacedData placed in record.items) if (placed.material != null) returns.Add(placed.material);
+        if (record.ground != null) returns.Add(record.ground);
+        foreach (MaterialData m in returns)
+        {
+            if (bag != null && bag.TryAdd(m)) toBag++;
+            else { GameState.AddArrivedItem(m); toMail++; }
+        }
+
+        // 낸 것을 돌려준다: 공짜 병이면 공짜 병을, 코인을 냈으면 그 코인을. (예전에 만든 병은 기록이 없어서 지금 가격으로 돌려준다)
+        string refund;
+        if (record.usedFree)
+        {
+            GameState.AddFreeBottle();
+            refund = "공짜 병 1개를 돌려받았어요";
+        }
+        else
+        {
+            int coins = record.paidCoins > 0 ? record.paidCoins : (index >= 0 ? chooser.PriceOf(index) : 0);
+            GameState.AddCoins(coins);
+            refund = coins > 0 ? "코인 " + coins + "개를 돌려받았어요" : "병을 버렸어요";
+        }
+
+        string name = contents.DisplayName;
+        contents.ResetToEmpty();
+        cancelAsked = false;
+        GameAudio.Play(GameAudio.Sfx.Remove, 0.8f);
+        string notice = name + "을(를) 버렸어요. " + refund;
+        if (toBag > 0) notice += " (재료 " + toBag + "개는 가방으로";
+        if (toMail > 0) notice += (toBag > 0 ? ", " : " (재료 ") + toMail + "개는 가방이 가득 차서 우체통으로";
+        if (toBag > 0 || toMail > 0) notice += ")";
+        ShowChooser(notice);
     }
 
     /// <summary>보고 있던 병을 놓는다. (카메라를 끄고 도구들의 대상을 비운다)</summary>

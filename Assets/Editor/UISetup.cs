@@ -328,6 +328,10 @@ public static class UISetup
         completeButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         CompleteBottleButton complete = completeButton.gameObject.AddComponent<CompleteBottleButton>();
 
+        // 병 버리기 (만들다가 취소. 한 번 더 눌러야 버려지고, 낸 코인을 돌려받는다)
+        Button cancelBottleButton = MakeSmallButton(edit.transform, "CancelButton", "병 버리기", new Vector2(0f, 1f), new Vector2(30f, -210f), new Vector2(200f, 90f), 26);
+        cancelBottleButton.GetComponent<Image>().color = new Color(0.93f, 0.66f, 0.62f, 1f);
+
         // ── 섬 지도 패널 (M 키). 지도 그림 위에 내 위치와 집을 표시하고, 집으로 돌아가는 버튼이 있다.
         GameObject mapRoot = Rect(ui.transform, "MapPanel");
         Stretch(mapRoot);
@@ -611,6 +615,7 @@ public static class UISetup
         SetRef(bp, "groundSelector", groundSelector); SetRef(bp, "completeButton", complete); SetRef(bp, "chooser", chooser);
         SetRef(bp, "bottleView", view); SetRef(bp, "inventoryView", invView);
         SetRef(bp, "editTools", edit);
+        SetRef(bp, "bag", bag); SetRef(bp, "cancelButton", cancelBottleButton); SetRef(bp, "cancelLabel", cancelBottleButton.GetComponentInChildren<TextMeshProUGUI>());
         SetRef(complete, "button", completeButton);
         SetRef(complete, "label", completeButton.GetComponentInChildren<TextMeshProUGUI>());
         SetRef(complete, "panel", bp); SetRef(complete, "decorator", decorator);

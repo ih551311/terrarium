@@ -59,21 +59,64 @@ public static class SoilLook
 
         copy = Object.Instantiate(source);
         copy.name = source.name + "_styled";
-        Vector3[] vertices = copy.vertices;
-        Vector3[] normals = copy.normals;
-        if (normals == null || normals.Length != vertices.Length) { copy.RecalculateNormals(); normals = copy.normals; }
+        var vertices = new System.Collections.Generic.List<Vector3>(copy.vertices);
+        var normals = new System.Collections.Generic.List<Vector3>();
+        Vector3[] sourceNormals = copy.normals;
+        if (sourceNormals == null || sourceNormals.Length != vertices.Count) { copy.RecalculateNormals(); sourceNormals = copy.normals; }
+        normals.AddRange(sourceNormals);
+        int[] source3 = copy.triangles;
+        var triangles = new System.Collections.Generic.List<int>(source3);
 
-        var uv = new Vector2[vertices.Length];
+        // 윗면은 위에서 본 평면 UV. 옆면은 "둘레를 따라 잰 길이(둘레 방향)와 높이" UV로 입힌다. 이렇게 하면 어느 쪽에서 봐도 알갱이 크기가 같다.
+        // (예전에는 x+z를 썼는데, 어떤 방향에서는 그 값이 거의 변하지 않아서 옆면이 가로로 길게 늘어난 줄무늬가 됐다)
         float k = 1f / TileMeters;
-        for (int i = 0; i < vertices.Length; i++)
+        const float Tau = Mathf.PI * 2f;
+        var uv = new System.Collections.Generic.List<Vector2>(vertices.Count);
+        for (int i = 0; i < vertices.Count; i++) uv.Add(new Vector2(vertices[i].x * k, vertices[i].z * k));
+
+        int triCount = source3.Length / 3;
+        for (int t = 0; t < triCount; t++)
         {
-            Vector3 v = vertices[i], n = normals[i];
-            // 위를 보는 면은 위에서 본 평면 UV, 옆을 보는 면은 둘레 방향과 높이 UV (두 방식을 법선으로 섞지 않고 갈라서 쓴다)
-            uv[i] = Mathf.Abs(n.y) > 0.5f ? new Vector2(v.x * k, v.z * k) : new Vector2((v.x + v.z) * k * 0.9f, v.y * k);
+            int ia = triangles[t * 3], ib = triangles[t * 3 + 1], ic = triangles[t * 3 + 2];
+            Vector3 fn = Vector3.Cross(vertices[ib] - vertices[ia], vertices[ic] - vertices[ia]);
+            if (fn.sqrMagnitude < 1e-12f || Mathf.Abs(fn.normalized.y) > 0.5f) continue; // 위나 아래를 보는 면은 평면 UV 그대로
+
+            int[] idx = { ia, ib, ic };
+            float[] angle = new float[3];
+            float min = float.MaxValue, max = float.MinValue;
+            for (int j = 0; j < 3; j++)
+            {
+                Vector3 v = vertices[idx[j]];
+                float a = Mathf.Atan2(v.z, v.x);
+                if (a < 0f) a += Tau;
+                angle[j] = a;
+                min = Mathf.Min(min, a); max = Mathf.Max(max, a);
+            }
+            bool wraps = max - min > Mathf.PI; // 둘레의 이음매(0도와 360도)에 걸친 삼각형: 작은 쪽을 한 바퀴 더한 값으로 이어 준다
+            for (int j = 0; j < 3; j++)
+            {
+                Vector3 v = vertices[idx[j]];
+                float a = angle[j];
+                int vi = idx[j];
+                if (wraps && a < Mathf.PI)
+                {
+                    a += Tau;
+                    vi = vertices.Count;        // 이음매에서는 꼭짓점을 하나 더 만들어 UV가 거꾸로 달리지 않게 한다
+                    vertices.Add(v); normals.Add(normals[idx[j]]); uv.Add(Vector2.zero);
+                    triangles[t * 3 + j] = vi;
+                }
+                float r = Mathf.Sqrt(v.x * v.x + v.z * v.z);
+                uv[vi] = new Vector2(a * r * k, v.y * k);
+            }
         }
-        copy.uv = uv;
-        copy.RecalculateTangents();
-        styled[source] = copy;
+
+        copy.Clear();
+        copy.SetVertices(vertices);
+        copy.SetNormals(normals);
+        copy.SetUVs(0, uv);
+        copy.SetTriangles(triangles, 0);
+        copy.RecalculateBounds();
+        copy.RecalculateTangents();        styled[source] = copy;
         return copy;
     }
 

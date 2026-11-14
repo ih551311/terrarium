@@ -60,6 +60,8 @@ public class BottleSave
     public string groundId;                 // 비어 있으면 흙
     public int shelfSlot = -1;              // 선반의 몇 번째 칸 (-1이면 선반에 없다)
     public string typeId;                   // 병 인벤토리의 병이면 병 종류 번호(예: bottle0). 작업대 병이면 비어 있다.
+    public int paidCoins;                   // 병을 만들 때 낸 코인 (취소하면 돌려준다)
+    public bool usedFree;                   // 병을 만들 때 공짜 병을 썼는가
     public string name;                     // 사용자가 지어 준 병 이름. 비어 있으면 "종류 #번호"
     public List<PlacedSave> items = new List<PlacedSave>();
 }

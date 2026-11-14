@@ -249,3 +249,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **스노우볼**(`bottle4`, 18코인)과 **눈꽃 병**(`bottle5`, 22코인): 병 종류가 4개에서 6개가 됐다. 둘은 **선착장을 고쳐야 만들 수 있다**(`BottleChooser.IsUnlocked`: 번호 4 이상은 `GameState.DockOpen`이 있어야 함, 잠겼을 때 카드에 "선착장을 고치면 열려요"). 스노우볼은 둥근 구슬 모양에 눈 덮인 마개, 눈꽃 병은 열 면이 각진 결정 모양에 빨간 뾰족 마개.
 - 유리 모델은 `BottleModelMaker`(메뉴 눈 섬 병 모델 만들기)가 회전체 껍데기로 만든다(바깥면, 안쪽면, 바닥, 입구 둘레, 안쪽 바닥 가운데 꼭짓점이 있어야 `JarSetup`이 안쪽 반지름 표를 읽는다). 새 병 종류를 더하려면 `JarSetup.Jars`에 한 줄, `BottleIconMaker.Ids`에 id, UISetup `ChoiceCount`와 typeIcons를 늘린다. 각진 병은 `Jar.fit`(안쪽 반지름에 곱함, 눈꽃 병 0.95)으로 평평한 면 안에 재료와 흙이 들어가게 한다. 순서: 병 모델, 장식 모델 가져오기 설정, 병 만들기, 병 그림 만들기, UI 만들기.
 - **병 다시 만들기 주의**: `JarSetup.Build`는 흙 모양 파일을 지우지 않고 같은 파일에 덮어쓴다(`SaveMeshAsset`, GUID를 지켜 프리팹과의 연결이 끊기지 않게). 병을 다시 만든 뒤에는 병 프리팹을 강제로 다시 가져온(`AssetDatabase.ImportAsset(..., ForceUpdate)`) 다음 병 그림 만들기와 UI 만들기를 해야 한다(그렇지 않으면 메모리에 남은 옛 프리팹으로 그림이 흙 없이 찍힌다). Play 중에는 병 만들기를 하지 않는다.
+## 병 버리기 · 병 종류 정리 (구현됨)
+- **병 버리기**: 병 꾸미기 화면의 "완성" 아래 분홍 "병 버리기" 버튼(`BottlePanel.OnCancelClicked`). 두 번 눌러야 지워진다(첫 클릭은 확인 문구). 만들 때 낸 코인(`BottleRecord.paidCoins`) 또는 공짜 병(`usedFree`)을 돌려주고, 병 안 재료와 바닥재는 가방으로 돌려준다(가방이 차면 우체통 도착함). 저장 파일에도 `paidCoins`, `usedFree`가 들어간다.
+- **병 종류**: 눈 구슬(snowglobe)은 없애고 **원기둥 병**(`cylinder`, 조금 넓은 원기둥, 10코인)으로 바꿨다. 키가 큰 병(`tall`)은 목록에서 뺐다(`BottleChooser.IsRetired`, 모델은 남아 있다). 가격: 6, 6, 10, 14, 10, 22.
+- **흙 옆면**: `SoilLook.Styled`가 윗면은 평면 UV, 옆면은 (각도×반지름, 높이) UV로 다시 만든다(이음새 정점 복제).

@@ -220,6 +220,29 @@ public static class GameState
         NewRequestToday = true;
     }
 
+    /// <summary>코인을 더한다. (병 만들기를 취소했을 때 돌려주는 코인 등)</summary>
+    public static void AddCoins(int amount)
+    {
+        if (amount <= 0) return;
+        Coins += amount;
+        Changed?.Invoke();
+    }
+
+    /// <summary>공짜 병 하나를 돌려준다. (공짜 병으로 만든 병을 취소했을 때)</summary>
+    public static void AddFreeBottle()
+    {
+        FreeBottles++;
+        Changed?.Invoke();
+    }
+
+    /// <summary>우체통에 도착한 물건으로 하나 더한다. (병을 취소할 때 가방이 가득 차서 못 돌려준 재료)</summary>
+    public static void AddArrivedItem(MaterialData item)
+    {
+        if (item == null) return;
+        arrivedItems.Add(item);
+        Changed?.Invoke();
+    }
+
     /// <summary>코인을 낸다. 모자라면 false (코인은 그대로).</summary>
     public static bool TrySpend(int amount)
     {

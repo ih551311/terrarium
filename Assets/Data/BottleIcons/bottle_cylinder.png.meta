@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: a1c5aa1cf8fd49f4e88fc4e0aee68488
+guid: 90bf3b89f9a03284680046dda6ba5868
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7122408255503938030
-    second: bottle_snowglobe_0
+      213: -1938961435307098677
+    second: bottle_cylinder_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bottle_snowglobe_0
+      name: bottle_cylinder_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 21ec0618d6f182d90800000000000000
-      internalID: -7122408255503938030
+      spriteID: bcdb65ff8dc6715e0800000000000000
+      internalID: -1938961435307098677
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bottle_snowglobe_0: -7122408255503938030
+      bottle_cylinder_0: -1938961435307098677
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

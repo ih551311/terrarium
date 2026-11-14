@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05992f2b86db22d428fc70d0b362cbbe, type: 3}
-  m_Name: bottle_snowglobe
+  m_Name: bottle_cylinder
   m_EditorClassIdentifier: Assembly-CSharp::BottleData
-  id: snowglobe
-  displayName: "\uC2A4\uB178\uC6B0\uBCFC"
-  prefab: {fileID: 594434920327464120, guid: 5a0ec339b4991c444aa3080425c34cde, type: 3}
+  id: cylinder
+  displayName: "\uC6D0\uAE30\uB465 \uBCD1"
+  prefab: {fileID: 7794725599548854682, guid: c0df6ca974063f94a908099b187afd37, type: 3}

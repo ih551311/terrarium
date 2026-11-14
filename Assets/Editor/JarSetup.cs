@@ -85,7 +85,7 @@ public static class JarSetup
         new Jar("flask", "넓은 병", "jar_flask", "bottle2", 0.034f, false),
         new Jar("side",  "누운 병", "jar_side",  "bottle3", 0f,     true),
         // 눈 섬 전용 병 (선착장을 고쳐야 만들 수 있다). 모델은 BottleModelMaker가 만든다
-        new Jar("snowglobe", "스노우볼", "jar_snowglobe", "bottle4", 0.046f, false), // 받침이 좁아서 흙을 조금 더 두껍게
+        new Jar("cylinder",  "원기둥 병", "jar_cylinder",  "bottle4", 0.036f, false),
         new Jar("lantern",   "눈꽃 병",  "jar_lantern",   "bottle5", 0.032f, false, 0.95f),
     };
 

@@ -5,7 +5,7 @@ using Builder = ShellModelMaker.Builder;
 
 /// <summary>
 /// 눈 섬 전용 병 두 종류의 유리 모델과 마개를 코드로 만들어 Assets/Models/Deco 에 .obj 로 저장한다.
-///  - 스노우볼(jar_snowglobe): 둥근 구슬 모양 유리에 짧은 목, 눈 덮인 마개
+///  - 원기둥 병(jar_cylinder): 곧은 원기둥 몸통의 조금 넓은 병, 나무색 마개
 ///  - 눈꽃 병(jar_lantern): 결정처럼 각진 열 면의 랜턴 모양 유리, 빨간 뾰족 마개
 /// 바깥면과 안쪽면, 바닥, 입구 둘레를 가진 속이 빈 유리 껍데기다. 안쪽 반지름 표는 JarSetup이 이 모델에서 읽는다
 /// (안쪽 바닥 가운데에 꼭짓점이 있어야 한다). 병 유리 재질은 '장식 모델 가져오기 설정'이 입힌다. 크기는 원래 병과 비슷하다(약 0.2m, 게임에서 2배).
@@ -20,10 +20,10 @@ public static class BottleModelMaker
     [MenuItem("유리병 정원/눈 섬 병 모델 만들기")]
     public static string Build()
     {
-        Snowglobe();
+        Cylinder();
         Lantern();
         AssetDatabase.Refresh();
-        return "눈 섬 병 모델 2종(스노우볼, 눈꽃 병)을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
+        return "병 모델 2종(원기둥 병, 눈꽃 병)을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
     }
 
     // ───────── 유리 껍데기 ─────────
@@ -60,35 +60,32 @@ public static class BottleModelMaker
         return new Vector3(p.x * Mathf.Cos(angle), p.y, p.x * Mathf.Sin(angle));
     }
 
-    // ───────── 스노우볼 ─────────
+    // ───────── 원기둥 병 ─────────
 
-    private static void Snowglobe()
+    private static void Cylinder()
     {
-        // 구슬: 중심 높이 0.108, 반지름 0.098 (안쪽은 0.0945). 바닥은 작은 받침 모양으로 둥글게 올라간다.
-        const float cy = 0.108f, R = 0.098f, Ri = 0.0945f;
-        var outer = new List<Vector2> { new Vector2(0f, 0f), new Vector2(0.040f, 0f), new Vector2(0.050f, 0.008f) };
-        var inner = new List<Vector2> { new Vector2(0f, 0.007f), new Vector2(0.036f, 0.007f), new Vector2(0.049f, 0.015f) };
-        for (float deg = -52f; deg <= 62.01f; deg += 7.6f)
+        // 곧은 원기둥 몸통(반지름 0.075)에 입구가 살짝 좁아지는 넓은 병. 바닥 모서리만 아주 조금 깎는다.
+        var outer = new List<Vector2>
         {
-            float a = deg * Mathf.Deg2Rad;
-            outer.Add(new Vector2(R * Mathf.Cos(a), cy + R * Mathf.Sin(a)));
-            inner.Add(new Vector2(Ri * Mathf.Cos(a), cy + Ri * Mathf.Sin(a)));
-        }
-        outer.Add(new Vector2(0.034f, 0.206f)); inner.Add(new Vector2(0.0305f, 0.203f));
-        outer.Add(new Vector2(0.034f, 0.222f)); inner.Add(new Vector2(0.0305f, 0.222f));
-
+            new Vector2(0f, 0f), new Vector2(0.070f, 0f), new Vector2(0.075f, 0.006f), new Vector2(0.075f, 0.180f),
+            new Vector2(0.064f, 0.192f), new Vector2(0.064f, 0.206f)
+        };
+        var inner = new List<Vector2>
+        {
+            new Vector2(0f, 0.006f), new Vector2(0.069f, 0.006f), new Vector2(0.072f, 0.010f), new Vector2(0.072f, 0.178f),
+            new Vector2(0.061f, 0.189f), new Vector2(0.061f, 0.206f)
+        };
         b = new Builder();
-        Shell(outer, inner, 24);
-        b.Write("jar_snowglobe");
+        Shell(outer, inner, 28);
+        b.Write("jar_cylinder");
 
-        // 마개: 코르크 몸통과 눈이 쌓인 하얀 덮개
+        // 마개: 코르크 몸통과 나무색 덮개
         b = new Builder();
-        Cylinder(0.0300f, 0.205f, 0.226f, 12, Brown);
-        Cylinder(0.0385f, 0.226f, 0.236f, 12, White);
-        Dome(0.0300f, 0.236f, 0.011f, White);
-        b.Write("jar_snowglobe_cork");
+        Cylinder(0.0605f, 0.190f, 0.210f, 14, Brown);
+        Cylinder(0.0680f, 0.210f, 0.222f, 14, 6);
+        Dome(0.0600f, 0.222f, 0.008f, 6);
+        b.Write("jar_cylinder_cork");
     }
-
     // ───────── 눈꽃 병 (각진 랜턴) ─────────
 
     private static void Lantern()

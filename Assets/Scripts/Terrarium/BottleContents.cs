@@ -152,10 +152,13 @@ public class BottleContents : MonoBehaviour
     public int SoilLevelIndex { get; private set; } = 1;
 
     /// <summary>병을 만든다. 흙의 양(0 적게, 1 보통, 2 많이)을 정하고, 그 뒤로는 바꿀 수 없다.</summary>
-    public void Create(int soilLevel)
+    public void Create(int soilLevel, int paidCoins = 0, bool usedFree = false)
     {
         if (IsCreated) return;
         IsCreated = true;
+        BottleRecord fresh = BottleStore.Get(bottleId); // 낸 값을 적어 둔다 (취소하면 돌려주려고)
+        fresh.paidCoins = paidCoins;
+        fresh.usedFree = usedFree;
         ApplySoilLevel(soilLevel);
         SaveState();
     }
@@ -438,7 +441,7 @@ public class BottleContents : MonoBehaviour
     public void SaveState()
     {
         BottleRecord old = BottleStore.Get(bottleId); // 병 종류와 이름은 이어 받는다
-        BottleRecord record = new BottleRecord { ground = Ground, completed = IsCompleted, created = IsCreated, soilLevel = SoilLevelIndex, typeId = old.typeId, name = old.name };
+        BottleRecord record = new BottleRecord { ground = Ground, completed = IsCompleted, created = IsCreated, soilLevel = SoilLevelIndex, typeId = old.typeId, name = old.name, paidCoins = old.paidCoins, usedFree = old.usedFree };
         foreach (PlacedMaterial placed in items)
         {
             record.items.Add(new PlacedData

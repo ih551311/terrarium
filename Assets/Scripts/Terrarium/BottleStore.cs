@@ -21,6 +21,8 @@ public class BottleRecord
     public int soilLevel = 1;     // 흙의 양: 0 적게, 1 보통, 2 많이
     public int shelfSlot = -1;    // 선반의 몇 번째 칸에 놓였는가 (-1이면 선반에 없다)
     public string typeId;         // 병 인벤토리에 보관된 병이면 어떤 종류의 병이었는지(작업대 병 번호, 예: bottle0). 작업대 병이면 비어 있다.
+    public int paidCoins;         // 이 병을 만들 때 낸 코인 (만들다가 취소하면 돌려준다)
+    public bool usedFree;         // 이 병을 만들 때 공짜 병을 썼는가 (취소하면 공짜 병을 돌려준다)
     public string name;           // 병 인벤토리의 병에 사용자가 지어 준 이름. 비어 있으면 "종류 #번호"로 보여 준다.
 }
 
