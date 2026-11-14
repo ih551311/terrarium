@@ -115,9 +115,9 @@ public static class IconBaker
     {
         if (data.placedPrefab != null) return (GameObject)PrefabUtility.InstantiatePrefab(data.placedPrefab);
 
-        // 모델이 없는 재료(모래): 모래색 둥근 더미 세 덩어리
+        // 모델이 없는 재료(모래, 눈): 재료 색의 둥근 더미 세 덩어리
         var root = new GameObject("SandPile");
-        Material mat = BottleSetup.GetOrCreateMaterial("SandIcon", data.placeholderColor);
+        Material mat = BottleSetup.GetOrCreateMaterial(data.id == "sand" ? "SandIcon" : "PileIcon_" + data.id, data.placeholderColor);
         foreach (var (x, y, z, s) in new[] { (0f, 0f, 0f, 1f), (0.55f, -0.05f, 0.1f, 0.65f), (-0.5f, -0.08f, -0.15f, 0.55f) })
         {
             GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);

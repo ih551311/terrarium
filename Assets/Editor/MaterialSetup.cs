@@ -78,9 +78,9 @@ public static class MaterialSetup
         new Entry("holly_berry",      "호랑가시 열매",   Plant, "deco_holly_berry",     new Color(0.85f, 0.25f, 0.25f), Snow, Hand, 3),
         new Entry("frost_leaf",       "서리 낀 잎",      Plant, "deco_frost_leaf",      new Color(0.70f, 0.88f, 0.85f), Snow, Hand, 2),
         new Entry("snowball",         "눈덩이",          Deco,  "deco_snowball",        new Color(0.95f, 0.97f, 1.00f), Snow, Hand, 1),
-        new Entry("mini_snowman",     "미니 눈사람",     Deco,  "deco_mini_snowman",    new Color(0.95f, 0.97f, 1.00f), Snow, Hand, 8),
+        new Entry("mini_snowman",     "미니 눈사람",     Deco,  "deco_mini_snowman",    new Color(0.95f, 0.97f, 1.00f), Snow, Hand, 8),       // 눈 섬의 눈사람을 곡괭이로 캐서 얻는다 (Harvestable.fixedMaterial)
         new Entry("winter_bell",      "겨울 방울",       Deco,  "deco_winter_bell",     new Color(0.93f, 0.75f, 0.25f), Snow, Hand, 6),
-        new Entry("mitten",           "벙어리장갑",      Deco,  "deco_mitten",          new Color(0.85f, 0.25f, 0.25f), Snow, Hand, 5),
+        new Entry("mitten",           "벙어리장갑",      Deco,  "deco_mitten",          new Color(0.85f, 0.25f, 0.25f), Shop, Buy, 5, 14),   // 눈 섬에서 줍지 않고 우체통에서 산다
         // ── 섬의 풀과 꽃을 괭이로 캐면 무작위로 나오는 재료들 (따로 놓인 자리는 없다. 괭이로 풀은 풀 재료, 꽃은 꽃 재료가 나온다)
         new Entry("tulip",            "튤립",       Plant, "deco_tulip",           new Color(0.85f, 0.35f, 0.40f), Hill,  Hoe, 3),
         new Entry("sunflower",        "해바라기",   Plant, "deco_sunflower",       new Color(0.97f, 0.80f, 0.20f), Hill,  Hoe, 15, 0, MaterialCondition.Always, true),
@@ -182,7 +182,12 @@ public static class MaterialSetup
         sand.zone = Beach; sand.acquire = Hand; sand.condition = MaterialCondition.Always; sand.sellPrice = 1;
         EditorUtility.SetDirty(sand);
 
+        // 바닥재 눈: 눈 섬에서 맨손으로 줍는다 (모래와 같은 방식)
+        MaterialData snow = BottleSetup.EnsureSnowAsset();
+        snow.zone = Snow; snow.acquire = Hand; snow.condition = MaterialCondition.Always; snow.sellPrice = 1;
+        EditorUtility.SetDirty(snow);
+
         AssetDatabase.SaveAssets();
-        return "재료 데이터 " + (Entries.Length + 1) + "종 (새로 " + created + "개), 모델 못 찾음 " + missingModel + "개";
+        return "재료 데이터 " + (Entries.Length + 2) + "종 (새로 " + created + "개), 모델 못 찾음 " + missingModel + "개";
     }
 }

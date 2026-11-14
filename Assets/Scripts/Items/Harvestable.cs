@@ -16,6 +16,9 @@ public class Harvestable : MonoBehaviour, IInteractable
     [Tooltip("이 자리의 구역. 구역에 맞는 재료가 먼저 나온다. 상관없으면 Anywhere")]
     [SerializeField] private MaterialZone zone = MaterialZone.Anywhere;
 
+    [Tooltip("정해 두면 이것을 캘 때 늘 이 재료가 나온다. 예: 눈 섬의 눈사람에서 미니 눈사람")]
+    [SerializeField] private MaterialData fixedMaterial;
+
     [Tooltip("괭이로 캐는 풀과 꽃만: 풀에서는 풀 재료, 꽃에서는 꽃 재료가 나온다")]
     [SerializeField] private PlantGroup plantGroup = PlantGroup.None;
 
@@ -44,6 +47,7 @@ public class Harvestable : MonoBehaviour, IInteractable
         get
         {
             if (depleted) return "오늘은 비어 있어요";
+            if (fixedMaterial != null) return "[좌클릭] " + (tool == AcquireMethod.Axe ? "도끼" : tool == AcquireMethod.Pickaxe ? "곡괭이" : "괭이") + "로 " + fixedMaterial.displayName + " 캐기";
             if (tool == AcquireMethod.Hoe) return plantGroup == PlantGroup.Flower ? "[좌클릭] 괭이로 꽃 캐기" : "[좌클릭] 괭이로 풀 캐기";
             return tool == AcquireMethod.Axe ? "[좌클릭] 도끼로 캐기" : "[좌클릭] 곡괭이로 캐기";
         }
@@ -52,6 +56,7 @@ public class Harvestable : MonoBehaviour, IInteractable
     /// <summary>캐서 나올 재료 하나를 고른다. (괭이는 풀/꽃 갈래로, 도끼와 곡괭이는 구역과 희귀 확률로)</summary>
     private MaterialData Roll(ToolSettings settings, ToolSettings.Level level, out bool rare)
     {
+        if (fixedMaterial != null) { rare = false; return fixedMaterial; }
         if (tool == AcquireMethod.Hoe) return settings.RollHoe(plantGroup, zone, level.rareChance, out rare);
         return settings.Roll(tool, zone, level.rareChance, out rare);
     }

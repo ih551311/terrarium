@@ -418,13 +418,14 @@ public static class SnowIslandSetup
         cap.height = height * inv;
     }
 
-    private static void AddHarvestable(GameObject go, AcquireMethod tool, Color emptyTint)
+    private static void AddHarvestable(GameObject go, AcquireMethod tool, Color emptyTint, MaterialData fixedMaterial = null)
     {
         Harvestable h = go.AddComponent<Harvestable>();
         SerializedObject so = new SerializedObject(h);
         so.FindProperty("tool").enumValueIndex = (int)tool;
         so.FindProperty("zone").enumValueIndex = (int)MaterialZone.Snow;
         so.FindProperty("emptyTint").colorValue = emptyTint;
+        if (fixedMaterial != null) so.FindProperty("fixedMaterial").objectReferenceValue = fixedMaterial;
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 
@@ -438,9 +439,17 @@ public static class SnowIslandSetup
 
         // 건물(집 3채, 우물)은 눈 섬에 놓지 않는다. 병 속에 놓는 꾸밈 재료로 우체통에서 산다 (BuildingMaterialSetup)
 
-        // 눈사람과 팻말
-        GameObject snowman = Instantiate("Snowman", g, new Vector3(8f, GroundY(8f, -7f), -7f), 200f, 4f);
-        if (snowman != null) AddTrunk(snowman, 0.5f, 1.6f);
+        // 눈사람 여섯 개: 곡괭이로 캐면 미니 눈사람(병 속 재료)이 나온다. 캐면 푸르스름하게 바래고 다음 날 아침 돌아온다.
+        MaterialData miniSnowman = AssetDatabase.LoadAssetAtPath<MaterialData>(MaterialFolder + "mini_snowman.asset");
+        Vector2[] snowmen = { new Vector2(8f, -7f), new Vector2(-11f, 7f), new Vector2(-15f, -10f), new Vector2(17f, 11f), new Vector2(-3f, 15f), new Vector2(31f, -12f) };
+        for (int i = 0; i < snowmen.Length; i++)
+        {
+            GameObject sm = Instantiate("Snowman", g, new Vector3(snowmen[i].x, GroundY(snowmen[i].x, snowmen[i].y), snowmen[i].y), Rand() * 360f, Range(3.4f, 4.6f));
+            if (sm == null) continue;
+            sm.name = "Snowman_" + i;
+            AddTrunk(sm, 0.5f, 1.6f);
+            AddHarvestable(sm, AcquireMethod.Pickaxe, new Color(0.58f, 0.66f, 0.80f, 1f), miniSnowman);
+        }
         GameObject sign1 = Instantiate("Sign1", g, new Vector3(5f, GroundY(5f, 4f), 4f), 20f, 3f);
         GameObject sign2 = Instantiate("Sign2", g, new Vector3(34f, GroundY(34f, 6f), 6f), 100f, 3f);
         foreach (GameObject s in new[] { sign1, sign2 }) if (s != null) AddTrunk(s, 0.2f, 2f);
@@ -604,7 +613,7 @@ public static class SnowIslandSetup
         // 재료마다 놓을 곳의 수 (눈꽃은 원래 꽃 언덕의 재료지만 눈 오는 날에만 피는 꽃이라 여기도 핀다)
         var want = new Dictionary<string, int>
         {
-            { "holly_berry", 9 }, { "frost_leaf", 9 }, { "snowball", 10 }, { "winter_bell", 4 }, { "mitten", 4 }, { "mini_snowman", 3 }, { "snow_flower", 10 }
+            { "holly_berry", 9 }, { "frost_leaf", 9 }, { "snowball", 10 }, { "winter_bell", 4 }, { "snow", 14 }, { "snow_flower", 10 }
         };
         foreach (KeyValuePair<string, int> pair in want)
         {
@@ -615,8 +624,8 @@ public static class SnowIslandSetup
             {
                 float ang = Rand() * Mathf.PI * 2f, rad = Mathf.Sqrt(Rand()) * (IslandRadius - 8f);
                 float x = Mathf.Cos(ang) * rad, z = Mathf.Sin(ang) * rad;
-                // 방울, 장갑, 눈사람은 마을 가까이에, 나머지는 어디서나
-                bool nearVillage = pair.Key == "winter_bell" || pair.Key == "mitten" || pair.Key == "mini_snowman";
+                // 방울은 마을 가까이에, 나머지는 어디서나 (미니 눈사람은 눈사람에서 캐고, 벙어리장갑은 우체통에서 산다)
+                bool nearVillage = pair.Key == "winter_bell";
                 float d = Vector2.Distance(new Vector2(x, z), Village);
                 if (nearVillage && (d < 11f || d > 48f)) continue;
                 if (!Allowed(x, z, 10f, 2f)) continue;
@@ -640,9 +649,23 @@ public static class SnowIslandSetup
         so.FindProperty("material").objectReferenceValue = data;
         so.ApplyModifiedPropertiesWithoutUndo();
 
-        GameObject model = (GameObject)PrefabUtility.InstantiatePrefab(data.placedPrefab);
-        model.transform.SetParent(go.transform, false);
-        model.transform.localScale = Vector3.one * data.pickupScale * 1.9f; // 하얀 눈 위에서는 작은 재료가 안 보여서 크게
+        GameObject model;
+        if (data.placedPrefab != null)
+        {
+            model = (GameObject)PrefabUtility.InstantiatePrefab(data.placedPrefab);
+            model.transform.SetParent(go.transform, false);
+            model.transform.localScale = Vector3.one * data.pickupScale * 1.9f; // 하얀 눈 위에서는 작은 재료가 안 보여서 크게
+        }
+        else
+        {
+            // 모델이 없는 재료(바닥재 눈): 눈이 소복이 쌓인 하얀 더미. 흰 눈 위에서도 보이게 푸르스름한 그늘색으로 한다.
+            model = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            model.transform.SetParent(go.transform, false);
+            model.transform.localScale = new Vector3(0.9f, 0.4f, 0.9f);
+            model.transform.localPosition = new Vector3(0f, 0.12f, 0f);
+            Object.DestroyImmediate(model.GetComponent<Collider>());
+            model.GetComponent<Renderer>().sharedMaterial = BottleSetup.GetOrCreateMaterial("SnowPile", new Color(0.80f, 0.88f, 0.98f));
+        }
         model.name = "Model";
 
         Renderer[] renderers = model.GetComponentsInChildren<Renderer>();

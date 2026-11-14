@@ -198,10 +198,11 @@ public static class UISetup
 
         // 바닥재 고르기 (병 그림 오른쪽, 작게)
         GameObject groundBox = Rect(edit.transform, "GroundSelector");
-        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -110f), new Vector2(200f, 210f));
+        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -110f), new Vector2(200f, 290f));
         Label(groundBox.transform, "Title", "바닥재", 34, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(200f, 50f), TextAlignmentOptions.Center);
         Button soilButton = MakeSmallButton(groundBox.transform, "SoilButton", "흙", new Vector2(0.5f, 1f), new Vector2(0f, -60f), new Vector2(200f, 70f), 30);
         Button sandButton = MakeSmallButton(groundBox.transform, "SandButton", "모래 x0", new Vector2(0.5f, 1f), new Vector2(0f, -140f), new Vector2(200f, 70f), 30);
+        Button snowButton = MakeSmallButton(groundBox.transform, "SnowButton", "눈 x0", new Vector2(0.5f, 1f), new Vector2(0f, -220f), new Vector2(200f, 70f), 30);
         GroundSelector groundSelector = groundBox.AddComponent<GroundSelector>();
         SetRef(groundSelector, "bag", bag); SetRef(groundSelector, "decorator", decorator);
         SetRef(groundSelector, "sand", BottleSetup.EnsureSandAsset());
@@ -209,6 +210,9 @@ public static class UISetup
         SetRef(groundSelector, "soilBackground", soilButton.GetComponent<Image>());
         SetRef(groundSelector, "sandBackground", sandButton.GetComponent<Image>());
         SetRef(groundSelector, "sandLabel", sandButton.GetComponentInChildren<TextMeshProUGUI>());
+        SetRef(groundSelector, "snow", BottleSetup.EnsureSnowAsset());
+        SetRef(groundSelector, "snowButton", snowButton); SetRef(groundSelector, "snowBackground", snowButton.GetComponent<Image>());
+        SetRef(groundSelector, "snowLabel", snowButton.GetComponentInChildren<TextMeshProUGUI>());
 
         // 병 만들기 화면: 꾸미는 중인 병이 없을 때 먼저 나온다. 흙의 양을 고르고 병 카드를 누르면 병이 만들어진다.
         // 병 종류와 흙의 양은 이때 정해지고 그 뒤로는 바꿀 수 없다. (창 전체를 덮어서, 닫기 버튼 말고는 아래 화면이 보이지 않는다)
@@ -366,7 +370,8 @@ public static class UISetup
         TextMeshProUGUI mapMessage = Label(mWindow.transform, "Message", string.Empty, 40, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-60f, 60f), new Vector2(560f, 140f), TextAlignmentOptions.BottomLeft);
         mapMessage.color = new Color(0.72f, 0.3f, 0.2f, 1f);
 
-        // ── 우체통 패널: 보내기(가방 재료 → 다음 날 코인), 주문하기(코인 → 다음 날 물건), 도착한 것 받기
+        // ── 우체통 패널: 처음에는 메뉴(판매하기, 업그레이드, 구매하기, 받기 버튼)가 뜨고, 버튼을 누르면 그 화면만 따로 열린다.
+        //    쪽: 0 메뉴, 1 판매하기, 2 업그레이드, 3 구매하기, 4 받기. 각 쪽에는 "우체통 메뉴"로 돌아가는 버튼이 있다.
         GameObject mailRoot = Rect(ui.transform, "MailboxPanel");
         Stretch(mailRoot);
         Image mailDim = mailRoot.AddComponent<Image>(); mailDim.color = new Color(0f, 0f, 0f, 0.55f);
@@ -377,51 +382,78 @@ public static class UISetup
         Label(mailWindow.transform, "Title", "우체통", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -25f), new Vector2(400f, 90f), TextAlignmentOptions.TopLeft);
         TextMeshProUGUI mailHeader = Label(mailWindow.transform, "Header", "코인 0", 50, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -35f), new Vector2(760f, 80f), TextAlignmentOptions.Center);
         Button mailCloseButton = MakeButton(mailWindow.transform, "CloseButton", "닫기", new Vector2(1f, 1f), new Vector2(-40f, -30f), new Vector2(220f, 80f));
+        TextMeshProUGUI mailMessage = Label(mailWindow.transform, "Message", string.Empty, 38, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(1400f, 70f), TextAlignmentOptions.Center);
+        mailMessage.color = new Color(0.72f, 0.3f, 0.2f, 1f);
 
-        // 왼쪽: 보내기 (가방 칸마다 하나씩, 누르면 1개 넣기)
-        Label(mailWindow.transform, "SendTitle", "보내기  (내일 아침 코인이 와요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -125f), new Vector2(700f, 60f), TextAlignmentOptions.TopLeft);
-        GameObject sendGrid = Rect(mailWindow.transform, "SendGrid");
-        Anchor(sendGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -195f), new Vector2(700f, 490f));
+        GameObject[] mailPages = new GameObject[5];
+        for (int i = 0; i < mailPages.Length; i++)
+        {
+            mailPages[i] = Rect(mailWindow.transform, "Page" + i);
+            Anchor(mailPages[i], new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -5f), new Vector2(1500f, 700f));
+        }
+
+        // 0쪽 메뉴: 큰 버튼 네 개
+        string[] hubNames = { "판매하기", "업그레이드", "구매하기", "받기" };
+        Color[] hubColors = { new Color(0.66f, 0.8f, 0.72f, 1f), new Color(0.98f, 0.82f, 0.45f, 1f), new Color(0.7f, 0.82f, 0.95f, 1f), new Color(0.97f, 0.72f, 0.55f, 1f) };
+        Button[] hubButtons = new Button[4];
+        TMP_Text[] hubLabels = new TMP_Text[4];
+        for (int i = 0; i < 4; i++)
+        {
+            Button hb = MakeButton(mailPages[0].transform, "Hub" + i, hubNames[i], new Vector2(0f, 1f), new Vector2(30f + (i % 2) * 740f, -30f - (i / 2) * 330f), new Vector2(700f, 300f));
+            hb.GetComponent<Image>().color = hubColors[i];
+            TextMeshProUGUI ht = hb.GetComponentInChildren<TextMeshProUGUI>();
+            ht.fontSize = 64; ht.lineSpacing = 12f;
+            hubButtons[i] = hb; hubLabels[i] = ht;
+        }
+
+        // 1~4쪽 공통: 메뉴로 돌아가기 버튼과 제목
+        string[] pageTitles = { null, "판매하기  (내일 아침 코인이 와요)", "업그레이드  (내일 아침 도착해요)", "구매하기  (내일 아침 도착해요)", "받기  (도착한 것을 가방과 지갑으로)" };
+        Button[] backButtons = new Button[4];
+        for (int p = 1; p <= 4; p++)
+        {
+            backButtons[p - 1] = MakeSmallButton(mailPages[p].transform, "BackButton", "< 우체통 메뉴", new Vector2(0f, 1f), new Vector2(10f, -5f), new Vector2(380f, 72f), 34);
+            Label(mailPages[p].transform, "PageTitle", pageTitles[p], 46, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(430f, -12f), new Vector2(1000f, 60f), TextAlignmentOptions.TopLeft);
+        }
+
+        // 1쪽 판매하기: 가방 칸마다 하나씩 (8열 x 4행 = 32칸), 누르면 1개 넣기
+        GameObject sendGrid = Rect(mailPages[1].transform, "SendGrid");
+        Anchor(sendGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -100f), new Vector2(1440f, 440f));
         GridLayoutGroup sendLayout = sendGrid.AddComponent<GridLayoutGroup>();
-        sendLayout.cellSize = new Vector2(108f, 76f); sendLayout.spacing = new Vector2(8f, 6f);
-        sendLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; sendLayout.constraintCount = 6; // 6열 x 6행 = 36칸 (가방 32칸이 들어간다)
+        sendLayout.cellSize = new Vector2(174f, 104f); sendLayout.spacing = new Vector2(6f, 8f);
+        sendLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; sendLayout.constraintCount = 8;
         Button[] sendButtons = new Button[SlotCount];
         TMP_Text[] sendLabels = new TMP_Text[SlotCount];
         Image[] sendIcons = new Image[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
-            Button b = MakeButton(sendGrid.transform, "Send" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(108f, 76f));
+            Button b = MakeButton(sendGrid.transform, "Send" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(174f, 104f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
-            t.fontSize = 14;
-            SetBottomText(t.rectTransform, 38f);
-            sendIcons[i] = MakeSlotIcon(b.transform, new Vector2(0.5f, 1f), new Vector2(0f, -3f), new Vector2(40f, 40f));
+            t.fontSize = 18;
+            SetBottomText(t.rectTransform, 50f);
+            sendIcons[i] = MakeSlotIcon(b.transform, new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(52f, 52f));
             sendButtons[i] = b; sendLabels[i] = t;
         }
+        TextMeshProUGUI mailSummary = Label(mailPages[1].transform, "Summary", string.Empty, 32, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -560f), new Vector2(1400f, 120f), TextAlignmentOptions.TopLeft);
 
-        // 보낸 것과 주문한 것 요약
-        TextMeshProUGUI mailSummary = Label(mailWindow.transform, "Summary", string.Empty, 34, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -695f), new Vector2(700f, 100f), TextAlignmentOptions.TopLeft);
-        mailSummary.fontSize = 28;
-
-        // 오른쪽: 주문하기 (코인을 내고 사는 물건. 가격이 있는 재료를 모두 보여 준다)
-        // 도구 강화 (도끼, 곡괭이): 코인을 내고 주문하면 다음 날 도착하고, 받으면 도구 단계가 오른다
-        Label(mailWindow.transform, "UpgradeTitle", "도구 강화  (내일 아침 도착해요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -115f), new Vector2(700f, 50f), TextAlignmentOptions.TopLeft);
-        Button[] upgradeButtons = new Button[3]; // 도끼, 곡괭이, 괭이
+        // 2쪽 업그레이드: 도끼, 곡괭이, 괭이. 코인을 내고 주문하면 다음 날 도착하고, 받으면 도구 단계가 오른다
+        Button[] upgradeButtons = new Button[3];
         TMP_Text[] upgradeLabels = new TMP_Text[3];
         for (int i = 0; i < 3; i++)
         {
-            Button b = MakeButton(mailWindow.transform, "Upgrade" + i, string.Empty, new Vector2(0f, 1f), new Vector2(810f + i * 237f, -170f), new Vector2(226f, 108f));
+            Button b = MakeButton(mailPages[2].transform, "Upgrade" + i, string.Empty, new Vector2(0f, 1f), new Vector2(20f + i * 490f, -110f), new Vector2(470f, 440f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
-            t.fontSize = 18;
+            t.fontSize = 32; t.lineSpacing = 10f;
             b.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
             upgradeButtons[i] = b; upgradeLabels[i] = t;
         }
+        Label(mailPages[2].transform, "UpgradeHint", "강화하면 치는 횟수가 줄고, 얻는 양과 희귀 재료가 나올 확률이 늘어요", 32, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -580f), new Vector2(1400f, 60f), TextAlignmentOptions.TopLeft);
 
-        Label(mailWindow.transform, "OrderTitle", "주문하기  (내일 아침 도착해요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -285f), new Vector2(700f, 50f), TextAlignmentOptions.TopLeft);
-        GameObject orderGrid = Rect(mailWindow.transform, "OrderGrid");
-        Anchor(orderGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -340f), new Vector2(700f, 350f));
+        // 3쪽 구매하기: 가격이 있는 재료를 모두 보여 준다 (5열 x 5행 = 25칸)
+        GameObject orderGrid = Rect(mailPages[3].transform, "OrderGrid");
+        Anchor(orderGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(6f, -100f), new Vector2(1488f, 440f));
         GridLayoutGroup orderLayout = orderGrid.AddComponent<GridLayoutGroup>();
-        orderLayout.cellSize = new Vector2(167f, 66f); orderLayout.spacing = new Vector2(10f, 6f);
-        orderLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; orderLayout.constraintCount = 4; // 20개가 5줄에 들어간다 (칸 높이 66)
+        orderLayout.cellSize = new Vector2(284f, 76f); orderLayout.spacing = new Vector2(17f, 14f);
+        orderLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; orderLayout.constraintCount = 5;
 
         var orderableList = new System.Collections.Generic.List<MaterialData>();
         foreach (string guid in AssetDatabase.FindAssets("t:MaterialData"))
@@ -435,24 +467,23 @@ public static class UISetup
         Image[] orderIcons = new Image[orderableList.Count];
         for (int i = 0; i < orderableList.Count; i++)
         {
-            Button b = MakeButton(orderGrid.transform, "Order" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(226f, 66f));
+            Button b = MakeButton(orderGrid.transform, "Order" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(284f, 76f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
-            t.fontSize = 22;
+            t.fontSize = 24;
             // 왼쪽에 재료 그림, 오른쪽에 이름과 가격
             RectTransform tr = t.rectTransform;
-            tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = new Vector2(60f, 0f); tr.offsetMax = Vector2.zero;
-            orderIcons[i] = MakeSlotIcon(b.transform, new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(48f, 48f));
+            tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = new Vector2(66f, 0f); tr.offsetMax = Vector2.zero;
+            orderIcons[i] = MakeSlotIcon(b.transform, new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(56f, 56f));
             orderButtons[i] = b; orderLabels[i] = t;
         }
+        TextMeshProUGUI orderSummary = Label(mailPages[3].transform, "Summary", string.Empty, 32, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -570f), new Vector2(1400f, 80f), TextAlignmentOptions.TopLeft);
 
-        // 아래: 도착한 것 받기와 알림
-        Button collectButton = MakeButton(mailWindow.transform, "CollectButton", "도착한 것 받기", new Vector2(0.5f, 0f), new Vector2(400f, 130f), new Vector2(700f, 100f));
+        // 4쪽 받기: 큰 버튼 하나와, 도착한 것의 목록
+        Button collectButton = MakeButton(mailPages[4].transform, "CollectButton", "도착한 것 받기", new Vector2(0.5f, 1f), new Vector2(0f, -120f), new Vector2(900f, 170f));
         collectButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         TextMeshProUGUI collectLabel = collectButton.GetComponentInChildren<TextMeshProUGUI>();
-        collectLabel.fontSize = 44;
-        TextMeshProUGUI mailMessage = Label(mailWindow.transform, "Message", string.Empty, 38, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(1400f, 70f), TextAlignmentOptions.Center);
-        mailMessage.color = new Color(0.72f, 0.3f, 0.2f, 1f);
-
+        collectLabel.fontSize = 46;
+        TextMeshProUGUI collectInfo = Label(mailPages[4].transform, "CollectInfo", string.Empty, 36, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -330f), new Vector2(1300f, 330f), TextAlignmentOptions.Top);
         // ── 가방 패널
         GameObject invRoot = Rect(ui.transform, "InventoryPanel");
         Stretch(invRoot);
@@ -614,6 +645,10 @@ public static class UISetup
         SetArray(mailPanel, "orderButtons", orderButtons); SetArray(mailPanel, "orderLabels", orderLabels);
         SetArray(mailPanel, "upgradeButtons", upgradeButtons); SetArray(mailPanel, "upgradeLabels", upgradeLabels);
         SetRef(mailPanel, "collectButton", collectButton); SetRef(mailPanel, "collectLabel", collectLabel);
+        SetArray(mailPanel, "pages", mailPages);
+        SetArray(mailPanel, "hubButtons", hubButtons); SetArray(mailPanel, "hubLabels", hubLabels);
+        SetArray(mailPanel, "backButtons", backButtons);
+        SetRef(mailPanel, "orderSummaryText", orderSummary); SetRef(mailPanel, "collectInfoText", collectInfo);
 
         // ── 병 자세히 보기 패널 (선반의 병에서 E, 또는 Tab 가방의 병 탭에서 병을 누르면 열린다). 가장 위에 그려지게 마지막에 만든다.
         GameObject detailRoot = Rect(ui.transform, "BottleDetailPanel");

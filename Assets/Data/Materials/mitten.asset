@@ -16,13 +16,13 @@ MonoBehaviour:
   displayName: "\uBC99\uC5B4\uB9AC\uC7A5\uAC11"
   kind: 1
   icon: {fileID: 21300000, guid: f153e98b8f30b694f82cbe323d7c2f1a, type: 3}
-  zone: 5
-  acquire: 0
+  zone: 4
+  acquire: 3
   condition: 0
   isRare: 0
   plantGroup: 0
   sellPrice: 5
-  buyPrice: 0
+  buyPrice: 14
   placedPrefab: {fileID: 919132149155446097, guid: 3172d5a8be0562b478b876445744e427, type: 3}
   placeholderShape: 0
   placeholderColor: {r: 0.85, g: 0.25, b: 0.25, a: 1}
