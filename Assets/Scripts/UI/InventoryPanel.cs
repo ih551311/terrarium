@@ -155,7 +155,8 @@ public class InventoryPanel : MonoBehaviour
             bottleTexts[i].enableAutoSizing = true;
             bottleTexts[i].fontSizeMin = 12f;
             bottleTexts[i].fontSizeMax = 20f;
-            bottleTexts[i].text = BottleStore.NameOf(id, typeName) + "\n" + (shown ? "선반에 전시 중" : typeName);
+            bool named = !string.IsNullOrEmpty(BottleStore.Get(id).name); // 이름이 없으면 첫 줄이 이미 종류를 말하므로 종류를 또 쓰지 않는다
+            bottleTexts[i].text = BottleStore.NameOf(id, typeName) + "\n" + (shown ? "선반에 전시 중" : named ? typeName : string.Empty);
             Sprite sprite = typeIcons != null && type >= 0 && type < typeIcons.Length ? typeIcons[type] : null;
             bottleIcons[i].sprite = sprite;
             bottleIcons[i].enabled = sprite != null;

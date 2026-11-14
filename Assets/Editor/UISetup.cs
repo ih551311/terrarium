@@ -480,7 +480,7 @@ public static class UISetup
         // 병 탭: 완성한 병 인벤토리 (보기만 한다. 전시는 작업대의 "내 병"에서)
         GameObject bottleGroup = Rect(iWindow.transform, "BottleGroup");
         Stretch(bottleGroup);
-        TextMeshProUGUI bottleInfo = Label(bottleGroup.transform, "Info", string.Empty, 34, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1300f, 60f), TextAlignmentOptions.Center);
+        TextMeshProUGUI bottleInfo = Label(bottleGroup.transform, "Info", string.Empty, 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(1200f, 50f), TextAlignmentOptions.Center); // 탭 버튼(-80까지)과 칸(-170부터) 사이
         GameObject bottleGrid = Rect(bottleGroup.transform, "BottleSlots");
         Anchor(bottleGrid, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(1122f, 474f));
         GridLayoutGroup bglg = bottleGrid.AddComponent<GridLayoutGroup>();
