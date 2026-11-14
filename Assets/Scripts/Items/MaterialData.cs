@@ -34,7 +34,15 @@ public enum AcquireMethod
     Axe,      // 도끼로 나무를 친다
     Pickaxe,  // 곡괭이로 돌을 친다
     Shop,     // 우체통에서 코인으로 주문한다
-    Wild      // 섬에 그냥 자란 풀을 뜯으면 무작위로 나온다 (따로 놓인 자리는 없다)
+    Hoe       // 섬에 자란 풀과 꽃을 괭이로 캐면 무작위로 나온다 (따로 놓인 자리는 없다)
+}
+
+/// <summary>괭이로 캘 수 있는 식물의 갈래. 풀처럼 생긴 것에서는 풀 재료가, 꽃처럼 생긴 것에서는 꽃 재료가 나온다.</summary>
+public enum PlantGroup
+{
+    None,   // 괭이로 캐지 않는 재료
+    Grass,  // 풀, 이끼, 잎, 열매, 버섯 같은 풀숲의 것들
+    Flower  // 꽃
 }
 
 /// <summary>재료가 나오는 때 (낮과 밤·날씨는 9~10단계에서 켠다. 그전에는 항상 나온다)</summary>
@@ -75,6 +83,9 @@ public class MaterialData : ScriptableObject
 
     [Tooltip("희귀 재료인가 (도끼나 곡괭이로 칠 때 가끔 나온다)")]
     public bool isRare;
+
+    [Tooltip("괭이로 캘 때 풀에서 나오는가, 꽃에서 나오는가. 괭이로 얻지 않는 재료는 None")]
+    public PlantGroup plantGroup;
 
     [Header("코인 (12~13단계의 우체통 상점에서 쓴다. 모두 임시 값)")]
     [Tooltip("우체통에 넣어 팔 때 받는 코인 (기본 재료 1~3, 희귀 재료 20)")]

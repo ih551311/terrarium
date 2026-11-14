@@ -20,6 +20,7 @@ MonoBehaviour:
   acquire: 4
   condition: 0
   isRare: 0
+  plantGroup: 1
   sellPrice: 2
   buyPrice: 0
   placedPrefab: {fileID: 919132149155446097, guid: 352f0d9e1ac81fd4ca97d1e2b88c77ce, type: 3}

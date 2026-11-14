@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -679,8 +679,9 @@ public static class IslandSetup
             if (Rand() > prob) return;
             string[] pool = Rand() < 0.45f ? leafy : tufts;
             GameObject go = Spawn(parent.Find("Plants"), "Plants", pool[rng.Next(pool.Length)], x, z, Range(0.9f, 1.6f));
-            if (go != null) { count++; MakeWildPlant(go, zone); }
+            if (go != null) { count++; MakeHoePlant(go, zone); }
         });
+        count += ScatterFlowers(parent.Find("Plants"));
 
         Grid(16f, (x, z, h, zone) =>
         {
@@ -692,10 +693,20 @@ public static class IslandSetup
         return count;
     }
 
-    /// <summary>섬의 풀 하나를 뜯을 수 있게 한다. (바라볼 수 있는 상자 Collider와 WildPlant를 붙인다)</summary>
-    private static void MakeWildPlant(GameObject go, Zone zone)
+    // 꽃처럼 생긴 풀 프리팹 (나머지는 풀처럼 생겼다). 꽃에서는 꽃 재료, 풀에서는 풀 재료가 나온다.
+    private static readonly System.Collections.Generic.HashSet<string> FlowerPlantNames = new System.Collections.Generic.HashSet<string>
     {
-        if (go.GetComponent<WildPlant>() != null) return;
+        "Plant04A", "Plant05A", "Plant05B", "Plant06B", "Plant07B"
+    };
+
+    /// <summary>
+    /// 섬의 풀이나 꽃 하나를 괭이로 캘 수 있게 한다. 바라볼 수 있는 상자 Collider와 Harvestable(괭이)을 붙인다.
+    /// 이름이 꽃 프리팹이면 꽃(꽃 재료), 아니면 풀(풀 재료)이다.
+    /// </summary>
+    private static void MakeHoePlant(GameObject go, Zone zone)
+    {
+        GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go); // 예전에 붙였던 스크립트(없어진 WildPlant)를 치운다
+        if (go.GetComponent<Harvestable>() != null) return;
         Renderer[] renderers = go.GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0) return;
         Bounds b = renderers[0].bounds;
@@ -708,17 +719,55 @@ public static class IslandSetup
         box.center = go.transform.InverseTransformPoint(b.center);
         box.size = new Vector3(Mathf.Max(b.size.x, 0.5f) / s.x, Mathf.Max(b.size.y, 0.5f) / s.y, Mathf.Max(b.size.z, 0.5f) / s.z);
 
-        WildPlant plant = go.AddComponent<WildPlant>();
-        SerializedObject so = new SerializedObject(plant);
+        Harvestable harvestable = go.AddComponent<Harvestable>();
+        SerializedObject so = new SerializedObject(harvestable);
+        so.FindProperty("tool").enumValueIndex = (int)AcquireMethod.Hoe;
         so.FindProperty("zone").enumValueIndex = (int)(zone == Zone.Forest ? MaterialZone.Forest : zone == Zone.Hill ? MaterialZone.FlowerHill : MaterialZone.Anywhere);
+        bool flower = FlowerPlantNames.Contains(go.name.Split(' ')[0]);
+        so.FindProperty("plantGroup").enumValueIndex = (int)(flower ? PlantGroup.Flower : PlantGroup.Grass);
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     /// <summary>
-    /// 섬은 그대로 두고, 이미 놓인 풀(IslandContent/Plants)을 모두 뜯을 수 있게 한다.
-    /// 이미 된 풀은 건너뛴다. (메뉴: 유리병 정원 > 섬의 풀 뜯을 수 있게)
+    /// 꽃 언덕(과 가운데 풀밭 일부)에 꽃을 더 심는다. 풀이 대부분이라 꽃 재료를 구하기 어려워서다.
+    /// 심은 꽃도 괭이로 캘 수 있다. 섬 만들기에서 쓰고, 이미 만든 섬에는 메뉴 '섬에 꽃 더 심기'로 심는다.
     /// </summary>
-    [MenuItem("유리병 정원/섬의 풀 뜯을 수 있게")]
+    private static int ScatterFlowers(Transform plants)
+    {
+        string[] flowers = { "Plant04A", "Plant05A", "Plant05B", "Plant06B", "Plant07B" };
+        int count = 0;
+        Grid(5f, (x, z, h, zone) =>
+        {
+            if (zone != Zone.Hill) return;
+            if (DistanceToPaths(x, z) < 2.5f || Rand() > 0.5f) return;
+            GameObject go = Spawn(plants, "Plants", flowers[rng.Next(flowers.Length)], x, z, Range(1.1f, 1.8f));
+            if (go != null) { count++; MakeHoePlant(go, zone); }
+        });
+        return count;
+    }
+
+    [MenuItem("유리병 정원/섬에 꽃 더 심기")]
+    public static string AddFlowers()
+    {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != IslandPath)
+            EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
+        GameObject root = GameObject.Find(RootName);
+        Transform group = root != null ? root.transform.Find("Plants") : null;
+        terrain = Terrain.activeTerrain;
+        if (group == null || terrain == null) return "IslandContent/Plants나 지형을 찾지 못했어요.";
+        rng = new System.Random(20261116);
+        Physics.SyncTransforms();
+        int n = ScatterFlowers(group);
+        EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        EditorSceneManager.SaveOpenScenes();
+        return "꽃 언덕에 꽃 " + n + "송이를 더 심었어요";
+    }
+
+    /// <summary>
+    /// 섬은 그대로 두고, 이미 놓인 풀(IslandContent/Plants)을 모두 괭이로 캘 수 있게 한다.
+    /// 이미 된 풀은 건너뛴다. (메뉴: 유리병 정원 > 섬의 풀 괭이로 캐게 하기)
+    /// </summary>
+    [MenuItem("유리병 정원/섬의 풀 괭이로 캐게 하기")]
     public static string MakePlantsHarvestable()
     {
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != IslandPath)
@@ -730,14 +779,14 @@ public static class IslandSetup
         int made = 0;
         foreach (Transform child in group)
         {
-            if (child.GetComponent<WildPlant>() != null || child.name.StartsWith("Mushroom")) continue; // 버섯은 풀이 아니다
+            if (child.name.StartsWith("Mushroom")) continue; // 버섯은 풀이 아니다
             Vector3 p = child.position;
-            MakeWildPlant(child.gameObject, ZoneAt(p.x, p.z, HeightAt(p.x, p.z)));
+            MakeHoePlant(child.gameObject, ZoneAt(p.x, p.z, HeightAt(p.x, p.z)));
             made++;
         }
         EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
-        return "풀 " + made + "개를 뜯을 수 있게 했어요";
+        return "풀과 꽃 " + made + "개를 괭이로 캘 수 있게 했어요";
     }
 
     private static void AddClouds(Transform parent)
@@ -772,8 +821,8 @@ public static class IslandSetup
             MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(AssetDatabase.GUIDToAssetPath(guid));
             // 상점 품목과 희귀 재료는 섬에 놓지 않는다 (희귀 재료는 도끼와 곡괭이로 칠 때 나온다)
             if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Anywhere || data.isRare) continue;
-            // 도끼와 곡괭이로 얻는 재료는 바닥에 놓지 않고, 나무와 돌(Harvestable)에서 나온다. 풀을 뜯어 얻는 재료(Wild)는 풀(WildPlant)에서 나온다.
-            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe || data.acquire == AcquireMethod.Wild) continue;
+            // 도끼와 곡괭이로 얻는 재료는 바닥에 놓지 않고, 나무와 돌(Harvestable)에서 나온다. 괭이로 캐는 재료(Hoe)는 풀과 꽃(Harvestable)에서 나온다.
+            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe || data.acquire == AcquireMethod.Hoe) continue;
 
             count += PlaceMaterialPickups(group.transform, data, 9);
         }
@@ -820,7 +869,7 @@ public static class IslandSetup
         {
             MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(AssetDatabase.GUIDToAssetPath(guid));
             if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Anywhere || data.isRare) continue;
-            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe || data.acquire == AcquireMethod.Wild) continue;
+            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe || data.acquire == AcquireMethod.Hoe) continue;
             if (group.Find("Pickup_" + data.id + "_0") != null) continue; // 이미 있다
 
             int n = PlaceMaterialPickups(group, data, 6);

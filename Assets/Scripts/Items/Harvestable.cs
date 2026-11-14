@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// 도끼나 곡괭이로 캘 수 있는 나무와 돌. 나무나 돌 오브젝트(Collider가 있는 것)에 붙인다.
+/// 도끼, 곡괭이, 괭이로 캘 수 있는 나무, 돌, 풀과 꽃. 나무, 돌, 풀 오브젝트(Collider가 있는 것)에 붙인다.
 /// 보고 좌클릭하면 도구를 휘두르고, 정해진 횟수만큼 치면 재료가 가방으로 들어온다.
 /// 나무와 돌은 사라지지 않는다. 캐면 "오늘은 비어 있음"으로 색이 바래고, 다음 날 아침에 돌아온다.
 /// 비어 있는 상태는 집에 들어갔다 나와도 유지된다 (GameState가 기억한다).
@@ -15,6 +15,9 @@ public class Harvestable : MonoBehaviour, IInteractable
 
     [Tooltip("이 자리의 구역. 구역에 맞는 재료가 먼저 나온다. 상관없으면 Anywhere")]
     [SerializeField] private MaterialZone zone = MaterialZone.Anywhere;
+
+    [Tooltip("괭이로 캐는 풀과 꽃만: 풀에서는 풀 재료, 꽃에서는 꽃 재료가 나온다")]
+    [SerializeField] private PlantGroup plantGroup = PlantGroup.None;
 
     // 비어 있을 때: 색을 살짝 줄이고 은은한 빛을 더해 "바랜" 느낌을 낸다. (곱하기만으로는 어두워지기만 해서)
     private static readonly Color EmptyTint = new Color(0.9f, 0.9f, 0.9f, 1f);
@@ -39,8 +42,17 @@ public class Harvestable : MonoBehaviour, IInteractable
         get
         {
             if (depleted) return "오늘은 비어 있어요";
+            if (tool == AcquireMethod.Hoe) return plantGroup == PlantGroup.Flower ? "[좌클릭] 괭이로 꽃 캐기" : "[좌클릭] 괭이로 풀 캐기";
             return tool == AcquireMethod.Axe ? "[좌클릭] 도끼로 캐기" : "[좌클릭] 곡괭이로 캐기";
         }
+    }
+
+    /// <summary>캐서 나올 재료 하나를 고른다. (괭이는 풀/꽃 갈래로, 도끼와 곡괭이는 구역과 희귀 확률로)</summary>
+    private MaterialData Roll(ToolSettings settings, ToolSettings.Level level, out bool rare)
+    {
+        rare = false;
+        if (tool == AcquireMethod.Hoe) return settings.RollHoe(plantGroup, zone);
+        return settings.Roll(tool, zone, level.rareChance, out rare);
     }
 
     private void Awake()
@@ -89,7 +101,7 @@ public class Harvestable : MonoBehaviour, IInteractable
         if (last)
         {
             // 마지막 타격 전에 가방에 자리가 있는지 본다. 가득 차면 캐지지 않고 대상도 비워지지 않는다.
-            first = settings.Roll(tool, zone, level.rareChance, out bool firstRare);
+            first = Roll(settings, level, out bool firstRare);
             if (first == null) return;
             if (!who.Bag.CanAdd(first))
             {
@@ -118,7 +130,7 @@ public class Harvestable : MonoBehaviour, IInteractable
         {
             MaterialData m = first;
             bool rare = firstRare;
-            if (i > 0) m = settings.Roll(tool, zone, level.rareChance, out rare);
+            if (i > 0) m = Roll(settings, level, out rare);
             if (m == null || !who.Bag.TryAdd(m)) continue;
 
             anyRare |= rare;

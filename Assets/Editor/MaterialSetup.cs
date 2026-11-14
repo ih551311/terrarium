@@ -36,7 +36,7 @@ public static class MaterialSetup
     private const MaterialKind Plant = MaterialKind.Plant;
     private const MaterialKind Deco = MaterialKind.Decoration;
     private const MaterialZone Forest = MaterialZone.Forest, Beach = MaterialZone.Beach, Hill = MaterialZone.FlowerHill, Shop = MaterialZone.Shop;
-    private const AcquireMethod Hand = AcquireMethod.Hand, Axe = AcquireMethod.Axe, Pick = AcquireMethod.Pickaxe, Buy = AcquireMethod.Shop, Wild = AcquireMethod.Wild;
+    private const AcquireMethod Hand = AcquireMethod.Hand, Axe = AcquireMethod.Axe, Pick = AcquireMethod.Pickaxe, Buy = AcquireMethod.Shop, Hoe = AcquireMethod.Hoe;
 
     // model은 Assets/Models/Deco 안의 파일 이름(확장자 없이). 가격은 모두 임시 값이다.
     private static readonly Entry[] Entries =
@@ -63,25 +63,25 @@ public static class MaterialSetup
         new Entry("clover",           "클로버",     Plant, "deco_clover",        new Color(0.64f, 0.83f, 0.51f), Hill, Hand, 1),
         new Entry("small_rock",       "작은 바위",  Deco,  "deco_rock_small",    new Color(0.62f, 0.62f, 0.65f), Hill, Pick, 2),
         new Entry("evening_primrose", "달맞이꽃",   Plant, "deco_flower_yellow", new Color(0.97f, 0.85f, 0.40f), Hill, Hand, 3, 0, MaterialCondition.NightOnly),
-        // ── 섬의 풀을 뜯으면 무작위로 나오는 재료들 (따로 놓인 자리는 없다. WildPlant가 구역에 맞게 뽑아 준다)
-        new Entry("tulip",            "튤립",       Plant, "deco_tulip",           new Color(0.85f, 0.35f, 0.40f), Hill,  Wild, 3),
-        new Entry("sunflower",        "해바라기",   Plant, "deco_sunflower",       new Color(0.97f, 0.80f, 0.20f), Hill,  Wild, 3),
-        new Entry("lavender",         "라벤더",     Plant, "deco_lavender",        new Color(0.70f, 0.60f, 0.88f), Hill,  Wild, 3),
-        new Entry("cosmos",           "코스모스",   Plant, "deco_cosmos",          new Color(0.96f, 0.68f, 0.75f), Hill,  Wild, 2),
-        new Entry("dandelion",        "민들레",     Plant, "deco_dandelion",       new Color(0.98f, 0.85f, 0.30f), Hill,  Wild, 2),
-        new Entry("pink_flower",      "분홍 들꽃",  Plant, "deco_flower_pink",     new Color(0.96f, 0.68f, 0.75f), Hill,  Wild, 2),
-        new Entry("purple_flower",    "보라 들꽃",  Plant, "deco_flower_purple",   new Color(0.70f, 0.60f, 0.88f), Hill,  Wild, 2),
-        new Entry("wheat",            "밀 이삭",    Plant, "deco_wheat",           new Color(0.93f, 0.78f, 0.40f), MaterialZone.Anywhere, Wild, 2),
-        new Entry("four_leaf_clover", "네잎클로버", Plant, "deco_four_leaf_clover",new Color(0.45f, 0.78f, 0.45f), MaterialZone.Anywhere, Wild, 4),
-        new Entry("grass_tuft",       "풀 다발",    Plant, "deco_grass_tuft",      new Color(0.45f, 0.70f, 0.40f), MaterialZone.Anywhere, Wild, 1),
-        new Entry("reed",             "갈대",       Plant, "deco_reed",            new Color(0.85f, 0.75f, 0.55f), MaterialZone.Anywhere, Wild, 2),
-        new Entry("foxtail",          "강아지풀",   Plant, "deco_foxtail",         new Color(0.75f, 0.70f, 0.45f), MaterialZone.Anywhere, Wild, 1),
-        new Entry("green_leaf",       "나뭇잎",     Deco,  "deco_leaf_green",      new Color(0.40f, 0.70f, 0.40f), Forest, Wild, 1),
-        new Entry("orange_leaf",      "단풍잎",     Deco,  "deco_leaf_orange",     new Color(0.93f, 0.55f, 0.25f), Forest, Wild, 2),
-        new Entry("moss_dark",        "짙은 이끼",  MaterialKind.Cover, "deco_moss_dark", new Color(0.30f, 0.50f, 0.30f), Forest, Wild, 1),
-        new Entry("acorn",            "도토리",     Deco,  "deco_acorn",           new Color(0.60f, 0.40f, 0.25f), Forest, Wild, 1),
-        new Entry("brown_mushroom",   "갈색 버섯",  Deco,  "deco_mushroom_brown",  new Color(0.60f, 0.42f, 0.30f), Forest, Wild, 2),
-        new Entry("white_mushroom",   "흰 버섯",    Deco,  "deco_mushroom_white",  new Color(0.95f, 0.94f, 0.90f), Forest, Wild, 2),
+        // ── 섬의 풀과 꽃을 괭이로 캐면 무작위로 나오는 재료들 (따로 놓인 자리는 없다. 괭이로 풀은 풀 재료, 꽃은 꽃 재료가 나온다)
+        new Entry("tulip",            "튤립",       Plant, "deco_tulip",           new Color(0.85f, 0.35f, 0.40f), Hill,  Hoe, 3),
+        new Entry("sunflower",        "해바라기",   Plant, "deco_sunflower",       new Color(0.97f, 0.80f, 0.20f), Hill,  Hoe, 3),
+        new Entry("lavender",         "라벤더",     Plant, "deco_lavender",        new Color(0.70f, 0.60f, 0.88f), Hill,  Hoe, 3),
+        new Entry("cosmos",           "코스모스",   Plant, "deco_cosmos",          new Color(0.96f, 0.68f, 0.75f), Hill,  Hoe, 2),
+        new Entry("dandelion",        "민들레",     Plant, "deco_dandelion",       new Color(0.98f, 0.85f, 0.30f), Hill,  Hoe, 2),
+        new Entry("pink_flower",      "분홍 들꽃",  Plant, "deco_flower_pink",     new Color(0.96f, 0.68f, 0.75f), Hill,  Hoe, 2),
+        new Entry("purple_flower",    "보라 들꽃",  Plant, "deco_flower_purple",   new Color(0.70f, 0.60f, 0.88f), Hill,  Hoe, 2),
+        new Entry("wheat",            "밀 이삭",    Plant, "deco_wheat",           new Color(0.93f, 0.78f, 0.40f), MaterialZone.Anywhere, Hoe,  2),
+        new Entry("four_leaf_clover", "네잎클로버", Plant, "deco_four_leaf_clover",new Color(0.45f, 0.78f, 0.45f), MaterialZone.Anywhere, Hoe,  4),
+        new Entry("grass_tuft",       "풀 다발",    Plant, "deco_grass_tuft",      new Color(0.45f, 0.70f, 0.40f), MaterialZone.Anywhere, Hoe,  1),
+        new Entry("reed",             "갈대",       Plant, "deco_reed",            new Color(0.85f, 0.75f, 0.55f), MaterialZone.Anywhere, Hoe,  2),
+        new Entry("foxtail",          "강아지풀",   Plant, "deco_foxtail",         new Color(0.75f, 0.70f, 0.45f), MaterialZone.Anywhere, Hoe,  1),
+        new Entry("green_leaf",       "나뭇잎",     Deco,  "deco_leaf_green",      new Color(0.40f, 0.70f, 0.40f), Forest, Hoe,  1),
+        new Entry("orange_leaf",      "단풍잎",     Deco,  "deco_leaf_orange",     new Color(0.93f, 0.55f, 0.25f), Forest, Hoe,  2),
+        new Entry("moss_dark",        "짙은 이끼",  MaterialKind.Cover, "deco_moss_dark", new Color(0.30f, 0.50f, 0.30f), Forest, Hoe,  1),
+        new Entry("acorn",            "도토리",     Deco,  "deco_acorn",           new Color(0.60f, 0.40f, 0.25f), Forest, Hoe,  1),
+        new Entry("brown_mushroom",   "갈색 버섯",  Deco,  "deco_mushroom_brown",  new Color(0.60f, 0.42f, 0.30f), Forest, Hoe,  2),
+        new Entry("white_mushroom",   "흰 버섯",    Deco,  "deco_mushroom_white",  new Color(0.95f, 0.94f, 0.90f), Forest, Hoe,  2),
 
         // ── 희귀 재료 2종 (나무와 돌을 칠 때 가끔)
         new Entry("amber",            "호박 조각",  Deco,  "deco_amber",         new Color(0.93f, 0.65f, 0.20f), MaterialZone.Anywhere, Axe,  20, 0, MaterialCondition.Always, true),
@@ -106,6 +106,25 @@ public static class MaterialSetup
         new Entry("hot_air_balloon",  "열기구",     Deco,  "deco_hot_air_balloon", new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 3, 40),
     };
 
+    // 괭이로 캘 때 꽃에서 나오는 재료 (나머지 식물, 이끼, 잎, 열매, 버섯은 풀에서 나온다)
+    private static readonly System.Collections.Generic.HashSet<string> FlowerIds = new System.Collections.Generic.HashSet<string>
+    {
+        "white_flower", "blue_flower", "evening_primrose", "tulip", "sunflower", "lavender", "cosmos", "dandelion", "pink_flower", "purple_flower"
+    };
+    // 풀에서 나오는 재료. 괭이 재료(Hoe)는 모두 풀이거나 꽃이고, 맨손으로 줍던 식물 몇 가지도 풀에서 나온다.
+    private static readonly System.Collections.Generic.HashSet<string> GrassHandIds = new System.Collections.Generic.HashSet<string>
+    {
+        "moss", "fern", "clover"
+    };
+
+    private static PlantGroup GroupOf(string id)
+    {
+        if (FlowerIds.Contains(id)) return PlantGroup.Flower;
+        foreach (Entry e in Entries)
+            if (e.id == id && (e.acquire == AcquireMethod.Hoe || GrassHandIds.Contains(id))) return PlantGroup.Grass;
+        return PlantGroup.None;
+    }
+
     [MenuItem("유리병 정원/재료 데이터 만들기")]
     public static string Build()
     {
@@ -128,6 +147,7 @@ public static class MaterialSetup
             data.placedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelFolder + "/" + e.model + ".obj");
             if (data.placedPrefab == null) missingModel++;
             data.zone = e.zone; data.acquire = e.acquire; data.condition = e.condition; data.isRare = e.rare;
+            data.plantGroup = GroupOf(e.id);
             data.sellPrice = e.sell; data.buyPrice = e.buy;
             EditorUtility.SetDirty(data);
         }

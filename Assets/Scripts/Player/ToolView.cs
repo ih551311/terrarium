@@ -16,8 +16,8 @@ public class ToolView : MonoBehaviour
         new Color(0.95f, 0.80f, 0.32f)  // 3단계: 금
     };
 
-    private GameObject axe, pickaxe;
-    private Renderer axeHead, pickaxeHead;
+    private GameObject axe, pickaxe, hoe;
+    private Renderer axeHead, pickaxeHead, hoeHead;
     private Coroutine swinging;
 
     /// <summary>카메라 아래에 도구 보기를 만든다.</summary>
@@ -44,8 +44,15 @@ public class ToolView : MonoBehaviour
         Part(pickaxe.transform, "Handle", new Vector3(0f, 0.2f, 0f), new Vector3(0.05f, 0.55f, 0.05f), handle);
         pickaxeHead = Part(pickaxe.transform, "Head", new Vector3(0f, 0.45f, 0f), new Vector3(0.42f, 0.05f, 0.05f), HeadColors[0]);
 
+        // 괭이: 자루 끝에 납작한 날이 앞쪽으로 꺾여 있다
+        hoe = new GameObject("Hoe");
+        hoe.transform.SetParent(transform, false);
+        Part(hoe.transform, "Handle", new Vector3(0f, 0.2f, 0f), new Vector3(0.05f, 0.55f, 0.05f), handle);
+        hoeHead = Part(hoe.transform, "Head", new Vector3(0f, 0.47f, 0.07f), new Vector3(0.17f, 0.04f, 0.14f), HeadColors[0]);
+
         axe.SetActive(false);
         pickaxe.SetActive(false);
+        hoe.SetActive(false);
     }
 
     private static Renderer Part(Transform parent, string name, Vector3 pos, Vector3 scale, Color color)
@@ -65,8 +72,8 @@ public class ToolView : MonoBehaviour
     /// <summary>도구를 보이고 한 번 휘두른다. 진행 중이던 휘두르기는 새로 시작한다.</summary>
     public void Swing(AcquireMethod tool, int level)
     {
-        GameObject model = tool == AcquireMethod.Axe ? axe : pickaxe;
-        Renderer head = tool == AcquireMethod.Axe ? axeHead : pickaxeHead;
+        GameObject model = tool == AcquireMethod.Axe ? axe : tool == AcquireMethod.Hoe ? hoe : pickaxe;
+        Renderer head = tool == AcquireMethod.Axe ? axeHead : tool == AcquireMethod.Hoe ? hoeHead : pickaxeHead;
         head.material.color = HeadColors[Mathf.Clamp(level, 0, HeadColors.Length - 1)];
 
         if (swinging != null) StopCoroutine(swinging);
@@ -77,6 +84,7 @@ public class ToolView : MonoBehaviour
     {
         axe.SetActive(false);
         pickaxe.SetActive(false);
+        hoe.SetActive(false);
         model.SetActive(true);
 
         // 위로 들었다가(0.12초) 내려친다(0.1초). 잠깐 머물다 사라진다.

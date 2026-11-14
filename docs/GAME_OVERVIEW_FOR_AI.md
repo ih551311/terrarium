@@ -69,7 +69,7 @@
 종류: Plant(식물), Decoration(장식), Ground(바닥재), Cover(바닥 덮기). 구역: Forest(작은 숲, 섬 북쪽), Beach(바닷가), FlowerHill(꽃 언덕), Anywhere, Shop(우체통 상점에서만).
 
 - **숲**: 이끼(moss, Cover, 줍기), 고사리(fern, Plant, 줍기), 버섯(mushroom, 줍기), 나뭇가지(twig, 도끼), 솔방울(pinecone, 도끼)
-- **섬에 그냥 자란 풀(WildPlant, E로 뜯기)**: 섬의 풀(IslandContent/Plants, 약 650개)을 뜯으면 그 구역 재료 중 무작위 하나가 가방에 들어옴(`AcquireMethod.Wild` 재료 + 맨손으로 줍는 식물). 뜯으면 사라졌다가 다음 날 아침에 다시 자람(GameState.MarkTaken). Wild 재료는 섬 바닥에 따로 놓이지 않음. 튤립, 해바라기, 라벤더, 코스모스, 민들레, 분홍·보라 들꽃, 밀 이삭, 네잎클로버, 풀 다발, 갈대, 강아지풀, 나뭇잎, 단풍잎, 짙은 이끼, 도토리, 갈색·흰 버섯. 모델은 코드로 만든 팔레트 로우폴리(`PlantModelMaker`, `ShellModelMaker`)이고 아이콘은 IconBaker가 모델을 찍어 만듦.
+- **섬의 풀과 꽃(괭이, Harvestable tool=Hoe)**: 섬의 풀 약 515개와 꽃 약 270개(꽃 언덕에 꽃 136송이를 더 심음)를 나무와 돌처럼 **괭이로 좌클릭**(2번 치기, 강화 없음)해서 캔다. 풀처럼 생긴 것(Plant01~03, 09, 12~16)에서는 **풀 재료**(`PlantGroup.Grass`: 이끼, 고사리, 클로버, 네잎클로버, 풀 다발, 강아지풀, 갈대, 밀 이삭, 나뭇잎, 단풍잎, 짙은 이끼, 도토리, 버섯), 꽃처럼 생긴 것(Plant04A, 05A/B, 06B, 07B)에서는 **꽃 재료**(`PlantGroup.Flower`: 흰·파란·분홍·보라 들꽃, 민들레, 튤립, 해바라기, 라벤더, 코스모스)가 구역에 맞게 무작위로 나옴(ToolSettings.RollHoe). 캔 풀은 바래 보이다가 다음 날 아침에 돌아옴. `AcquireMethod.Hoe` 재료는 섬 바닥에 따로 놓이지 않음. 모델은 코드로 만든 팔레트 로우폴리(`PlantModelMaker`, `ShellModelMaker`)이고 아이콘은 IconBaker가 모델을 찍어 만듦.
 - **바닷가**: 조개껍데기(seashell, 줍기), 가리비·대합·고둥·모래 달러·뿔고둥(줍기), 모래(sand, Ground, 줍기), 조약돌(pebble, 곡괭이), 유목(driftwood, 도끼)
 - **꽃 언덕**: 흰 들꽃(white_flower), 파란 들꽃(blue_flower), 클로버(clover), 달맞이꽃(evening_primrose, 밤만) — 모두 Plant, 줍기. 작은 바위(small_rock, 곡괭이)
 - **어디서나(희귀)**: 호박 조각(amber, 도끼 희귀), 수정 조각(crystal, 곡괭이 희귀)

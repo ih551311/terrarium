@@ -81,9 +81,10 @@ public static class GameState
         return true;
     }
 
-    /// <summary>도구(Axe 또는 Pickaxe)의 강화 단계</summary>
+    /// <summary>도구(Axe, Pickaxe, Hoe)의 강화 단계. 괭이는 강화가 없어 항상 0이다.</summary>
     public static int LevelOf(AcquireMethod tool)
     {
+        if (tool == AcquireMethod.Hoe) return 0;
         return tool == AcquireMethod.Axe ? AxeLevel : PickaxeLevel;
     }
 
