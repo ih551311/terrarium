@@ -1,8 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 선반에 전시된 병 하나. 바라보고 E를 누르면 선반에서 내린다. (병은 지워지지 않고 그대로 남는다)
-/// 다시 전시하려면 병 꾸미기 화면에서 그 병을 열고 "선반에 전시하기"를 누른다.
+/// 선반에 전시된 병 하나. 바라보고 E를 누르면 병을 크게 보여 준다. (자세히 보기 화면에서 돌려 보고, 선반에서 내릴 수도 있다)
 /// BottleShelf가 병을 선반에 올릴 때 붙인다.
 /// </summary>
 public class ShelfBottle : MonoBehaviour, IInteractable
@@ -16,11 +15,13 @@ public class ShelfBottle : MonoBehaviour, IInteractable
         displayName = name;
     }
 
-    public string Prompt => "[E] 선반에서 내리기 - " + displayName;
+    public string Prompt => "[E] 자세히 보기 - " + displayName;
 
     public void Interact(Interactor who)
     {
-        BottleStore.Undisplay(bottleId);
-        who.ShowMessage(displayName + "을(를) 선반에서 내렸어요");
+        BottleDetailPanel panel = GameRoot.Instance != null ? GameRoot.Instance.BottleDetailPanel : null;
+        if (panel == null) return;
+        string problem = panel.Open(bottleId);
+        if (problem != null) who.ShowMessage(problem);
     }
 }

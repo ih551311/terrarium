@@ -62,7 +62,7 @@ public class BottlePanel : MonoBehaviour
     {
         Keyboard keyboard = Keyboard.current;
         // 가방이 위에 열려 있으면 가방이 먼저 닫히도록 양보한다.
-        if (isOpen && !InventoryPanel.IsOpen && !BottleNameDialog.IsOpen && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+        if (isOpen && !InventoryPanel.IsOpen && !BottleNameDialog.IsOpen && !BottleDetailPanel.IsOpen && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             Close();
     }
 

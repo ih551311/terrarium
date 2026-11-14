@@ -12,9 +12,11 @@ public class GameRoot : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private BottlePanel bottlePanel;
     [SerializeField] private MailboxPanel mailboxPanel;
+    [SerializeField] private BottleDetailPanel bottleDetailPanel;
 
     public static GameRoot Instance { get; private set; }
     public BottlePanel BottlePanel => bottlePanel;
+    public BottleDetailPanel BottleDetailPanel => bottleDetailPanel;
     public MailboxPanel MailboxPanel => mailboxPanel;
     public Transform Player => player;
 

@@ -84,6 +84,7 @@ public static class IconBaker
             made++;
         }
 
+        cam.targetTexture = null; // 카메라가 쥔 채로 지우면 오류가 난다
         Object.DestroyImmediate(rt);
         AssetDatabase.Refresh();
 

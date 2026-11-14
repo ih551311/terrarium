@@ -29,6 +29,8 @@ public class InventoryPanel : MonoBehaviour
     [SerializeField] private TMP_Text bottleInfo;
     [SerializeField] private Image[] bottleIcons;
     [SerializeField] private TMP_Text[] bottleTexts;
+    [Tooltip("병 칸마다 하나씩. 누르면 그 병을 자세히 본다")]
+    [SerializeField] private Button[] bottleButtons;
     [SerializeField] private Button bottlePrev;
     [SerializeField] private Button bottleNext;
     [Tooltip("병 종류(둥근, 긴, 넓은, 누운)별 병 그림")]
@@ -48,6 +50,24 @@ public class InventoryPanel : MonoBehaviour
         bottleTab.onClick.AddListener(() => SetTab(true));
         bottlePrev.onClick.AddListener(() => { bottlePage--; Refresh(); });
         bottleNext.onClick.AddListener(() => { bottlePage++; Refresh(); });
+        if (bottleButtons != null)
+            for (int i = 0; i < bottleButtons.Length; i++)
+            {
+                int cell = i;
+                bottleButtons[i].onClick.AddListener(() => OpenBottleDetail(cell));
+            }
+    }
+
+    /// <summary>병 칸을 눌렀다. 그 병을 자세히 본다. (집 안에서만 볼 수 있어서, 밖이면 안내만 한다)</summary>
+    private void OpenBottleDetail(int cell)
+    {
+        var ids = BottleStore.ArchivedIds();
+        int n = bottlePage * bottleTexts.Length + cell;
+        if (n < 0 || n >= ids.Count) return;
+
+        BottleDetailPanel panel = GameRoot.Instance != null ? GameRoot.Instance.BottleDetailPanel : null;
+        string problem = panel != null ? panel.Open(ids[n]) : "병을 자세히 볼 수 없어요";
+        if (problem != null) bottleInfo.text = problem;
     }
 
     private void SetTab(bool bottles)
@@ -74,6 +94,7 @@ public class InventoryPanel : MonoBehaviour
     {
         Keyboard keyboard = Keyboard.current;
         if (keyboard == null) return;
+        if (BottleDetailPanel.IsOpen) return; // 병 자세히 보기가 위에 열려 있으면 그쪽이 먼저 닫히게 양보한다
 
         if (keyboard.tabKey.wasPressedThisFrame)
         {

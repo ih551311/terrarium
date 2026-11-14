@@ -489,10 +489,13 @@ public static class UISetup
         bglg.childAlignment = TextAnchor.UpperCenter;
         Image[] bottleIcons = new Image[SlotCount];
         TMP_Text[] bottleTexts = new TMP_Text[SlotCount];
+        Button[] bottleButtons = new Button[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
             GameObject cell = Rect(bottleGrid.transform, "BottleCell" + i);
-            Image cbg = cell.AddComponent<Image>(); cbg.color = new Color(0.82f, 0.88f, 0.82f, 1f); cbg.raycastTarget = false;
+            Image cbg = cell.AddComponent<Image>(); cbg.color = new Color(0.82f, 0.88f, 0.82f, 1f);
+            Button cellButton = cell.AddComponent<Button>(); cellButton.targetGraphic = cbg; // 누르면 병을 자세히 본다
+            bottleButtons[i] = cellButton;
             GameObject ct = Rect(cell.transform, "Text");
             Stretch(ct);
             TextMeshProUGUI ctmp = ct.AddComponent<TextMeshProUGUI>();
@@ -586,6 +589,7 @@ public static class UISetup
         SetRef(ip, "bottleInfo", bottleInfo);
         SetArray(ip, "bottleIcons", bottleIcons);
         SetArray(ip, "bottleTexts", bottleTexts);
+        SetArray(ip, "bottleButtons", bottleButtons);
         SetRef(ip, "bottlePrev", bottlePrev); SetRef(ip, "bottleNext", bottleNext);
         SetArray(ip, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3) });
 
@@ -611,7 +615,33 @@ public static class UISetup
         SetArray(mailPanel, "upgradeButtons", upgradeButtons); SetArray(mailPanel, "upgradeLabels", upgradeLabels);
         SetRef(mailPanel, "collectButton", collectButton); SetRef(mailPanel, "collectLabel", collectLabel);
 
+        // ── 병 자세히 보기 패널 (선반의 병에서 E, 또는 Tab 가방의 병 탭에서 병을 누르면 열린다). 가장 위에 그려지게 마지막에 만든다.
+        GameObject detailRoot = Rect(ui.transform, "BottleDetailPanel");
+        Stretch(detailRoot);
+        Image detailDim = detailRoot.AddComponent<Image>(); detailDim.color = new Color(0f, 0f, 0f, 0.6f);
+        GameObject dWindow = Rect(detailRoot.transform, "Window");
+        Center(dWindow, 1500f, 1000f);
+        Image dBg = dWindow.AddComponent<Image>(); dBg.color = new Color(0.96f, 0.94f, 0.89f, 1f);
+        TextMeshProUGUI detailName = Label(dWindow.transform, "Name", string.Empty, 54, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(1000f, 70f), TextAlignmentOptions.Center);
+        detailName.textWrappingMode = TextWrappingModes.NoWrap; detailName.overflowMode = TextOverflowModes.Ellipsis;
+        TextMeshProUGUI detailInfo = Label(dWindow.transform, "Info", string.Empty, 28, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -96f), new Vector2(1200f, 80f), TextAlignmentOptions.Top);
+        Button detailClose = MakeSmallButton(dWindow.transform, "CloseButton", "닫기", new Vector2(1f, 1f), new Vector2(-30f, -24f), new Vector2(150f, 60f), 32);
+        GameObject detailView = Rect(dWindow.transform, "BottleView");
+        Anchor(detailView, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -185f), new Vector2(700f, 700f));
+        RawImage detailRaw = detailView.AddComponent<RawImage>(); detailRaw.color = Color.white;
+        detailRaw.texture = AssetDatabase.LoadAssetAtPath<RenderTexture>(RenderTexturePath);
+        DragRotate detailDrag = detailView.AddComponent<DragRotate>();
+        Label(dWindow.transform, "Hint", "끌어서 돌려 보기  |  T: 처음 방향  |  Esc: 닫기", 26, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(40f, 40f), new Vector2(760f, 40f), TextAlignmentOptions.Left);
+        Button detailShelf = MakeSmallButton(dWindow.transform, "ShelfButton", "선반에 올리기", new Vector2(1f, 0f), new Vector2(-40f, 30f), new Vector2(380f, 80f), 34);
+        detailShelf.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
+        detailRoot.SetActive(false);
+        BottleDetailPanel detailPanel = ui.AddComponent<BottleDetailPanel>();
+        SetRef(detailPanel, "root", detailRoot); SetRef(detailPanel, "closeButton", detailClose); SetRef(detailPanel, "dragRotate", detailDrag);
+        SetRef(detailPanel, "nameLabel", detailName); SetRef(detailPanel, "infoLabel", detailInfo);
+        SetRef(detailPanel, "shelfButton", detailShelf); SetRef(detailPanel, "shelfLabel", detailShelf.GetComponentInChildren<TextMeshProUGUI>());
+
         // GameRoot가 새 병 패널과 우체통 패널을 가리키도록 다시 연결한다
+        SetRef(root.GetComponent<GameRoot>(), "bottleDetailPanel", detailPanel);
         SetRef(root.GetComponent<GameRoot>(), "bottlePanel", bp);
         SetRef(root.GetComponent<GameRoot>(), "mailboxPanel", mailPanel);
 
