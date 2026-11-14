@@ -154,10 +154,14 @@ public class BottlePanel : MonoBehaviour
         BottleContents bottle = station.Get(index);
         if (!bottle.IsCreated)
         {
-            // 병 가격이 켜져 있으면 코인을 낸다
-            if (chooser.RequirePurchase && !GameState.TrySpend(chooser.PriceOf(index)))
+            // 시작할 때 받은 공짜 병을 먼저 쓰고, 없으면 병 가격만큼 코인을 낸다
+            if (GameState.FreeBottles > 0)
             {
-                decorator.ShowMessage("코인이 모자라요 (" + chooser.PriceOf(index) + "코인 필요)");
+                GameState.UseFreeBottle();
+            }
+            else if (chooser.RequirePurchase && !GameState.TrySpend(chooser.PriceOf(index)))
+            {
+                chooser.Refresh(station, "코인이 모자라요 (" + chooser.PriceOf(index) + "코인 필요, 지금 " + GameState.Coins + "코인)");
                 return;
             }
             bottle.Create(chooser.SelectedSoil);

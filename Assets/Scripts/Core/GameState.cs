@@ -130,6 +130,18 @@ public static class GameState
     /// <summary>값이 바뀔 때마다 호출된다. (화면 갱신용)</summary>
     public static event Action Changed;
 
+    /// <summary>처음 시작할 때 받는 공짜 병의 수. 병을 만들 때 먼저 이것을 쓰고, 다 쓰면 코인을 낸다.</summary>
+    public static int FreeBottles { get; private set; } = 1;
+
+    /// <summary>공짜 병 하나를 쓴다. 없으면 false.</summary>
+    public static bool UseFreeBottle()
+    {
+        if (FreeBottles <= 0) return false;
+        FreeBottles--;
+        Changed?.Invoke();
+        return true;
+    }
+
     /// <summary>코인을 낸다. 모자라면 false (코인은 그대로).</summary>
     public static bool TrySpend(int amount)
     {
@@ -227,6 +239,7 @@ public static class GameState
         data.arrivedCoins = ArrivedCoins;
         data.axeLevel = AxeLevel;
         data.pickaxeLevel = PickaxeLevel;
+        data.freeBottles = FreeBottles;
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
         foreach (MaterialData m in arrivedItems) data.arrivedItems.Add(m.id);
@@ -242,6 +255,7 @@ public static class GameState
         ArrivedCoins = data.arrivedCoins;
         AxeLevel = data.axeLevel;
         PickaxeLevel = data.pickaxeLevel;
+        FreeBottles = Mathf.Max(0, data.freeBottles);
 
         outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
         foreach (string id in data.outbox) { MaterialData m = db.Find(id); if (m != null) outbox.Add(m); }
@@ -265,6 +279,7 @@ public static class GameState
         TimeOfDay = 0f;
         AxeLevel = 0;
         PickaxeLevel = 0;
+        FreeBottles = 1;
         DayStarted = null;
         Day = 1;
         Coins = 0;

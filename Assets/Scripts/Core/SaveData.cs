@@ -20,6 +20,7 @@ public class SaveData
     public List<string> outbox = new List<string>();
     public List<string> orders = new List<string>();
     public List<string> arrivedItems = new List<string>();
+    public int freeBottles = 1;                           // 아직 안 쓴 공짜 병 (처음 시작할 때 1개. 예전 저장에도 1개를 준다)
     public List<int> upgradeOrders = new List<int>();    // 주문한 도구 강화 (AcquireMethod 번호)
     public List<int> arrivedUpgrades = new List<int>();  // 도착한 도구 강화
 

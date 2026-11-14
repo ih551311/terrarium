@@ -17,7 +17,7 @@ public static class UISetup
     private const string PrefabPath = "Assets/Prefabs/GameRoot.prefab";
     private const string FontAssetPath = "Assets/Resources/Fonts/Cafe24DongdongLight SDF.asset";
     private const string RenderTexturePath = "Assets/Data/Placeholder/BottleView.renderTexture";
-    private const int SlotCount = 20; // 가방 칸 수 (5열 x 4행). Bag의 slotCount도 이 값으로 맞춘다.
+    private const int SlotCount = 32; // 가방 칸 수 (가방 창은 8열 x 4행). Bag의 slotCount도 이 값으로 맞춘다.
 
     private static readonly Color TextColor = new Color(0.2f, 0.25f, 0.2f, 1f);
 
@@ -145,7 +145,7 @@ public static class UISetup
 
         // 병 그림: 꾸미는 곳이라 크게 둔다. 버튼들은 작게 해서 옆으로 비킨다.
         GameObject view = Rect(bWindow.transform, "BottleView");
-        Anchor(view, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -90f), new Vector2(740f, 740f));
+        Anchor(view, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -90f), new Vector2(670f, 670f)); // 아래 재료 칸이 두 줄이라 조금 줄였다
         RawImage raw = view.AddComponent<RawImage>(); raw.color = Color.white;
         raw.texture = AssetDatabase.LoadAssetAtPath<RenderTexture>(RenderTexturePath);
         DragRotate drag = view.AddComponent<DragRotate>();
@@ -155,15 +155,15 @@ public static class UISetup
         Stretch(edit);
 
         Label(edit.transform, "Hint", "클릭: 놓기  |  재료 위 휠: 돌리기  |  그 밖의 휠: 확대/축소  |  Q/R: 크기  |  우클릭: 빼기  |  끌기: 병 방향 바꾸기 (T: 원위치)",
-            24, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 128f), new Vector2(1440f, 40f), TextAlignmentOptions.Center);
+            24, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 196f), new Vector2(1440f, 40f), TextAlignmentOptions.Center);
 
-        // 재료 칸: 가방 칸을 가로로 늘어놓는다
+        // 재료 칸: 가방 칸을 두 줄(16칸씩)로 늘어놓는다
         GameObject strip = Rect(edit.transform, "MaterialStrip");
-        Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(1440f, 100f));
-        HorizontalLayoutGroup hlg = strip.AddComponent<HorizontalLayoutGroup>();
-        hlg.spacing = 8f; hlg.childAlignment = TextAnchor.MiddleCenter;
-        hlg.childControlWidth = true; hlg.childControlHeight = true;
-        hlg.childForceExpandWidth = true; hlg.childForceExpandHeight = true;
+        Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(1440f, 164f));
+        GridLayoutGroup stripGrid = strip.AddComponent<GridLayoutGroup>();
+        stripGrid.cellSize = new Vector2(84f, 78f); stripGrid.spacing = new Vector2(6f, 6f);
+        stripGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount; stripGrid.constraintCount = 16;
+        stripGrid.childAlignment = TextAnchor.UpperCenter;
 
         Button[] slotButtons = new Button[SlotCount];
         TMP_Text[] slotLabels = new TMP_Text[SlotCount];
@@ -180,9 +180,9 @@ public static class UISetup
             tmp.font = font; tmp.fontSize = 24; tmp.color = TextColor; tmp.alignment = TextAlignmentOptions.Center;
             tmp.raycastTarget = false; tmp.text = string.Empty;
             // 위에 재료 그림, 아래에 이름과 개수 (재료 칸은 낮아서 글자를 작게)
-            tmp.fontSize = 15;
-            SetBottomText(tmp.rectTransform, 46f);
-            stripIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(52f, 52f));
+            tmp.fontSize = 14;
+            SetBottomText(tmp.rectTransform, 38f);
+            stripIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -3f), new Vector2(44f, 44f));
             slotButtons[i] = b; slotLabels[i] = tmp; slotBackgrounds[i] = bg;
         }
 
@@ -381,25 +381,25 @@ public static class UISetup
         // 왼쪽: 보내기 (가방 칸마다 하나씩, 누르면 1개 넣기)
         Label(mailWindow.transform, "SendTitle", "보내기  (내일 아침 코인이 와요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -125f), new Vector2(700f, 60f), TextAlignmentOptions.TopLeft);
         GameObject sendGrid = Rect(mailWindow.transform, "SendGrid");
-        Anchor(sendGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -195f), new Vector2(700f, 470f));
+        Anchor(sendGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -195f), new Vector2(700f, 490f));
         GridLayoutGroup sendLayout = sendGrid.AddComponent<GridLayoutGroup>();
-        sendLayout.cellSize = new Vector2(132f, 110f); sendLayout.spacing = new Vector2(8f, 10f);
-        sendLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; sendLayout.constraintCount = 5;
+        sendLayout.cellSize = new Vector2(108f, 76f); sendLayout.spacing = new Vector2(8f, 6f);
+        sendLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; sendLayout.constraintCount = 6; // 6열 x 6행 = 36칸 (가방 32칸이 들어간다)
         Button[] sendButtons = new Button[SlotCount];
         TMP_Text[] sendLabels = new TMP_Text[SlotCount];
         Image[] sendIcons = new Image[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
-            Button b = MakeButton(sendGrid.transform, "Send" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(132f, 110f));
+            Button b = MakeButton(sendGrid.transform, "Send" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(108f, 76f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
-            t.fontSize = 18;
-            SetBottomText(t.rectTransform, 50f);
-            sendIcons[i] = MakeSlotIcon(b.transform, new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(56f, 56f));
+            t.fontSize = 14;
+            SetBottomText(t.rectTransform, 38f);
+            sendIcons[i] = MakeSlotIcon(b.transform, new Vector2(0.5f, 1f), new Vector2(0f, -3f), new Vector2(40f, 40f));
             sendButtons[i] = b; sendLabels[i] = t;
         }
 
         // 보낸 것과 주문한 것 요약
-        TextMeshProUGUI mailSummary = Label(mailWindow.transform, "Summary", string.Empty, 34, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -675f), new Vector2(700f, 100f), TextAlignmentOptions.TopLeft);
+        TextMeshProUGUI mailSummary = Label(mailWindow.transform, "Summary", string.Empty, 34, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -695f), new Vector2(700f, 100f), TextAlignmentOptions.TopLeft);
         mailSummary.fontSize = 28;
 
         // 오른쪽: 주문하기 (코인을 내고 사는 물건. 가격이 있는 재료를 모두 보여 준다)
@@ -459,7 +459,7 @@ public static class UISetup
         Image invDim = invRoot.AddComponent<Image>(); invDim.color = new Color(0f, 0f, 0f, 0.35f);
 
         GameObject iWindow = Rect(invRoot.transform, "Window");
-        Center(iWindow, 1300f, 780f); // 창은 직사각형, 칸은 정사각형
+        Center(iWindow, 1400f, 920f); // 창은 직사각형, 칸은 정사각형 (8열 x 4행 = 32칸)
         Image iBg = iWindow.AddComponent<Image>(); iBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
         Label(iWindow.transform, "Title", "인벤토리", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(500f, 90f), TextAlignmentOptions.TopLeft);
         Label(iWindow.transform, "Hint", "Tab: 닫기", 40, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -45f), new Vector2(400f, 60f), TextAlignmentOptions.TopRight);
@@ -471,10 +471,10 @@ public static class UISetup
         GameObject bagGroup = Rect(iWindow.transform, "BagGroup");
         Stretch(bagGroup);
         GameObject grid = Rect(bagGroup.transform, "Slots");
-        Anchor(grid, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(1122f, 474f));
+        Anchor(grid, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -160f), new Vector2(1284f, 636f));
         GridLayoutGroup glg = grid.AddComponent<GridLayoutGroup>();
         glg.cellSize = new Vector2(150f, 150f); glg.spacing = new Vector2(12f, 12f);
-        glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; glg.constraintCount = 7;
+        glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; glg.constraintCount = 8;
         glg.childAlignment = TextAnchor.UpperCenter;
 
         // 병 탭: 완성한 병 인벤토리 (보기만 한다. 전시는 작업대의 "내 병"에서)
@@ -482,10 +482,10 @@ public static class UISetup
         Stretch(bottleGroup);
         TextMeshProUGUI bottleInfo = Label(bottleGroup.transform, "Info", string.Empty, 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(1200f, 50f), TextAlignmentOptions.Center); // 탭 버튼(-80까지)과 칸(-170부터) 사이
         GameObject bottleGrid = Rect(bottleGroup.transform, "BottleSlots");
-        Anchor(bottleGrid, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(1122f, 474f));
+        Anchor(bottleGrid, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -160f), new Vector2(1284f, 636f));
         GridLayoutGroup bglg = bottleGrid.AddComponent<GridLayoutGroup>();
         bglg.cellSize = new Vector2(150f, 150f); bglg.spacing = new Vector2(12f, 12f);
-        bglg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; bglg.constraintCount = 7;
+        bglg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; bglg.constraintCount = 8;
         bglg.childAlignment = TextAnchor.UpperCenter;
         Image[] bottleIcons = new Image[SlotCount];
         TMP_Text[] bottleTexts = new TMP_Text[SlotCount];

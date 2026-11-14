@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 가방. 10칸이고, 같은 재료는 한 칸에 5개까지 겹친다.
+/// 가방. 칸 수는 UISetup이 정한다(32칸). 같은 재료는 한 칸에 5개까지 겹친다.
 /// Player 오브젝트에 붙인다.
 /// </summary>
 public class Bag : MonoBehaviour
@@ -14,7 +14,7 @@ public class Bag : MonoBehaviour
         public int count;
     }
 
-    [SerializeField] private int slotCount = 10;
+    [SerializeField] private int slotCount = 32;
     [SerializeField] private int maxStack = 5;
 
     private readonly List<Slot> slots = new List<Slot>();

@@ -199,26 +199,49 @@ public static class InteriorSetup
         GameObject candle = Deco(root, "deco_candle", new Vector3(-2.3f, 0.79f, -2.1f), 6f);
         PointLight(candle.transform, "CandleLight", new Vector3(0f, 0.25f, 0f), new Color(1f, 0.82f, 0.55f), 1.2f, 3.5f);
 
-        // 선반 (서쪽 벽, 북쪽): 3단 x 2칸 = 6칸. 4단계에서 완성한 병을 올린다.
-        Vector3 shelf = new Vector3(-2.58f, 0f, 1.3f);
-        foreach (float y in new[] { 0.25f, 0.8f, 1.35f, 1.9f })
-            Cube(root, "ShelfBoard", shelf + new Vector3(0f, y, 0f), new Vector3(0.3f, 0.04f, 1.9f), wood);
-        foreach (float z in new[] { -0.93f, 0.93f })
-            Cube(root, "ShelfPost", shelf + new Vector3(0f, 1.07f, z), new Vector3(0.3f, 1.7f, 0.05f), darkWood);
-        Cube(root, "ShelfBack", shelf + new Vector3(-0.13f, 1.07f, 0f), new Vector3(0.03f, 1.7f, 1.9f), darkWood, false);
+        BuildShelf(root.transform, wood, darkWood);
 
-        // 선반 칸 자리 6곳(3단 x 2칸): 완성한 병이 앞 칸부터 올라간다 (BottleShelf)
+        // 보관 상자와 통
+        Kitpiece(root, "Crate", new Vector3(1.6f, 0f, 2.3f), 15f);
+        Kitpiece(root, "Crate", new Vector3(1.6f, 0.8f, 2.3f), 40f);
+        Kitpiece(root, "Barrel", new Vector3(2.35f, 0f, 2.3f), 0f);
+        Kitpiece(root, "Barrel", new Vector3(2.4f, 0f, 1.25f), 40f);
+        Kitpiece(root, "Crate", new Vector3(-1.3f, 0f, -2.7f), 80f); // 서쪽 벽은 긴 선반이 차지해서 상자는 남쪽 벽으로 옮겼다
+        Kitpiece(root, "Bucket", new Vector3(-2.3f, 0f, 3.0f - 0.35f), 0f);
+
+        // 천장에 매단 랜턴 (작업대 위)
+        GameObject lantern = Kitpiece(root, "Lantern", new Vector3(0f, 2.3f, 1.2f), 0f, false);
+        PointLight(lantern.transform, "LanternLight", new Vector3(0f, 0.3f, 0f), new Color(1f, 0.78f, 0.45f), 1.0f, 5f);
+    }
+
+    // 선반: 서쪽 벽을 따라 긴 선반 하나. 4단 x 6칸 = 24칸이고 아래 단부터 6칸씩 열린다. (완성한 병 6개마다 한 단씩. BottleStore.ShelfCapacity)
+    private const float ShelfLength = 3.1f, ShelfDepth = 0.3f;
+    private static readonly Vector3 ShelfCenter = new Vector3(-2.58f, 0f, 0.7f);
+    private static readonly float[] ShelfBoardY = { 0.25f, 0.8f, 1.35f, 1.9f, 2.45f };
+    private const int ShelfRows = 4, ShelfCols = 6;
+
+    /// <summary>선반의 판, 기둥, 뒤판과 병 칸 자리(BottleShelf)를 만든다. 병 칸 번호는 아래 단 왼쪽부터 (단 x 6 + 칸).</summary>
+    private static void BuildShelf(Transform furniture, Material wood, Material darkWood)
+    {
+        GameObject root = furniture.gameObject;
+        foreach (float y in ShelfBoardY)
+            Cube(root, "ShelfBoard", ShelfCenter + new Vector3(0f, y, 0f), new Vector3(ShelfDepth, 0.04f, ShelfLength), wood);
+        foreach (float z in new[] { -ShelfLength / 2f + 0.03f, 0f, ShelfLength / 2f - 0.03f })
+            Cube(root, "ShelfPost", ShelfCenter + new Vector3(0f, 1.27f, z), new Vector3(ShelfDepth, 2.5f, 0.05f), darkWood);
+        Cube(root, "ShelfBack", ShelfCenter + new Vector3(-0.13f, 1.27f, 0f), new Vector3(0.03f, 2.5f, ShelfLength), darkWood, false);
+
         GameObject shelfRoot = new GameObject("BottleShelf");
-        shelfRoot.transform.SetParent(root.transform, false);
+        shelfRoot.transform.SetParent(furniture, false);
         var slotList = new System.Collections.Generic.List<Transform>();
-        float[] rowY = { 0.27f, 0.82f, 1.37f }; // 각 판 윗면
-        for (int row = 0; row < 3; row++)
+        float spacing = (ShelfLength - 0.2f) / ShelfCols;
+        for (int row = 0; row < ShelfRows; row++)
         {
-            for (int col = 0; col < 2; col++)
+            for (int col = 0; col < ShelfCols; col++)
             {
-                GameObject slot = new GameObject("Slot" + (row * 2 + col));
+                GameObject slot = new GameObject("Slot" + (row * ShelfCols + col));
                 slot.transform.SetParent(shelfRoot.transform, false);
-                slot.transform.position = new Vector3(shelf.x + 0.02f, rowY[row], shelf.z + (col == 0 ? -0.45f : 0.45f));
+                float z = ShelfCenter.z + (col - (ShelfCols - 1) / 2f) * spacing;
+                slot.transform.position = new Vector3(ShelfCenter.x + 0.02f, ShelfBoardY[row] + 0.02f, z); // 판 윗면
                 slotList.Add(slot.transform);
             }
         }
@@ -229,18 +252,39 @@ public static class InteriorSetup
         for (int i = 0; i < slotList.Count; i++) slotsProp.GetArrayElementAtIndex(i).objectReferenceValue = slotList[i];
         shelfSo.FindProperty("station").objectReferenceValue = Object.FindFirstObjectByType<BottleStation>(FindObjectsInactive.Include);
         shelfSo.ApplyModifiedPropertiesWithoutUndo();
+    }
 
-        // 보관 상자와 통
-        Kitpiece(root, "Crate", new Vector3(1.6f, 0f, 2.3f), 15f);
-        Kitpiece(root, "Crate", new Vector3(1.6f, 0.8f, 2.3f), 40f);
-        Kitpiece(root, "Barrel", new Vector3(2.35f, 0f, 2.3f), 0f);
-        Kitpiece(root, "Barrel", new Vector3(2.4f, 0f, 1.25f), 40f);
-        Kitpiece(root, "Crate", new Vector3(-2.2f, 0f, -0.1f), 80f);
-        Kitpiece(root, "Bucket", new Vector3(-2.3f, 0f, 3.0f - 0.35f), 0f);
+    /// <summary>
+    /// 집 안의 다른 것은 그대로 두고 선반만 다시 만든다. (메뉴: 유리병 정원 > 선반 다시 만들기)
+    /// 이전 선반의 판과 기둥과 병 자리를 지우고 새로 만든다. 서쪽 벽의 상자(Crate)가 선반과 겹치면 남쪽 벽으로 옮긴다.
+    /// </summary>
+    [MenuItem("유리병 정원/선반 다시 만들기")]
+    public static string RebuildShelf()
+    {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != InteriorPath)
+        {
+            EditorSceneManager.SaveOpenScenes();
+            EditorSceneManager.OpenScene(InteriorPath, OpenSceneMode.Single);
+        }
+        GameObject furniture = GameObject.Find("Furniture");
+        if (furniture == null) return "Furniture를 찾지 못했어요. 먼저 집 안 꾸미기를 하세요.";
 
-        // 천장에 매단 랜턴 (작업대 위)
-        GameObject lantern = Kitpiece(root, "Lantern", new Vector3(0f, 2.3f, 1.2f), 0f, false);
-        PointLight(lantern.transform, "LanternLight", new Vector3(0f, 0.3f, 0f), new Color(1f, 0.78f, 0.45f), 1.0f, 5f);
+        for (int i = furniture.transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = furniture.transform.GetChild(i);
+            bool shelfPart = child.name == "ShelfBoard" || child.name == "ShelfPost" || child.name == "ShelfBack" || child.name == "BottleShelf";
+            // 예전 위치(-2.2, -0.1)에 있던 상자는 새 선반과 겹쳐서 옮긴다
+            bool oldCrate = child.name.StartsWith("Crate") && Vector3.Distance(child.position, new Vector3(-2.2f, 0f, -0.1f)) < 0.5f;
+            if (oldCrate) child.position = new Vector3(-1.3f, 0f, -2.7f);
+            if (shelfPart) Object.DestroyImmediate(child.gameObject);
+        }
+        Material wood = Mat("FurnitureWood", new Color(0.69f, 0.51f, 0.35f));
+        Material darkWood = Mat("FurnitureDarkWood", new Color(0.47f, 0.33f, 0.23f));
+        BuildShelf(furniture.transform, wood, darkWood);
+
+        EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        EditorSceneManager.SaveOpenScenes();
+        return "선반을 24칸(4단 x 6칸)으로 다시 만들었어요";
     }
 
     private static void BuildLighting()

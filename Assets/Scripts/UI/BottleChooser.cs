@@ -33,8 +33,8 @@ public class BottleChooser : MonoBehaviour
     public event Action OpenInventory;
 
     [Header("병 가격")]
-    [Tooltip("켜면 병을 만들 때 코인을 낸다. 지금은 개발 중이라 꺼 둔다(무료). 나중에 병을 사게 할 때 켠다.")]
-    [SerializeField] private bool requirePurchase;
+    [Tooltip("켜면 병을 만들 때 코인을 낸다. (시작할 때 받은 공짜 병은 먼저 쓴다)")]
+    [SerializeField] private bool requirePurchase = true;
     [Tooltip("병 카드 순서(둥근, 긴, 넓은, 누운)대로의 가격(코인). 임시 값.")]
     [SerializeField] private int[] prices = { 20, 20, 30, 40 };
 
@@ -92,7 +92,8 @@ public class BottleChooser : MonoBehaviour
             if (!exists) continue;
 
             BottleContents bottle = station.Get(i);
-            labels[i].text = bottle.DisplayName + "\n만들기" + (requirePurchase ? " (" + PriceOf(i) + "코인)" : string.Empty);
+            string cost = GameState.FreeBottles > 0 ? " (공짜 병 " + GameState.FreeBottles + "개)" : requirePurchase ? " (" + PriceOf(i) + "코인)" : string.Empty;
+            labels[i].text = bottle.DisplayName + "\n만들기" + cost;
             buttons[i].interactable = true;
             backgrounds[i].color = normalColor;
         }
