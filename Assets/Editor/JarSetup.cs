@@ -22,8 +22,11 @@ public static class JarSetup
     private const string ModelFolder = "Assets/Models/Deco";
     private const string PrefabFolder = "Assets/Prefabs/Bottles";
 
-    /// <summary>병 그림의 배경색. 연한 파랑인 유리가 묻히지 않게 한 단계 짙은 회청록이다.</summary>
-    public static readonly Color BottleViewBackground = new Color(0.50f, 0.64f, 0.63f, 1f);
+    /// <summary>병 그림의 배경색. 연한 파랑 유리와 밝은 재료(흰 꽃, 조개)가 묻히지 않도록 짙은 청회색으로 둔다.</summary>
+    public static readonly Color BottleViewBackground = new Color(0.17f, 0.22f, 0.25f, 1f);
+
+    /// <summary>병 카메라의 기본 시야각. 작을수록 병이 크게 보인다. (휠로 더 줄이거나 늘릴 수 있다)</summary>
+    public const float BottleViewFieldOfView = 50f;
 
     /// <summary>이미 만든 병 프리팹들의 카메라 배경색만 바꾼다. (병을 다시 만들지 않는다)</summary>
     public static string ApplyBackgroundToPrefabs()
@@ -38,6 +41,7 @@ public static class JarSetup
                 Camera cam = root.GetComponentInChildren<Camera>(true);
                 if (cam == null) continue;
                 cam.backgroundColor = BottleViewBackground;
+                cam.fieldOfView = BottleViewFieldOfView;
                 PrefabUtility.SaveAsPrefabAsset(root, path);
                 n++;
             }
@@ -290,7 +294,7 @@ public static class JarSetup
         camGo.transform.localPosition = center + new Vector3(0f, extent * 0.1f, -extent * 1.3f);
         camGo.transform.LookAt(root.transform.TransformPoint(center));
         Camera cam = camGo.AddComponent<Camera>();
-        cam.fieldOfView = 60f;
+        cam.fieldOfView = BottleViewFieldOfView;
         cam.nearClipPlane = 0.01f;
         cam.farClipPlane = 8f;
         cam.cullingMask = 1 << layer;

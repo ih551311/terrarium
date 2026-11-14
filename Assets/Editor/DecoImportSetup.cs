@@ -43,7 +43,7 @@ public static class DecoImportSetup
 
         // 병 유리: 투명(Transparent), 알파 0.25, 반짝임 높게. 팔레트 그림은 쓰지 않는다.
         Material glass = GetOrCreateMaterial(GlassMaterialPath);
-        glass.SetColor("_BaseColor", new Color(0.88f, 0.96f, 1f, 0.3f)); // 팔레트의 glass 색(#CEEAF2)보다 밝고 진하게 (배경에 묻히지 않게)
+        glass.SetColor("_BaseColor", new Color(0.88f, 0.96f, 1f, 0.2f)); // 팔레트의 glass 색(#CEEAF2)보다 밝게. 알파는 병 속 재료가 잘 보이도록 0.2 (0.3이면 앞면 두 겹이 뿌옇게 가렸다)
         glass.SetFloat("_Surface", 1f);    // Transparent
         glass.SetFloat("_Blend", 0f);      // Alpha
         glass.SetFloat("_SrcBlend", 5f);   // SrcAlpha
