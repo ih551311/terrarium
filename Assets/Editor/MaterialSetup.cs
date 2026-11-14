@@ -49,7 +49,12 @@ public static class MaterialSetup
         new Entry("mushroom",         "버섯",       Deco,  "deco_mushroom_red",  new Color(0.85f, 0.35f, 0.33f), Forest, Hand, 2, 0, MaterialCondition.AfterRain),
         // ── 바닷가 (병 2개 완성 후)
         new Entry("seashell",         "조개껍데기", Deco,  "deco_seashell",      new Color(0.96f, 0.82f, 0.79f), Beach, Hand, 2),
-        new Entry("pebble",           "조약돌",     Deco,  "deco_pebble_gray",   new Color(0.62f, 0.62f, 0.65f), Beach, Pick, 1),
+        new Entry("scallop",          "가리비",     Deco,  "deco_scallop",       new Color(0.96f, 0.68f, 0.52f), Beach, Hand, 2),
+        new Entry("clam",             "대합",       Deco,  "deco_clam",          new Color(0.72f, 0.60f, 0.88f), Beach, Hand, 2),
+        new Entry("spiral_shell",     "고둥",       Deco,  "deco_spiral_shell",  new Color(0.94f, 0.60f, 0.40f), Beach, Hand, 2),
+        new Entry("sand_dollar",      "모래 달러",  Deco,  "deco_sand_dollar",   new Color(0.89f, 0.78f, 0.61f), Beach, Hand, 3),
+        new Entry("turret_shell",     "뿔고둥",     Deco,  "deco_turret_shell",  new Color(0.77f, 0.61f, 0.44f), Beach, Hand, 3),
+        new Entry("pebble",           "조약돌",    Deco,  "deco_pebble_gray",   new Color(0.62f, 0.62f, 0.65f), Beach, Pick, 1),
         new Entry("driftwood",        "유목",       Deco,  "deco_driftwood",     new Color(0.69f, 0.51f, 0.35f), Beach, Axe,  2),
         // 모래는 바닥재라서 병 안에 놓는 모델이 없다 (BottleSetup이 데이터를 만들고, 구역은 아래에서 정한다)
         // ── 꽃 언덕 (병 5개 완성 후)

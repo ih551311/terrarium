@@ -727,21 +727,61 @@ public static class IslandSetup
             // 도끼와 곡괭이로 얻는 재료는 바닥에 놓지 않고, 나무와 돌(Harvestable)에서 나온다
             if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe) continue;
 
-            Zone target = data.zone == MaterialZone.Forest ? Zone.Forest : data.zone == MaterialZone.Beach ? Zone.Beach : Zone.Hill;
-            int want = 9;
-            int placed = 0, tries = 0;
-            while (placed < want && tries++ < 4000)
-            {
-                float x, z;
-                if (!RandomPointIn(target, out x, out z)) continue;
-                if (DistanceToPaths(x, z) < 2f) continue;
-                // 나무, 바위와 겹치지 않게. (지형 자체에 걸리지 않도록 땅에서 1.4m 위에서 검사한다)
-                if (Physics.CheckSphere(new Vector3(x, GroundY(x, z) + 1.4f, z), 0.9f)) continue;
-                MakePickup(group.transform, data, x, z, placed);
-                placed++; count++;
-            }
+            count += PlaceMaterialPickups(group.transform, data, 9);
         }
         return count;
+    }
+
+    /// <summary>재료 하나를 자기 구역의 무작위 자리 want곳에 놓는다. 놓은 개수를 돌려준다.</summary>
+    private static int PlaceMaterialPickups(Transform group, MaterialData data, int want)
+    {
+        Zone target = data.zone == MaterialZone.Forest ? Zone.Forest : data.zone == MaterialZone.Beach ? Zone.Beach : Zone.Hill;
+        int placed = 0, tries = 0;
+        while (placed < want && tries++ < 4000)
+        {
+            float x, z;
+            if (!RandomPointIn(target, out x, out z)) continue;
+            if (DistanceToPaths(x, z) < 2f) continue;
+            // 나무, 바위와 겹치지 않게. (지형 자체에 걸리지 않도록 땅에서 1.4m 위에서 검사한다)
+            if (Physics.CheckSphere(new Vector3(x, GroundY(x, z) + 1.4f, z), 0.9f)) continue;
+            MakePickup(group, data, x, z, placed);
+            placed++;
+        }
+        return placed;
+    }
+
+    /// <summary>
+    /// 섬은 그대로 두고, 섬에 아직 없는 재료만 자기 구역에 놓는다. (재료를 새로 만든 뒤에 누른다)
+    /// 이미 놓인 재료와 섬의 다른 것은 건드리지 않는다. (메뉴: 유리병 정원 > 섬에 새 재료 놓기)
+    /// </summary>
+    [MenuItem("유리병 정원/섬에 새 재료 놓기")]
+    public static string AddMissingPickups()
+    {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != IslandPath)
+            EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
+        GameObject root = GameObject.Find(RootName);
+        Transform group = root != null ? root.transform.Find("Pickups") : null;
+        terrain = Terrain.activeTerrain;
+        if (group == null || terrain == null) return "섬(IslandContent/Pickups)이나 지형을 찾지 못했어요. 먼저 섬 만들기를 하세요.";
+
+        rng = new System.Random(20261115);
+        Physics.SyncTransforms();
+        var report = new System.Text.StringBuilder();
+        int total = 0;
+        foreach (string guid in AssetDatabase.FindAssets("t:MaterialData", new[] { MaterialFolder }))
+        {
+            MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(AssetDatabase.GUIDToAssetPath(guid));
+            if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Anywhere || data.isRare) continue;
+            if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe) continue;
+            if (group.Find("Pickup_" + data.id + "_0") != null) continue; // 이미 있다
+
+            int n = PlaceMaterialPickups(group, data, 6);
+            total += n;
+            report.Append(data.displayName).Append(' ').Append(n).Append("곳  ");
+        }
+        EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        EditorSceneManager.SaveOpenScenes();
+        return "새 재료 " + total + "곳을 놓았어요: " + report;
     }
 
     /// <summary>구역 안의 무작위 지점을 고른다. 못 찾으면 false.</summary>
