@@ -41,6 +41,7 @@ public static class SaveSystem
                     soilLevel = r.soilLevel,
                     shelfSlot = r.shelfSlot,
                     typeId = r.typeId,
+                    name = r.name,
                     groundId = r.ground != null ? r.ground.id : string.Empty
                 };
                 foreach (PlacedData p in r.items)
@@ -109,6 +110,7 @@ public static class SaveSystem
                     soilLevel = b.soilLevel,
                     shelfSlot = data.version >= 2 ? b.shelfSlot : -1, // 예전 저장은 자동으로 올라가 있던 병을 모두 내린 상태로 연다
                     typeId = string.IsNullOrEmpty(b.typeId) ? null : b.typeId,
+                    name = string.IsNullOrEmpty(b.name) ? null : b.name,
                     ground = db.Find(b.groundId)
                 };
                 foreach (PlacedSave p in b.items)

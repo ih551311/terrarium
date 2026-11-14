@@ -522,8 +522,52 @@ public static class UISetup
             slotTexts[i] = tmp;
         }
 
+        // 병 이름 짓기 상자: 병을 완성하면 뜬다. 창 전체를 어둡게 덮고 가운데에 입력칸과 확인 버튼을 둔다. (닫기 버튼 위에 보이게 맨 뒤에 만든다)
+        GameObject nameHolder = Rect(bWindow.transform, "NameDialog");
+        Stretch(nameHolder);
+        GameObject nameOverlay = Rect(nameHolder.transform, "Overlay");
+        Stretch(nameOverlay);
+        Image nameDim = nameOverlay.AddComponent<Image>(); nameDim.color = new Color(0f, 0f, 0f, 0.6f); // 뒤의 버튼이 눌리지 않게 막는다
+        GameObject nameBox = Rect(nameOverlay.transform, "Box");
+        Center(nameBox, 760f, 400f);
+        Image nameBoxBg = nameBox.AddComponent<Image>(); nameBoxBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
+        Label(nameBox.transform, "Title", "병 이름을 지어 주세요", 44, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(700f, 70f), TextAlignmentOptions.Center);
+        GameObject nameInputGo = Rect(nameBox.transform, "Input");
+        Anchor(nameInputGo, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0f), new Vector2(620f, 90f));
+        Image nameInputBg = nameInputGo.AddComponent<Image>(); nameInputBg.color = Color.white;
+        GameObject nameViewport = Rect(nameInputGo.transform, "TextArea");
+        Stretch(nameViewport);
+        ((RectTransform)nameViewport.transform).offsetMin = new Vector2(18f, 8f);
+        ((RectTransform)nameViewport.transform).offsetMax = new Vector2(-18f, -8f);
+        nameViewport.AddComponent<RectMask2D>();
+        TextMeshProUGUI namePlaceholder = Label(nameViewport.transform, "Placeholder", "이름", 34, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, TextAlignmentOptions.Left);
+        Stretch(namePlaceholder.gameObject);
+        namePlaceholder.color = new Color(0.45f, 0.5f, 0.45f, 0.8f);
+        namePlaceholder.fontStyle = FontStyles.Italic;
+        TextMeshProUGUI nameText = Label(nameViewport.transform, "Text", string.Empty, 40, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, TextAlignmentOptions.Left);
+        Stretch(nameText.gameObject);
+        nameText.raycastTarget = false;
+        TMP_InputField nameInput = nameInputGo.AddComponent<TMP_InputField>();
+        nameInput.targetGraphic = nameInputBg;
+        nameInput.textViewport = (RectTransform)nameViewport.transform;
+        nameInput.textComponent = nameText;
+        nameInput.placeholder = namePlaceholder;
+        nameInput.fontAsset = font;
+        nameInput.pointSize = 40;
+        nameInput.characterLimit = BottleNameDialog.MaxLength;
+        Button nameConfirm = MakeSmallButton(nameBox.transform, "ConfirmButton", "확인", new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(240f, 80f), 36);
+        nameConfirm.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
+        nameOverlay.SetActive(false);
+        nameHolder.transform.SetAsLastSibling();
+        BottleNameDialog nameDialog = nameHolder.AddComponent<BottleNameDialog>();
+        SetRef(nameDialog, "root", nameOverlay);
+        SetRef(nameDialog, "input", nameInput);
+        SetRef(nameDialog, "placeholderLabel", namePlaceholder);
+        SetRef(nameDialog, "confirmButton", nameConfirm);
+
         // ── 제어 스크립트 (Canvas 오브젝트에 붙는다)
         BottlePanel bp = ui.AddComponent<BottlePanel>();
+        SetRef(bp, "nameDialog", nameDialog);
         SetRef(bp, "root", bottleRoot); SetRef(bp, "closeButton", closeButton);
         SetRef(bp, "dragRotate", drag); SetRef(bp, "decorator", decorator);
         SetRef(bp, "groundSelector", groundSelector); SetRef(bp, "completeButton", complete); SetRef(bp, "chooser", chooser);

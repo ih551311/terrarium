@@ -401,7 +401,8 @@ public class BottleContents : MonoBehaviour
     /// <summary>돌리거나 키운 뒤에 불러서 기록을 새로 한다.</summary>
     public void SaveState()
     {
-        BottleRecord record = new BottleRecord { ground = Ground, completed = IsCompleted, created = IsCreated, soilLevel = SoilLevelIndex };
+        BottleRecord old = BottleStore.Get(bottleId); // 병 종류와 이름은 이어 받는다
+        BottleRecord record = new BottleRecord { ground = Ground, completed = IsCompleted, created = IsCreated, soilLevel = SoilLevelIndex, typeId = old.typeId, name = old.name };
         foreach (PlacedMaterial placed in items)
         {
             record.items.Add(new PlacedData

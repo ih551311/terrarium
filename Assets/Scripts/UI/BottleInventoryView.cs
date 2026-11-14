@@ -101,9 +101,15 @@ public class BottleInventoryView : MonoBehaviour
             string id = ids[n];
             BottleRecord record = BottleStore.Get(id);
             int type = station != null ? station.IndexOf(record.typeId) : -1;
-            string name = (type >= 0 ? station.Get(type).DisplayName : "병") + " #" + BottleStore.ArchiveNumber(id);
+            string typeName = type >= 0 ? station.Get(type).DisplayName : "병";
+            string name = BottleStore.NameOf(id, typeName);
             bool shown = BottleStore.IsDisplayed(id);
-            labels[i].text = name + (shown ? "\n선반에 전시 중" : "\n눌러서 전시하기");
+            labels[i].enableAutoSizing = true; // 긴 이름은 글자가 작아진다
+            labels[i].fontSizeMin = 14f;
+            labels[i].fontSizeMax = 26f;
+            // 이름을 지어 줬으면 둘째 줄 앞에 병 종류를 붙인다. (지어 주지 않았으면 이름에 이미 종류가 들어 있다)
+            string status = shown ? "선반에 전시 중" : "눌러서 전시하기";
+            labels[i].text = name + "\n" + (string.IsNullOrEmpty(record.name) ? status : typeName + " · " + status);
             backgrounds[i].color = shown ? displayedColor : normalColor;
 
             Sprite sprite = type >= 0 && typeIcons != null && type < typeIcons.Length ? typeIcons[type] : null;

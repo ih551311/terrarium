@@ -31,6 +31,8 @@ public class BottlePanel : MonoBehaviour
     [SerializeField] private BottleInventoryView inventoryView;
     [Tooltip("병 그림(RawImage) 오브젝트. 병을 만들기 전에는 숨긴다.")]
     [SerializeField] private GameObject bottleView;
+    [Tooltip("병을 완성했을 때 이름을 짓는 상자")]
+    [SerializeField] private BottleNameDialog nameDialog;
 
     [Header("꾸미는 중")]
     [Tooltip("재료 칸, 바닥재, 완성 버튼 등 꾸밀 때만 보이는 것을 담은 오브젝트")]
@@ -40,6 +42,7 @@ public class BottlePanel : MonoBehaviour
     private BottleStation station;
     private BottleContents contents;
     private Camera bottleCamera;
+    private BottleContents namingBottle; // 완성했고 이름을 짓는 중인 병
 
     private void Awake()
     {
@@ -59,7 +62,7 @@ public class BottlePanel : MonoBehaviour
     {
         Keyboard keyboard = Keyboard.current;
         // 가방이 위에 열려 있으면 가방이 먼저 닫히도록 양보한다.
-        if (isOpen && !InventoryPanel.IsOpen && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+        if (isOpen && !InventoryPanel.IsOpen && !BottleNameDialog.IsOpen && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             Close();
     }
 
@@ -80,6 +83,9 @@ public class BottlePanel : MonoBehaviour
     public void Close()
     {
         if (!isOpen) return;
+
+        // 이름을 짓는 중에 닫으면 지금까지 쓴 이름(없으면 기본 이름)으로 마무리해서, 완성한 병이 작업대에 남지 않게 한다
+        if (namingBottle != null && nameDialog != null) nameDialog.Confirm();
         isOpen = false;
 
         ReleaseBottle();
@@ -91,19 +97,32 @@ public class BottlePanel : MonoBehaviour
     }
 
     /// <summary>
-    /// 병을 완성했다(CompleteBottleButton이 부른다). 완성한 병을 병 인벤토리에 넣고,
-    /// 작업대의 병은 비워서 같은 종류를 또 만들 수 있게 한 뒤 병 만들기 화면으로 돌아간다.
+    /// 병을 완성했다(CompleteBottleButton이 부른다). 먼저 이름을 짓는 상자를 띄운다. (병 그림은 그대로 보이고, 꾸미기 도구는 숨는다)
+    /// 이름이 정해지면 FinishCompleted가 병을 병 인벤토리에 넣는다.
     /// </summary>
     public void OnBottleCompleted()
     {
-        if (station == null || contents == null || !contents.IsCompleted) return;
+        if (station == null || contents == null || !contents.IsCompleted || namingBottle != null) return;
 
-        BottleContents done = contents;
+        namingBottle = contents;
+        editTools.SetActive(false);
+        string defaultName = namingBottle.DisplayName + " #" + BottleStore.NextArchiveNumber();
+        nameDialog.Show(defaultName, FinishCompleted);
+    }
+
+    /// <summary>이름이 정해졌다. 완성한 병을 병 인벤토리에 넣고, 작업대의 병은 비워서 같은 종류를 또 만들 수 있게 한 뒤 병 만들기 화면으로 돌아간다.</summary>
+    private void FinishCompleted(string givenName)
+    {
+        BottleContents done = namingBottle;
+        namingBottle = null;
+        if (done == null || station == null) return;
+
+        string typeName = done.DisplayName;
         ReleaseBottle();
-        string id = BottleStore.Archive(done.BottleId);
+        string id = BottleStore.Archive(done.BottleId, givenName);
         done.ResetToEmpty();
         station.ShowOnlyInProgress();
-        ShowChooser(id != null ? "병을 완성했어요! 병 인벤토리에 넣었어요 (내 병 #" + BottleStore.ArchiveNumber(id) + ")" : null);
+        ShowChooser(id != null ? "병을 완성했어요! 병 인벤토리에 넣었어요 (" + BottleStore.NameOf(id, typeName) + ")" : null);
     }
 
     /// <summary>병 만들기 화면을 보인다. (보고 있던 병은 놓고, 병 그림과 꾸미기 도구는 숨긴다)</summary>

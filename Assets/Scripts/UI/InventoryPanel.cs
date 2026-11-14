@@ -130,7 +130,11 @@ public class InventoryPanel : MonoBehaviour
             if (typeId != null && typeId.Length > 6 && int.TryParse(typeId.Substring(6), out int t)) type = t;
             bool shown = BottleStore.IsDisplayed(id);
             string typeName = type >= 0 && type < TypeNames.Length ? TypeNames[type] : "병";
-            bottleTexts[i].text = typeName + " #" + BottleStore.ArchiveNumber(id) + (shown ? "\n선반에 전시 중" : string.Empty);
+            // 지어 준 이름이 있으면 이름을, 없으면 "종류 #번호"를 보여 준다. 둘째 줄: 전시 중이면 그 안내, 아니면 병 종류.
+            bottleTexts[i].enableAutoSizing = true;
+            bottleTexts[i].fontSizeMin = 12f;
+            bottleTexts[i].fontSizeMax = 20f;
+            bottleTexts[i].text = BottleStore.NameOf(id, typeName) + "\n" + (shown ? "선반에 전시 중" : typeName);
             Sprite sprite = typeIcons != null && type >= 0 && type < typeIcons.Length ? typeIcons[type] : null;
             bottleIcons[i].sprite = sprite;
             bottleIcons[i].enabled = sprite != null;

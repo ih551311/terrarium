@@ -87,7 +87,7 @@ public class BottleShelf : MonoBehaviour
         if (copy.GetComponent<BottleContents>().IsSideways)
             copy.transform.rotation = slot.rotation * Quaternion.Euler(0f, 90f, 0f);
 
-        copy.AddComponent<ShelfBottle>().Init(archivedId, type.DisplayName + " #" + BottleStore.ArchiveNumber(archivedId));
+        copy.AddComponent<ShelfBottle>().Init(archivedId, BottleStore.NameOf(archivedId, type.DisplayName));
         return copy;
     }
 }

@@ -21,6 +21,7 @@ public class BottleRecord
     public int soilLevel = 1;     // 흙의 양: 0 적게, 1 보통, 2 많이
     public int shelfSlot = -1;    // 선반의 몇 번째 칸에 놓였는가 (-1이면 선반에 없다)
     public string typeId;         // 병 인벤토리에 보관된 병이면 어떤 종류의 병이었는지(작업대 병 번호, 예: bottle0). 작업대 병이면 비어 있다.
+    public string name;           // 병 인벤토리의 병에 사용자가 지어 준 이름. 비어 있으면 "종류 #번호"로 보여 준다.
 }
 
 /// <summary>
@@ -73,24 +74,31 @@ public static class BottleStore
     /// 완성한 병을 병 인벤토리로 옮긴다. 병마다 고유한 번호(예: bottle0#3)를 받아 따로 보관되고,
     /// 작업대의 그 종류 병은 비워져서 같은 종류를 또 만들 수 있다. 새 번호를 돌려준다. 완성하지 않았으면 null.
     /// </summary>
-    public static string Archive(string typeId)
+    public static string Archive(string typeId, string name = null)
     {
         BottleRecord record = Get(typeId);
         if (!record.completed) return null;
 
+        string newId = typeId + "#" + NextArchiveNumber();
+
+        record.typeId = typeId;
+        record.name = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
+        bottles[newId] = record;
+        bottles[typeId] = new BottleRecord();
+        Changed?.Invoke();
+        return newId;
+    }
+
+    /// <summary>다음에 보관할 병이 받을 번호 (지금 가장 큰 번호 + 1)</summary>
+    public static int NextArchiveNumber()
+    {
         int max = 0;
         foreach (string key in bottles.Keys)
         {
             int hash = key.IndexOf('#');
             if (hash > 0 && int.TryParse(key.Substring(hash + 1), out int n) && n > max) max = n;
         }
-        string newId = typeId + "#" + (max + 1);
-
-        record.typeId = typeId;
-        bottles[newId] = record;
-        bottles[typeId] = new BottleRecord();
-        Changed?.Invoke();
-        return newId;
+        return max + 1;
     }
 
     /// <summary>병 인벤토리의 병 번호들. 만든 순서(번호 순)로 돌려준다.</summary>
@@ -101,6 +109,16 @@ public static class BottleStore
             if (pair.Value.completed && pair.Value.typeId != null) list.Add(pair.Key);
         list.Sort((a, b) => ArchiveNumber(a).CompareTo(ArchiveNumber(b)));
         return list;
+    }
+
+    /// <summary>
+    /// 병 인벤토리 병의 이름. 사용자가 지어 준 이름이 있으면 그것을, 없으면 "종류 #번호"를 돌려준다.
+    /// typeName은 병 종류 이름(둥근 병 등). 모르면 "병".
+    /// </summary>
+    public static string NameOf(string id, string typeName = "병")
+    {
+        string given = Get(id).name;
+        return string.IsNullOrEmpty(given) ? typeName + " #" + ArchiveNumber(id) : given;
     }
 
     /// <summary>"bottle0#3"에서 3</summary>
