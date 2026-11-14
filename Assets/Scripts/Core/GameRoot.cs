@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 /// 모든 씬에 이 프리팹을 하나씩 넣어 둔다. 이미 있으면 새로 들어온 쪽은 스스로 사라진다.
 /// 그래서 어느 씬에서 Play를 눌러도 시작할 수 있다.
 /// </summary>
+[DefaultExecutionOrder(-2000)] // EventSystem(-1000)보다 먼저 깨어나서, 중복이면 자식들이 켜지기 전에 스스로 꺼진다
 public class GameRoot : MonoBehaviour
 {
     [Tooltip("플레이어 오브젝트 (씬을 옮길 때 도착 지점으로 이동시킨다)")]
