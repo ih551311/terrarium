@@ -45,7 +45,7 @@ public class GameAudio : MonoBehaviour
     // ───────── 소리 재료 ─────────
 
     private readonly Dictionary<Sfx, AudioClip> sfxClips = new Dictionary<Sfx, AudioClip>();
-    private AudioClip[] steps, birds;
+    private AudioClip[] steps, sandSteps, birds;
     private AudioSource sfxSource, waves, wind, rainLoop, crickets, roomTone, musicDay, musicNight;
 
     private CharacterController controller;
@@ -63,7 +63,8 @@ public class GameAudio : MonoBehaviour
         sfxClips[Sfx.Paper] = FilteredNoise("Paper", 0.28f, 0.45f, 6f, 3, 0.6f);
         sfxClips[Sfx.Click] = Glide("Click", 1400f, 1100f, 0.035f, 70f, 0.25f);
 
-        steps = new[] { Thump("Step1", 95f, 0.11f, 30f, 0.8f), Thump("Step2", 80f, 0.11f, 30f, 0.8f), Thump("Step3", 110f, 0.11f, 30f, 0.8f) };
+        steps = new[] { Footstep("Step1", 0.16f, 0.10f, 32f, 1), Footstep("Step2", 0.13f, 0.11f, 30f, 2), Footstep("Step3", 0.19f, 0.095f, 34f, 3) };
+        sandSteps = new[] { Footstep("Sand1", 0.38f, 0.13f, 24f, 4), Footstep("Sand2", 0.32f, 0.14f, 22f, 5), Footstep("Sand3", 0.42f, 0.12f, 26f, 6) };
         birds = new[] { Chirp("Bird1", 3200f, 4300f, 3), Chirp("Bird2", 2600f, 3900f, 2), Chirp("Bird3", 3600f, 2900f, 4) };
 
         waves = NewSource("Waves", Loop("Waves", WavesData(), Rate), 0f, true);
@@ -125,7 +126,7 @@ public class GameAudio : MonoBehaviour
             float d = Vector2.Distance(new Vector2(player.position.x, player.position.z), new Vector2(0f, 30f));
             shore = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(70f, 140f, d));
         }
-        Fade(waves, outdoors ? Mathf.Lerp(0.14f, 0.6f, shore) : 0.03f);
+        Fade(waves, outdoors ? Mathf.Lerp(0.05f, 0.26f, shore) : 0.015f);
         Fade(wind, outdoors ? 0.17f + 0.12f * rain : 0.03f);
         Fade(rainLoop, 0f); // 빗소리와 폭풍 소리는 날씨 에셋(AudioModule)이 낸다
         Fade(crickets, outdoors ? 0.14f * night * (1f - rain) : 0f);
@@ -165,7 +166,9 @@ public class GameAudio : MonoBehaviour
         stepTimer -= Time.deltaTime * Mathf.Clamp(speed, 1f, 8f) / 2.2f;
         if (stepTimer > 0f) return;
         stepTimer = 1f;
-        sfxSource.PlayOneShot(steps[Random.Range(0, steps.Length)], 0.55f);
+        bool sand = WeatherEffects.Outdoors && Vector2.Distance(new Vector2(player.position.x, player.position.z), new Vector2(0f, 30f)) > 108f; // 바닷가는 모래
+        AudioClip[] set = sand ? sandSteps : steps;
+        sfxSource.PlayOneShot(set[Random.Range(0, set.Length)], sand ? 0.3f : 0.26f);
     }
 
     // ───────── 소리 만들기 ─────────
@@ -212,6 +215,31 @@ public class GameAudio : MonoBehaviour
         return Make(name, d);
     }
 
+    /// <summary>
+    /// 발소리: 짧은 잡음을 걸러서 "사박" 하고 부드럽게 난다. 북소리 같은 낮은 울림은 거의 없다.
+    /// brightness가 클수록 바삭하고(모래), 작을수록 폭신하다(풀밭). 낮은 소리는 발이 닿는 아주 작은 둔탁함만 더한다.
+    /// </summary>
+    private static AudioClip Footstep(string name, float brightness, float seconds, float decay, int seed)
+    {
+        int n = (int)(Rate * seconds);
+        var d = new float[n];
+        var rnd = new System.Random(seed * 977 + 13);
+        float lp1 = 0f, lp2 = 0f, hp = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float t = i / (float)Rate;
+            float x = (float)(rnd.NextDouble() * 2.0 - 1.0);
+            lp1 += (x - lp1) * brightness;     // 높은 소리를 덜어 내고
+            lp2 += (lp1 - lp2) * brightness;
+            hp += (lp2 - hp) * 0.015f;         // 아주 낮은 울림도 덜어 낸다 (북소리가 되지 않게)
+            float body = lp2 - hp;
+            float attack = Mathf.Min(1f, i / 120f);               // 딱 하는 끝이 없게 살짝 부드럽게 시작
+            float env = attack * Mathf.Exp(-t * decay);
+            float thud = Mathf.Sin(2f * Mathf.PI * 70f * t) * Mathf.Exp(-t * 60f) * 0.12f; // 발 닿는 둔탁함은 아주 작게
+            d[i] = (body * 4.5f + thud) * env;
+        }
+        return Make(name, d);
+    }
     /// <summary>종소리: 음마다 길게 울리며 겹친다</summary>
     private static AudioClip Bells(string name, float[] notes, float step, float tail)
     {
@@ -303,7 +331,7 @@ public class GameAudio : MonoBehaviour
             a += (x - a) * 0.05f; b += (a - b) * 0.12f;
             float swell = 0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * t / 7f);
             float swell2 = 0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * t / 4.7f + 1.3f);
-            d[i] = (b * 5f) * (0.25f + 0.75f * swell * swell) * (0.7f + 0.3f * swell2);
+            d[i] = (b * 3.2f) * (0.25f + 0.75f * swell * swell) * (0.7f + 0.3f * swell2);
         }
         return d;
     }
