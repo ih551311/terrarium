@@ -45,9 +45,20 @@ public class SkyController : MonoBehaviour
     [SerializeField] private float thickFogEnd = 140f;
 
     private Material skyInstance;
+    private Material coastWater;                  // 해안 물 재질 복사본 (안개 낀 날 안개 색으로 물들인다)
+    private Color coastDeep, coastShallow;        // 해안 물의 원래 깊은 색, 얕은 색
 
     private void Start()
     {
+        // 해안 물(Bitgem 셰이더)은 안개를 받지 못해서, 안개가 짙은 날에는 색 자체를 안개 색 쪽으로 옮겨 먼 바다(안개를 받는 판)와 이어 준다
+        GameObject coast = GameObject.Find("SeaCoast");
+        if (coast != null && coast.TryGetComponent(out Renderer coastRenderer))
+        {
+            coastWater = coastRenderer.material;
+            if (coastWater.HasProperty("Color_7D9A58EC")) coastDeep = coastWater.GetColor("Color_7D9A58EC");
+            if (coastWater.HasProperty("Color_F01C36BF")) coastShallow = coastWater.GetColor("Color_F01C36BF");
+        }
+
         // 재질 파일 자체를 바꾸지 않도록 복사본을 쓴다
         skyInstance = new Material(skyMaterial);
         RenderSettings.skybox = skyInstance;
@@ -59,6 +70,7 @@ public class SkyController : MonoBehaviour
     private void OnDestroy()
     {
         if (skyInstance != null) Destroy(skyInstance);
+        if (coastWater != null) Destroy(coastWater);
     }
 
     private void Update()
@@ -131,6 +143,30 @@ public class SkyController : MonoBehaviour
         Color weatherFog = GameWeatherModule.FogColor * Mathf.Lerp(0.2f, 1f, day);
         RenderSettings.fogColor = Color.Lerp(clearFog, weatherFog, fog);
         RenderSettings.fogStartDistance = Mathf.Lerp(fogStart, 15f, fog);
-        RenderSettings.fogEndDistance = Mathf.Lerp(fogEnd, thickFogEnd, fog);
+        // 카메라가 볼 수 있는 끝(보통 1000m)보다 안쪽에서 안개가 다 차야, 먼 바다가 끝에서 뚝 끊기지 않고 안개 색으로 사라진다
+        float visibleEnd = Mathf.Min(fogEnd, 900f);
+        RenderSettings.fogEndDistance = Mathf.Lerp(visibleEnd, thickFogEnd, fog);
+
+        // 해안 물: 안개 낀 날과 비 오는 날에는 안개 색으로 물든다 (안개가 짙을수록)
+        if (coastWater != null)
+        {
+            float tintAmount = Mathf.Clamp01(fog * 0.9f);
+            Color fogTone = RenderSettings.fogColor;
+            if (coastWater.HasProperty("Color_7D9A58EC")) coastWater.SetColor("Color_7D9A58EC", Color.Lerp(coastDeep, fogTone, tintAmount));
+            if (coastWater.HasProperty("Color_F01C36BF"))
+            {
+                Color shallow = Color.Lerp(coastShallow, fogTone, tintAmount * 0.8f);
+                shallow.a = coastShallow.a;
+                coastWater.SetColor("Color_F01C36BF", shallow);
+            }
+        }
+
+        // 하늘의 지평선을 안개 색으로 맞춘다: 안개에 묻힌 먼 바다와 하늘이 같은 색으로 이어져서 지평선에 띠가 생기지 않는다
+        if (skyInstance != null)
+        {
+            skyInstance.SetColor("_HorizonColor", RenderSettings.fogColor);
+            skyInstance.SetFloat("_HorizonStrength", 1f);
+            skyInstance.SetFloat("_HorizonWidth", Mathf.Lerp(0.2f, 0.32f, fog)); // 안개 낀 날은 더 높이까지 번진다
+        }
     }
 }

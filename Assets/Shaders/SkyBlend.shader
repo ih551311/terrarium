@@ -16,6 +16,10 @@ Shader "유리병 정원/Sky Blend"
         _Overcast ("흐림 (0 맑음 ~ 1 온통 구름)", Range(0, 1)) = 0
         _CloudZenith ("구름 색 (머리 위)", Color) = (0.58, 0.62, 0.68, 1)
         _CloudHorizon ("구름 색 (지평선)", Color) = (0.76, 0.78, 0.8, 1)
+        // 지평선 이음새: 하늘의 맨 아래쪽을 안개 색으로 서서히 바꿔서, 안개에 묻힌 먼 바다와 하늘이 딱 맞게 이어지게 한다 (SkyController가 안개 색을 넣어 준다)
+        _HorizonColor ("지평선 색 (안개 색)", Color) = (0.8, 0.85, 0.9, 1)
+        _HorizonWidth ("지평선 너비 (높이 방향)", Range(0.02, 0.6)) = 0.2
+        _HorizonStrength ("지평선 세기", Range(0, 1)) = 0
     }
 
     SubShader
@@ -44,6 +48,9 @@ Shader "유리병 정원/Sky Blend"
             half _Overcast;
             half4 _CloudZenith;
             half4 _CloudHorizon;
+            half4 _HorizonColor;
+            half _HorizonWidth;
+            half _HorizonStrength;
 
             struct appdata_t
             {
@@ -80,7 +87,12 @@ Shader "유리병 정원/Sky Blend"
                 half3 cloud = lerp(_CloudHorizon.rgb, _CloudZenith.rgb, up);
                 half luma = dot(a, half3(0.333, 0.333, 0.333));
                 cloud *= 0.88 + 0.24 * saturate(luma);
-                return half4(lerp(sky, cloud, _Overcast), 1);
+                sky = lerp(sky, cloud, _Overcast);
+
+                // 지평선 근처는 안개 색으로: 높이(dir.y)가 0에 가까울수록 안개 색이 짙다
+                half h = 1.0 - smoothstep(0.0, _HorizonWidth, abs(normalize(i.texcoord).y));
+                sky = lerp(sky, _HorizonColor.rgb, h * _HorizonStrength);
+                return half4(sky, 1);
             }
             ENDCG
         }

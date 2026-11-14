@@ -300,14 +300,51 @@ public static class IslandSetup
         coastRenderer.sharedMaterial = GetOrCreateCoastMaterial();
         coastRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
-        GameObject far = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        far.name = "SeaFar";
+        // 먼 바다: 안개는 점마다 계산해서 사이를 잇기 때문에, 판이 듬성하면(기본 Plane은 600m 간격) 먼 바다가 안개 색으로 안 변한다.
+        // 그래서 40m 간격의 촘촘한 격자로 만든다. 카메라가 볼 수 있는 끝(1000m)보다 넓게(사방 1500m) 깐다.
+        GameObject far = new GameObject("SeaFar");
         far.transform.SetParent(parent, false);
         far.transform.position = new Vector3(IslandCenter.x, SeaFarY, IslandCenter.y);
-        far.transform.localScale = new Vector3(600f, 1f, 600f); // 약 6km
-        Object.DestroyImmediate(far.GetComponent<Collider>());
-        far.GetComponent<Renderer>().sharedMaterial = GetOrCreateFarSeaMaterial();
-        far.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        far.AddComponent<MeshFilter>().sharedMesh = GetOrCreateFarMesh();
+        MeshRenderer farRenderer = far.AddComponent<MeshRenderer>();
+        farRenderer.sharedMaterial = GetOrCreateFarSeaMaterial();
+        farRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+    }
+
+    /// <summary>먼 바다 메쉬: 사방 3000m를 40m 간격 격자로. 위를 본다.</summary>
+    private static Mesh GetOrCreateFarMesh()
+    {
+        const string path = "Assets/Data/Placeholder/SeaFar.asset";
+        const int cells = 75;
+        const float size = 3000f;
+        float step = size / cells;
+        int n = cells + 1;
+
+        Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (mesh == null) { mesh = new Mesh(); AssetDatabase.CreateAsset(mesh, path); }
+        mesh.Clear();
+
+        var verts = new Vector3[n * n];
+        var normals = new Vector3[n * n];
+        for (int z = 0; z < n; z++)
+        for (int x = 0; x < n; x++)
+        {
+            verts[z * n + x] = new Vector3(-size / 2f + x * step, 0f, -size / 2f + z * step);
+            normals[z * n + x] = Vector3.up;
+        }
+        var tris = new int[cells * cells * 6];
+        int t = 0;
+        for (int z = 0; z < cells; z++)
+        for (int x = 0; x < cells; x++)
+        {
+            int v = z * n + x;
+            tris[t++] = v; tris[t++] = v + n; tris[t++] = v + n + 1;
+            tris[t++] = v + n + 1; tris[t++] = v + 1; tris[t++] = v;
+        }
+        mesh.vertices = verts; mesh.normals = normals; mesh.triangles = tris;
+        mesh.RecalculateBounds();
+        EditorUtility.SetDirty(mesh);
+        return mesh;
     }
 
     /// <summary>해안 물 메쉬: 한 변 SeaCoastSize인 격자. 점 색 검정, UV는 세계 좌표(미터), 위를 본다.</summary>
