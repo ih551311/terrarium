@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 /// <summary>
 /// 가방 패널. Tab으로 어디서든 열고 닫는다. (병 꾸미기 패널 위에서도 열린다)
@@ -16,22 +17,56 @@ public class InventoryPanel : MonoBehaviour
     [Tooltip("가방 칸마다 하나씩. 재료 그림을 보여 준다")]
     [SerializeField] private UnityEngine.UI.Image[] slotIcons;
 
+    [Header("가방 / 병 탭")]
+    [SerializeField] private Button bagTab;
+    [SerializeField] private Button bottleTab;
+    [SerializeField] private Image bagTabBackground;
+    [SerializeField] private Image bottleTabBackground;
+    [Tooltip("가방 칸들을 담은 오브젝트")]
+    [SerializeField] private GameObject bagGroup;
+    [Tooltip("병 칸들을 담은 오브젝트")]
+    [SerializeField] private GameObject bottleGroup;
+    [SerializeField] private TMP_Text bottleInfo;
+    [SerializeField] private Image[] bottleIcons;
+    [SerializeField] private TMP_Text[] bottleTexts;
+    [SerializeField] private Button bottlePrev;
+    [SerializeField] private Button bottleNext;
+    [Tooltip("병 종류(둥근, 긴, 넓은, 누운)별 병 그림")]
+    [SerializeField] private Sprite[] typeIcons;
+
+    private static readonly string[] TypeNames = { "둥근 병", "긴 병", "넓은 병", "누운 병" };
+    private bool showBottles;
+    private int bottlePage;
+
     /// <summary>다른 패널이 Esc 처리를 양보할 때 쓴다.</summary>
     public static bool IsOpen { get; private set; }
 
     private void Awake()
     {
         root.SetActive(false);
+        bagTab.onClick.AddListener(() => SetTab(false));
+        bottleTab.onClick.AddListener(() => SetTab(true));
+        bottlePrev.onClick.AddListener(() => { bottlePage--; Refresh(); });
+        bottleNext.onClick.AddListener(() => { bottlePage++; Refresh(); });
+    }
+
+    private void SetTab(bool bottles)
+    {
+        showBottles = bottles;
+        bottlePage = 0;
+        Refresh();
     }
 
     private void OnEnable()
     {
         if (bag != null) bag.Changed += Refresh;
+        BottleStore.Changed += Refresh;
     }
 
     private void OnDisable()
     {
         if (bag != null) bag.Changed -= Refresh;
+        BottleStore.Changed -= Refresh;
         if (IsOpen) Close();
     }
 
@@ -72,8 +107,54 @@ public class InventoryPanel : MonoBehaviour
         slotIcons[i].enabled = material != null && material.icon != null;
     }
 
+    private void RefreshBottles()
+    {
+        var ids = BottleStore.ArchivedIds();
+        int perPage = bottleTexts.Length;
+        int pageCount = Mathf.Max(1, (ids.Count + perPage - 1) / perPage);
+        bottlePage = Mathf.Clamp(bottlePage, 0, pageCount - 1);
+
+        int onShelf = 0;
+        foreach (string id in ids) if (BottleStore.IsDisplayed(id)) onShelf++;
+
+        for (int i = 0; i < perPage; i++)
+        {
+            int n = bottlePage * perPage + i;
+            bool has = n < ids.Count;
+            bottleTexts[i].transform.parent.gameObject.SetActive(has);
+            if (!has) continue;
+
+            string id = ids[n];
+            string typeId = BottleStore.Get(id).typeId;
+            int type = 0;
+            if (typeId != null && typeId.Length > 6 && int.TryParse(typeId.Substring(6), out int t)) type = t;
+            bool shown = BottleStore.IsDisplayed(id);
+            string typeName = type >= 0 && type < TypeNames.Length ? TypeNames[type] : "병";
+            bottleTexts[i].text = typeName + " #" + BottleStore.ArchiveNumber(id) + (shown ? "\n선반에 전시 중" : string.Empty);
+            Sprite sprite = typeIcons != null && type >= 0 && type < typeIcons.Length ? typeIcons[type] : null;
+            bottleIcons[i].sprite = sprite;
+            bottleIcons[i].enabled = sprite != null;
+        }
+
+        bottlePrev.gameObject.SetActive(pageCount > 1);
+        bottleNext.gameObject.SetActive(pageCount > 1);
+        bottlePrev.interactable = bottlePage > 0;
+        bottleNext.interactable = bottlePage < pageCount - 1;
+        bottleInfo.text = ids.Count == 0
+            ? "아직 완성한 병이 없어요"
+            : "완성한 병 " + ids.Count + "개  |  선반 " + onShelf + "/" + BottleStore.ShelfCapacity + "칸" + (pageCount > 1 ? "  |  " + (bottlePage + 1) + "/" + pageCount + "쪽" : string.Empty);
+    }
+
     private void Refresh()
     {
+        if (!IsOpen) return;
+        Color on = new Color(0.98f, 0.82f, 0.45f, 1f), off = new Color(0.82f, 0.88f, 0.82f, 1f);
+        bagTabBackground.color = showBottles ? off : on;
+        bottleTabBackground.color = showBottles ? on : off;
+        bagGroup.SetActive(!showBottles);
+        bottleGroup.SetActive(showBottles);
+        if (showBottles) { RefreshBottles(); return; }
+
         for (int i = 0; i < slotTexts.Length; i++)
         {
             if (bag != null && i < bag.Slots.Count)

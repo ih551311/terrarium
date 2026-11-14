@@ -452,17 +452,48 @@ public static class UISetup
         Image invDim = invRoot.AddComponent<Image>(); invDim.color = new Color(0f, 0f, 0f, 0.35f);
 
         GameObject iWindow = Rect(invRoot.transform, "Window");
-        Center(iWindow, 1000f, 620f);
+        Center(iWindow, 1500f, 950f);
         Image iBg = iWindow.AddComponent<Image>(); iBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
-        Label(iWindow.transform, "Title", "가방", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(500f, 90f), TextAlignmentOptions.TopLeft);
+        Label(iWindow.transform, "Title", "인벤토리", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(500f, 90f), TextAlignmentOptions.TopLeft);
         Label(iWindow.transform, "Hint", "Tab: 닫기", 40, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -45f), new Vector2(400f, 60f), TextAlignmentOptions.TopRight);
 
-        GameObject grid = Rect(iWindow.transform, "Slots");
-        Anchor(grid, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 60f), new Vector2(920f, 400f));
+        // 탭: 가방 / 병
+        Button bagTab = MakeSmallButton(iWindow.transform, "BagTab", "가방", new Vector2(0.5f, 1f), new Vector2(-110f, -45f), new Vector2(200f, 70f), 36);
+        Button bottleTab = MakeSmallButton(iWindow.transform, "BottleTab", "병", new Vector2(0.5f, 1f), new Vector2(110f, -45f), new Vector2(200f, 70f), 36);
+
+        GameObject bagGroup = Rect(iWindow.transform, "BagGroup");
+        Stretch(bagGroup);
+        GameObject grid = Rect(bagGroup.transform, "Slots");
+        Anchor(grid, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(1400f, 740f));
         GridLayoutGroup glg = grid.AddComponent<GridLayoutGroup>();
-        glg.cellSize = new Vector2(168f, 180f); glg.spacing = new Vector2(10f, 20f);
+        glg.cellSize = new Vector2(268f, 350f); glg.spacing = new Vector2(12f, 30f);
         glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; glg.constraintCount = 5;
         glg.childAlignment = TextAnchor.UpperCenter;
+
+        // 병 탭: 완성한 병 인벤토리 (보기만 한다. 전시는 작업대의 "내 병"에서)
+        GameObject bottleGroup = Rect(iWindow.transform, "BottleGroup");
+        Stretch(bottleGroup);
+        TextMeshProUGUI bottleInfo = Label(bottleGroup.transform, "Info", string.Empty, 34, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1300f, 60f), TextAlignmentOptions.Center);
+        Image[] bottleIcons = new Image[10];
+        TMP_Text[] bottleTexts = new TMP_Text[10];
+        for (int i = 0; i < 10; i++)
+        {
+            int col = i % 5, row = i / 5;
+            GameObject cell = Rect(bottleGroup.transform, "BottleCell" + i);
+            Anchor(cell, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2((col - 2f) * 280f, 120f - row * 360f - 40f), new Vector2(260f, 340f));
+            Image cbg = cell.AddComponent<Image>(); cbg.color = new Color(0.82f, 0.88f, 0.82f, 1f); cbg.raycastTarget = false;
+            GameObject ct = Rect(cell.transform, "Text");
+            Stretch(ct);
+            TextMeshProUGUI ctmp = ct.AddComponent<TextMeshProUGUI>();
+            ctmp.font = font; ctmp.fontSize = 28; ctmp.color = TextColor;
+            ctmp.alignment = TextAlignmentOptions.Center; ctmp.raycastTarget = false; ctmp.text = string.Empty;
+            SetBottomText(ctmp.rectTransform, 90f);
+            bottleIcons[i] = MakeSlotIcon(cell.transform, new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(210f, 210f));
+            bottleTexts[i] = ctmp;
+        }
+        Button bottlePrev = MakeSmallButton(bottleGroup.transform, "PrevButton", "이전", new Vector2(0.5f, 0f), new Vector2(-150f, 30f), new Vector2(200f, 70f), 30);
+        Button bottleNext = MakeSmallButton(bottleGroup.transform, "NextButton", "다음", new Vector2(0.5f, 0f), new Vector2(150f, 30f), new Vector2(200f, 70f), 30);
+        bottleGroup.SetActive(false);
 
         TMP_Text[] slotTexts = new TMP_Text[SlotCount];
         Image[] slotIcons = new Image[SlotCount];
@@ -473,10 +504,10 @@ public static class UISetup
             GameObject t = Rect(slot.transform, "Text");
             Stretch(t);
             TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
-            tmp.font = font; tmp.fontSize = 28; tmp.color = TextColor;
+            tmp.font = font; tmp.fontSize = 32; tmp.color = TextColor;
             tmp.alignment = TextAlignmentOptions.Center; tmp.raycastTarget = false; tmp.text = string.Empty;
-            SetBottomText(tmp.rectTransform, 70f);
-            slotIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(100f, 100f));
+            SetBottomText(tmp.rectTransform, 100f);
+            slotIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(200f, 200f));
             slotTexts[i] = tmp;
         }
 
@@ -494,6 +525,14 @@ public static class UISetup
         SetRef(ip, "bag", bag); SetRef(ip, "root", invRoot);
         SetArray(ip, "slotTexts", slotTexts);
         SetArray(ip, "slotIcons", slotIcons);
+        SetRef(ip, "bagTab", bagTab); SetRef(ip, "bottleTab", bottleTab);
+        SetRef(ip, "bagTabBackground", bagTab.GetComponent<Image>()); SetRef(ip, "bottleTabBackground", bottleTab.GetComponent<Image>());
+        SetRef(ip, "bagGroup", bagGroup); SetRef(ip, "bottleGroup", bottleGroup);
+        SetRef(ip, "bottleInfo", bottleInfo);
+        SetArray(ip, "bottleIcons", bottleIcons);
+        SetArray(ip, "bottleTexts", bottleTexts);
+        SetRef(ip, "bottlePrev", bottlePrev); SetRef(ip, "bottleNext", bottleNext);
+        SetArray(ip, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3) });
 
         MapPanel mp = ui.AddComponent<MapPanel>();
         SetRef(mp, "root", mapRoot); SetRef(mp, "closeButton", mapCloseButton); SetRef(mp, "homeButton", homeButton);
