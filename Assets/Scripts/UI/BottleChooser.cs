@@ -22,6 +22,16 @@ public class BottleChooser : MonoBehaviour
     [Tooltip("만들 수 있는 병이 하나도 없을 때 보이는 안내 글자")]
     [SerializeField] private GameObject noneLeftNotice;
 
+    [Header("병 인벤토리")]
+    [Tooltip("완성한 병이 병 인벤토리로 들어갔다는 등의 안내 글자")]
+    [SerializeField] private TMP_Text noticeLabel;
+    [Tooltip("\"내 병\" 화면을 여는 버튼")]
+    [SerializeField] private Button myBottlesButton;
+    [SerializeField] private TMP_Text myBottlesLabel;
+
+    /// <summary>"내 병" 버튼을 눌렀다.</summary>
+    public event Action OpenInventory;
+
     [Header("병 가격")]
     [Tooltip("켜면 병을 만들 때 코인을 낸다. 지금은 개발 중이라 꺼 둔다(무료). 나중에 병을 사게 할 때 켠다.")]
     [SerializeField] private bool requirePurchase;
@@ -34,8 +44,6 @@ public class BottleChooser : MonoBehaviour
     [SerializeField] private Color normalColor = new Color(0.82f, 0.88f, 0.82f, 1f);
     [SerializeField] private Color selectedColor = new Color(0.98f, 0.82f, 0.45f, 1f);
     [SerializeField] private Color disabledColor = new Color(0.88f, 0.9f, 0.87f, 1f);
-
-    private static readonly string[] SoilNames = { "적게", "보통", "많이" };
 
     /// <summary>병 카드를 눌렀을 때, 눌린 병의 번호와 함께 알린다.</summary>
     public event Action<int> Chosen;
@@ -59,6 +67,7 @@ public class BottleChooser : MonoBehaviour
             int index = i; // 반복 변수를 버튼마다 따로 잡아 둔다
             buttons[i].onClick.AddListener(() => Chosen?.Invoke(index));
         }
+        if (myBottlesButton != null) myBottlesButton.onClick.AddListener(() => OpenInventory?.Invoke());
         for (int i = 0; i < soilButtons.Length; i++)
         {
             int level = i;
@@ -66,13 +75,16 @@ public class BottleChooser : MonoBehaviour
         }
     }
 
-    /// <summary>작업대의 병 목록에 맞춰 카드와 흙의 양 버튼을 갱신한다.</summary>
-    public void Refresh(BottleStation station)
+    /// <summary>
+    /// 작업대의 병 목록에 맞춰 카드와 흙의 양 버튼을 갱신한다.
+    /// 병은 몇 개든 만들 수 있다(완성한 병은 병 인벤토리로 들어가고 카드는 다시 비어 있다).
+    /// notice가 있으면 위쪽에 안내 글자로 보여 준다. (예: "병 인벤토리에 넣었어요")
+    /// </summary>
+    public void Refresh(BottleStation station, string notice = null)
     {
         AddListeners();
         RefreshSoil();
 
-        bool anyCreatable = false;
         for (int i = 0; i < buttons.Length; i++)
         {
             bool exists = station != null && i < station.Count;
@@ -80,21 +92,22 @@ public class BottleChooser : MonoBehaviour
             if (!exists) continue;
 
             BottleContents bottle = station.Get(i);
-            string status;
-            if (!bottle.IsCreated) { status = "\n만들기" + (requirePurchase ? " (" + PriceOf(i) + "코인)" : string.Empty); anyCreatable = true; }
-            else if (bottle.IsCompleted) status = "\n(완성) 흙 " + SoilNames[bottle.SoilLevelIndex] + (BottleStore.IsDisplayed(bottle.BottleId) ? "\n선반에 전시 중" : string.Empty);
-            else status = "\n(꾸미는 중)";
-            labels[i].text = bottle.DisplayName + status;
-
-            bool creatable = !bottle.IsCreated;
-            bool viewable = bottle.IsCompleted;
-            buttons[i].interactable = creatable || viewable;
-            backgrounds[i].color = creatable ? normalColor : (viewable ? selectedColor : disabledColor);
+            labels[i].text = bottle.DisplayName + "\n만들기" + (requirePurchase ? " (" + PriceOf(i) + "코인)" : string.Empty);
+            buttons[i].interactable = true;
+            backgrounds[i].color = normalColor;
         }
 
-        // 이미 만든 병에는 흙의 양을 다시 정할 수 없으므로, 만들 병이 없으면 흙의 양 버튼을 끈다
-        foreach (Button b in soilButtons) b.interactable = anyCreatable;
-        if (noneLeftNotice != null) noneLeftNotice.SetActive(!anyCreatable);
+        foreach (Button b in soilButtons) b.interactable = true;
+        if (noneLeftNotice != null) noneLeftNotice.SetActive(false);
+
+        if (noticeLabel != null)
+        {
+            noticeLabel.text = notice ?? string.Empty;
+            noticeLabel.gameObject.SetActive(!string.IsNullOrEmpty(notice));
+        }
+
+        int count = BottleStore.CompletedCount;
+        if (myBottlesLabel != null) myBottlesLabel.text = "내 병 (" + count + "개)";
     }
 
     private void RefreshSoil()

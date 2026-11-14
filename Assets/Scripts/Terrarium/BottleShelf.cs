@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 집 안 선반. 사용자가 전시하기로 고른 완성한 병이 비어 있는 가장 앞 칸에 올라가고, 병 속이 그대로 보인다.
+/// 집 안 선반. 병 인벤토리의 병 중 사용자가 전시하기로 고른 것(칸 번호가 있는 병)을 칸에 올리고, 병 속이 그대로 보인다.
 /// 칸 자리(slots)는 InteriorSetup이 선반 위에 놓아 둔다. 병은 작업대의 병과 같은 병 프리팹을 작게 줄여 복사해서 올린다.
-/// 선반은 완성한 병을 전시하는 곳이다. (식물은 자라지 않는다)
+/// 전시하고 내리는 것은 "내 병" 화면의 버튼이나 선반 병에서 E를 눌러 한다.
 /// </summary>
 public class BottleShelf : MonoBehaviour
 {
@@ -14,7 +14,7 @@ public class BottleShelf : MonoBehaviour
     [Tooltip("병 프리팹을 선반 크기로 줄이는 비율 (병 크기 2배인 병을 0.55배로)")]
     [SerializeField] private float bottleScale = 0.55f;
 
-    [Tooltip("이 병 종류들. 병 번호(bottleId)로 프리팹을 찾는다. 작업대의 BottleStation에서 받는다.")]
+    [Tooltip("병 종류들. 병 번호(bottleId)로 프리팹을 찾는다. 작업대의 BottleStation에서 받는다.")]
     [SerializeField] private BottleStation station;
 
     private readonly Dictionary<string, GameObject> shown = new Dictionary<string, GameObject>();
@@ -34,41 +34,46 @@ public class BottleShelf : MonoBehaviour
         BottleStore.Changed -= Refresh;
     }
 
-    /// <summary>
-    /// 전시하기로 한 병(완성했고 칸 번호가 있는 병)만 선반에 올리고, 내린 병은 치운다.
-    /// 병을 전시하고 내리는 것은 병 꾸미기 화면의 버튼이나 선반 병에서 E를 눌러 한다.
-    /// </summary>
+    /// <summary>전시하기로 한 병만 선반에 올리고, 내린 병은 치운다.</summary>
     private void Refresh()
     {
         if (station == null) return;
-        for (int i = 0; i < station.Count; i++)
-        {
-            BottleContents bottle = station.Get(i);
-            string id = bottle.BottleId;
-            BottleRecord record = BottleStore.Get(id);
-            bool shouldShow = record.completed && record.shelfSlot >= 0 && record.shelfSlot < slots.Length;
 
-            if (!shouldShow)
-            {
-                if (shown.TryGetValue(id, out GameObject old))
-                {
-                    if (old != null) { old.SetActive(false); Destroy(old); }
-                    shown.Remove(id);
-                }
-                continue;
-            }
-            if (shown.ContainsKey(id)) continue;
-            shown[id] = Place(bottle, record.shelfSlot);
+        var wanted = new Dictionary<string, int>(); // 선반에 있어야 할 병 번호와 칸
+        foreach (string id in BottleStore.ArchivedIds())
+        {
+            BottleRecord record = BottleStore.Get(id);
+            if (record.shelfSlot >= 0 && record.shelfSlot < slots.Length) wanted[id] = record.shelfSlot;
+        }
+
+        // 내린 병은 치운다
+        var remove = new List<string>();
+        foreach (string id in shown.Keys) if (!wanted.ContainsKey(id)) remove.Add(id);
+        foreach (string id in remove)
+        {
+            GameObject old = shown[id];
+            if (old != null) { old.SetActive(false); Destroy(old); }
+            shown.Remove(id);
+        }
+
+        // 새로 전시한 병을 올린다
+        foreach (KeyValuePair<string, int> pair in wanted)
+        {
+            if (shown.ContainsKey(pair.Key)) continue;
+            BottleContents type = station.GetById(BottleStore.Get(pair.Key).typeId);
+            if (type == null || type.Prefab == null) continue;
+            shown[pair.Key] = Place(type, pair.Key, pair.Value);
         }
     }
 
-    private GameObject Place(BottleContents source, int slotIndex)
+    private GameObject Place(BottleContents type, string archivedId, int slotIndex)
     {
-        // 작업대의 병과 같은 병 프리팹을 복사한다. (병 번호가 같아서 병 속은 기록에서 저절로 되살아난다)
-        GameObject prefab = source.Prefab;
+        // 작업대와 같은 병 프리팹을 복사한다. Instantiate 직전에 보관된 병 번호를 넣어 두면 그 병의 기록으로 병 속이 되살아난다.
         Transform slot = slots[slotIndex];
-        GameObject copy = Instantiate(prefab, slot.position, slot.rotation, transform);
-        copy.name = "ShelfBottle_" + source.BottleId;
+        BottleContents.SpawnId = archivedId;
+        GameObject copy = Instantiate(type.Prefab, slot.position, slot.rotation, transform);
+        BottleContents.SpawnId = null;
+        copy.name = "ShelfBottle_" + archivedId;
 
         // 선반에서는 돌리거나 카메라로 보지 않는다
         BottleViewer viewer = copy.GetComponent<BottleViewer>();
@@ -82,7 +87,7 @@ public class BottleShelf : MonoBehaviour
         if (copy.GetComponent<BottleContents>().IsSideways)
             copy.transform.rotation = slot.rotation * Quaternion.Euler(0f, 90f, 0f);
 
-        copy.AddComponent<ShelfBottle>().Init(source.BottleId, source.DisplayName);
+        copy.AddComponent<ShelfBottle>().Init(archivedId, type.DisplayName + " #" + BottleStore.ArchiveNumber(archivedId));
         return copy;
     }
 }

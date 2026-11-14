@@ -20,6 +20,7 @@ public class BottleRecord
     public bool created;          // 병을 만들었는가 (만들 때 병 종류와 흙의 양을 정하고, 그 뒤로는 바꿀 수 없다)
     public int soilLevel = 1;     // 흙의 양: 0 적게, 1 보통, 2 많이
     public int shelfSlot = -1;    // 선반의 몇 번째 칸에 놓였는가 (-1이면 선반에 없다)
+    public string typeId;         // 병 인벤토리에 보관된 병이면 어떤 종류의 병이었는지(작업대 병 번호, 예: bottle0). 작업대 병이면 비어 있다.
 }
 
 /// <summary>
@@ -56,16 +57,57 @@ public static class BottleStore
         Changed?.Invoke();
     }
 
-    /// <summary>완성한 병의 수 (바닷가와 꽃 언덕을 여는 조건에 쓴다)</summary>
+    /// <summary>완성한 병의 수 = 병 인벤토리에 보관된 병의 수 (바닷가와 꽃 언덕을 여는 조건에 쓴다)</summary>
     public static int CompletedCount
     {
         get
         {
             int count = 0;
             foreach (BottleRecord record in bottles.Values)
-                if (record.completed) count++;
+                if (record.completed && record.typeId != null) count++;
             return count;
         }
+    }
+
+    /// <summary>
+    /// 완성한 병을 병 인벤토리로 옮긴다. 병마다 고유한 번호(예: bottle0#3)를 받아 따로 보관되고,
+    /// 작업대의 그 종류 병은 비워져서 같은 종류를 또 만들 수 있다. 새 번호를 돌려준다. 완성하지 않았으면 null.
+    /// </summary>
+    public static string Archive(string typeId)
+    {
+        BottleRecord record = Get(typeId);
+        if (!record.completed) return null;
+
+        int max = 0;
+        foreach (string key in bottles.Keys)
+        {
+            int hash = key.IndexOf('#');
+            if (hash > 0 && int.TryParse(key.Substring(hash + 1), out int n) && n > max) max = n;
+        }
+        string newId = typeId + "#" + (max + 1);
+
+        record.typeId = typeId;
+        bottles[newId] = record;
+        bottles[typeId] = new BottleRecord();
+        Changed?.Invoke();
+        return newId;
+    }
+
+    /// <summary>병 인벤토리의 병 번호들. 만든 순서(번호 순)로 돌려준다.</summary>
+    public static List<string> ArchivedIds()
+    {
+        var list = new List<string>();
+        foreach (KeyValuePair<string, BottleRecord> pair in bottles)
+            if (pair.Value.completed && pair.Value.typeId != null) list.Add(pair.Key);
+        list.Sort((a, b) => ArchiveNumber(a).CompareTo(ArchiveNumber(b)));
+        return list;
+    }
+
+    /// <summary>"bottle0#3"에서 3</summary>
+    public static int ArchiveNumber(string id)
+    {
+        int hash = id.IndexOf('#');
+        return hash > 0 && int.TryParse(id.Substring(hash + 1), out int n) ? n : 0;
     }
 
     /// <summary>선반의 칸 수. 처음에는 6칸이고, 완성한 병이 6개, 12개, 18개가 될 때 6칸씩 늘어 최대 24칸이다. (기획서 6.3)</summary>

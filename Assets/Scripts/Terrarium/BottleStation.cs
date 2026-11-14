@@ -59,6 +59,22 @@ public class BottleStation : MonoBehaviour, IInteractable
         return bottles[index];
     }
 
+    /// <summary>병 번호(예: bottle0)로 작업대의 병 종류를 찾는다. 없으면 null.</summary>
+    public BottleContents GetById(string bottleId)
+    {
+        foreach (BottleContents b in bottles)
+            if (b.BottleId == bottleId) return b;
+        return null;
+    }
+
+    /// <summary>병 번호(예: bottle0)의 카드 순서(0부터). 없으면 -1.</summary>
+    public int IndexOf(string bottleId)
+    {
+        for (int i = 0; i < bottles.Length; i++)
+            if (bottles[i].BottleId == bottleId) return i;
+        return -1;
+    }
+
     /// <summary>작업대에 올릴 병을 고른다. 고른 병만 켜고 나머지는 숨긴다.</summary>
     public void Select(int index)
     {

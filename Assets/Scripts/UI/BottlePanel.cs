@@ -9,7 +9,8 @@ using UnityEngine.UI;
 /// 1) 꾸미는 중인 병이 없으면 "병 만들기" 화면이 먼저 나온다. 흙의 양을 고르고 병 카드를 누르면 병이 만들어진다.
 ///    병의 종류와 흙의 양은 이때 정해지고, 그 뒤로는 바꿀 수 없다. (지금은 병을 바로 주지만, 나중에는 병을 사야 한다)
 /// 2) 만든 병은 병 그림 화면에서 꾸민다. 꾸미는 중에는 병을 바꾸는 버튼이 없다. 패널을 닫았다 열면 그 병이 그대로 열린다.
-/// 3) 완성하면 꾸미기 도구는 사라지고 "새 병 만들기" 버튼이 나온다. 누르면 1)로 돌아간다.
+/// 3) 완성하면 그 병은 자동으로 "병 인벤토리"에 들어가고, 병 만들기 화면으로 돌아간다. 같은 종류의 병도 또 만들 수 있다.
+/// 4) 병 만들기 화면의 "내 병" 버튼으로 병 인벤토리를 열어, 선반에 전시할 병을 고른다.
 /// 병은 병 옆 카메라가 RenderTexture에 그려서 패널 안 RawImage로 보여 준다.
 /// 패널은 GameRoot 안에 있어서 씬을 옮겨도 남고, 병과 카메라는 열 때마다 받는다.
 /// </summary>
@@ -26,27 +27,16 @@ public class BottlePanel : MonoBehaviour
     [SerializeField] private CompleteBottleButton completeButton;
     [Tooltip("병 만들기 화면 (꾸미는 중인 병이 없을 때 먼저 보인다)")]
     [SerializeField] private BottleChooser chooser;
+    [Tooltip("내 병(병 인벤토리) 화면")]
+    [SerializeField] private BottleInventoryView inventoryView;
     [Tooltip("병 그림(RawImage) 오브젝트. 병을 만들기 전에는 숨긴다.")]
     [SerializeField] private GameObject bottleView;
-    [Tooltip("완성한 병을 보고 있을 때 나오는, 새 병을 만들러 가는 버튼")]
-    [SerializeField] private Button newBottleButton;
-    [Tooltip("완성한 병을 보고 있을 때 나오는, 선반에 전시하거나 내리는 버튼")]
-    [SerializeField] private Button displayButton;
-    [SerializeField] private TMPro.TMP_Text displayLabel;
-    [Tooltip("완성한 병을 비우는 버튼. 실수로 안 누르게 두 번 눌러야 한다.")]
-    [SerializeField] private Button emptyButton;
-    [SerializeField] private TMPro.TMP_Text emptyLabel;
 
-    private float emptyConfirmUntil;
-
-    [Header("꾸미는 중 / 완성 후 모드")]
+    [Header("꾸미는 중")]
     [Tooltip("재료 칸, 바닥재, 완성 버튼 등 꾸밀 때만 보이는 것을 담은 오브젝트")]
     [SerializeField] private GameObject editTools;
-    [Tooltip("완성한 병을 열었을 때 보이는 글자")]
-    [SerializeField] private GameObject completedLabel;
 
     private bool isOpen;
-    private bool choosing; // true: 병 만들기 화면, false: 병 그림 화면
     private BottleStation station;
     private BottleContents contents;
     private Camera bottleCamera;
@@ -56,47 +46,8 @@ public class BottlePanel : MonoBehaviour
         root.SetActive(false);
         closeButton.onClick.AddListener(Close);
         chooser.Chosen += OnBottleChosen;
-        newBottleButton.onClick.AddListener(ShowChooser);
-        displayButton.onClick.AddListener(ToggleDisplay);
-        emptyButton.onClick.AddListener(EmptyBottle);
-    }
-
-    /// <summary>보고 있는 완성한 병을 비운다. 안의 재료가 모두 사라지니, 3초 안에 한 번 더 눌러야 한다.</summary>
-    private void EmptyBottle()
-    {
-        if (contents == null || !contents.IsCompleted) return;
-        if (Time.unscaledTime > emptyConfirmUntil)
-        {
-            emptyConfirmUntil = Time.unscaledTime + 3f;
-            emptyLabel.text = "한 번 더 누르면 비워요\n(재료가 사라져요)";
-            return;
-        }
-
-        emptyConfirmUntil = 0f;
-        contents.ResetToEmpty();
-        ShowChooser(); // 비운 병은 다시 만들 수 있다
-        decorator.ShowMessage("병을 비웠어요. 다시 만들 수 있어요");
-    }
-
-    /// <summary>보고 있는 완성한 병을 선반에 전시하거나, 이미 전시 중이면 내린다.</summary>
-    private void ToggleDisplay()
-    {
-        if (contents == null || !contents.IsCompleted) return;
-        string id = contents.BottleId;
-        if (BottleStore.IsDisplayed(id))
-        {
-            BottleStore.Undisplay(id);
-            decorator.ShowMessage("선반에서 내렸어요");
-        }
-        else if (BottleStore.TryDisplay(id))
-        {
-            decorator.ShowMessage("선반에 전시했어요");
-        }
-        else
-        {
-            decorator.ShowMessage("선반이 가득 찼어요");
-        }
-        RefreshMode();
+        chooser.OpenInventory += ShowInventory;
+        inventoryView.Back += () => ShowChooser();
     }
 
     private void OnDisable()
@@ -139,24 +90,45 @@ public class BottlePanel : MonoBehaviour
         UIFocus.Close();
     }
 
+    /// <summary>
+    /// 병을 완성했다(CompleteBottleButton이 부른다). 완성한 병을 병 인벤토리에 넣고,
+    /// 작업대의 병은 비워서 같은 종류를 또 만들 수 있게 한 뒤 병 만들기 화면으로 돌아간다.
+    /// </summary>
+    public void OnBottleCompleted()
+    {
+        if (station == null || contents == null || !contents.IsCompleted) return;
+
+        BottleContents done = contents;
+        ReleaseBottle();
+        string id = BottleStore.Archive(done.BottleId);
+        done.ResetToEmpty();
+        station.ShowOnlyInProgress();
+        ShowChooser(id != null ? "병을 완성했어요! 병 인벤토리에 넣었어요 (내 병 #" + BottleStore.ArchiveNumber(id) + ")" : null);
+    }
+
     /// <summary>병 만들기 화면을 보인다. (보고 있던 병은 놓고, 병 그림과 꾸미기 도구는 숨긴다)</summary>
-    private void ShowChooser()
+    private void ShowChooser(string notice = null)
     {
         if (station == null) return;
         ReleaseBottle();
-        choosing = true;
 
+        inventoryView.gameObject.SetActive(false);
         chooser.gameObject.SetActive(true);
-        chooser.Refresh(station);
+        chooser.Refresh(station, notice);
         bottleView.SetActive(false);
         editTools.SetActive(false);
-        completedLabel.SetActive(false);
-        newBottleButton.gameObject.SetActive(false);
-        displayButton.gameObject.SetActive(false);
-        emptyButton.gameObject.SetActive(false);
     }
 
-    /// <summary>병 카드를 눌렀다. 아직 안 만든 병이면 지금 고른 흙의 양으로 만들고(이때 정해진다), 그 병을 연다.</summary>
+    /// <summary>내 병(병 인벤토리) 화면을 보인다.</summary>
+    private void ShowInventory()
+    {
+        if (station == null) return;
+        chooser.gameObject.SetActive(false);
+        inventoryView.gameObject.SetActive(true);
+        inventoryView.Open(station);
+    }
+
+    /// <summary>병 카드를 눌렀다. 지금 고른 흙의 양으로 병을 만들고(이때 정해진다), 그 병을 연다.</summary>
     private void OnBottleChosen(int index)
     {
         if (station == null) return;
@@ -179,9 +151,10 @@ public class BottlePanel : MonoBehaviour
     {
         if (station == null) return;
         ReleaseBottle();
-        choosing = false;
         chooser.gameObject.SetActive(false);
+        inventoryView.gameObject.SetActive(false);
         bottleView.SetActive(true);
+        editTools.SetActive(true);
 
         station.Select(index);
         contents = station.Get(index);
@@ -192,8 +165,6 @@ public class BottlePanel : MonoBehaviour
         groundSelector.SetTarget(contents);
         completeButton.SetTarget(contents);
         if (bottleCamera != null) bottleCamera.enabled = true;
-
-        RefreshMode();
     }
 
     /// <summary>보고 있던 병을 놓는다. (카메라를 끄고 도구들의 대상을 비운다)</summary>
@@ -206,21 +177,5 @@ public class BottlePanel : MonoBehaviour
         decorator.SetTarget(null, null);
         groundSelector.SetTarget(null);
         completeButton.SetTarget(null);
-    }
-
-    /// <summary>병이 완성됐는지에 따라 꾸미기 도구를 보이거나 숨긴다. (완성하면 새 병 만들기 버튼이 나온다)</summary>
-    public void RefreshMode()
-    {
-        if (choosing) return; // 병 만들기 화면에서는 꾸미기 도구를 보이지 않는다
-        bool done = contents != null && contents.IsCompleted;
-        editTools.SetActive(!done);
-        completedLabel.SetActive(done);
-        newBottleButton.gameObject.SetActive(done);
-        displayButton.gameObject.SetActive(done);
-        emptyButton.gameObject.SetActive(done);
-        emptyConfirmUntil = 0f;
-        if (emptyLabel != null) emptyLabel.text = "병 비우기";
-        if (done && displayLabel != null)
-            displayLabel.text = BottleStore.IsDisplayed(contents.BottleId) ? "선반에서 내리기" : "선반에 전시하기";
     }
 }

@@ -161,8 +161,16 @@ public class BottleContents : MonoBehaviour
 
     // 처음 켜지는 순간(Awake)에 기억해 둔 상태를 되살린다. 숨겨 뒀다가 나중에 켜지는 병도
     // 켜지자마자 완성 여부와 바닥재가 맞게 보이도록, Start가 아니라 Awake에서 한다.
+    /// <summary>
+    /// 선반에 올릴 복사본을 만들 때, Instantiate 직전에 병 번호(보관된 병의 번호)를 여기에 넣어 둔다.
+    /// 복사본의 Awake가 이 번호의 기록으로 병 속을 되살린다. (한 번 쓰면 비워진다)
+    /// </summary>
+    public static string SpawnId;
+
     private void Awake()
     {
+        if (!string.IsNullOrEmpty(SpawnId)) { bottleId = SpawnId; SpawnId = null; }
+
         if (groundRenderer != null) soilColor = groundRenderer.sharedMaterial.color;
 
         // 씬을 옮겼다 돌아왔을 때 기억해 둔 상태를 다시 만든다.

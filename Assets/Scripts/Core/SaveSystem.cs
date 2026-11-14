@@ -40,6 +40,7 @@ public static class SaveSystem
                     completed = r.completed,
                     soilLevel = r.soilLevel,
                     shelfSlot = r.shelfSlot,
+                    typeId = r.typeId,
                     groundId = r.ground != null ? r.ground.id : string.Empty
                 };
                 foreach (PlacedData p in r.items)
@@ -107,6 +108,7 @@ public static class SaveSystem
                     completed = b.completed,
                     soilLevel = b.soilLevel,
                     shelfSlot = data.version >= 2 ? b.shelfSlot : -1, // 예전 저장은 자동으로 올라가 있던 병을 모두 내린 상태로 연다
+                    typeId = string.IsNullOrEmpty(b.typeId) ? null : b.typeId,
                     ground = db.Find(b.groundId)
                 };
                 foreach (PlacedSave p in b.items)
@@ -117,6 +119,12 @@ public static class SaveSystem
                 }
                 BottleStore.Set(b.bottleId, record);
             }
+
+            // 예전 저장: 작업대 병이 완성된 채로 남아 있으면 병 인벤토리로 옮긴다 (선반 전시 상태는 그대로 이어진다)
+            var legacy = new System.Collections.Generic.List<string>();
+            foreach (var pair in BottleStore.All)
+                if (pair.Value.completed && pair.Value.typeId == null) legacy.Add(pair.Key);
+            foreach (string typeId in legacy) BottleStore.Archive(typeId);
 
             loaded = data;
             Debug.Log("[저장] " + data.day + "일째 저장을 불러왔어요.");

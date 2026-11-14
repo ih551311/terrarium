@@ -151,25 +151,6 @@ public static class UISetup
         Label(edit.transform, "Hint", "클릭: 놓기  |  재료 위 휠: 돌리기  |  그 밖의 휠: 확대/축소  |  Q/R: 크기  |  우클릭: 빼기  |  끌기: 병 방향 바꾸기 (T: 원위치)",
             24, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 128f), new Vector2(1440f, 40f), TextAlignmentOptions.Center);
 
-        // 완성한 병을 열었을 때 보이는 글자 (평소엔 꺼 둔다)
-        GameObject completedLabel = Label(bWindow.transform, "CompletedLabel", "완성한 병이에요\n끌어서 돌리고, 휠로 확대/축소할 수 있어요", 40,
-            new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1000f, 120f), TextAlignmentOptions.Center).gameObject;
-        completedLabel.SetActive(false);
-
-        // 완성한 뒤에 나오는 "새 병 만들기" 버튼 (병 만들기 화면으로 간다)
-        Button newBottleButton = MakeSmallButton(bWindow.transform, "NewBottleButton", "새 병 만들기", new Vector2(0f, 1f), new Vector2(30f, -110f), new Vector2(230f, 80f), 34);
-        newBottleButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
-        newBottleButton.gameObject.SetActive(false);
-
-        // 완성한 병을 선반에 전시하거나 내리는 버튼 (새 병 만들기 아래)
-        Button displayButton = MakeSmallButton(bWindow.transform, "DisplayButton", "선반에 전시하기", new Vector2(0f, 1f), new Vector2(30f, -200f), new Vector2(230f, 80f), 30);
-        displayButton.gameObject.SetActive(false);
-
-        // 완성한 병을 비우는 버튼 (전시 버튼 아래, 두 번 눌러야 비워진다)
-        Button emptyButton = MakeSmallButton(bWindow.transform, "EmptyButton", "병 비우기", new Vector2(0f, 1f), new Vector2(30f, -290f), new Vector2(230f, 90f), 26);
-        emptyButton.GetComponent<Image>().color = new Color(0.9f, 0.78f, 0.74f, 1f);
-        emptyButton.gameObject.SetActive(false);
-
         // 재료 칸: 가방 칸을 가로로 늘어놓는다
         GameObject strip = Rect(edit.transform, "MaterialStrip");
         Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(1440f, 100f));
@@ -267,9 +248,64 @@ public static class UISetup
         }
         GameObject noneLeft = Label(chooseBox.transform, "NoneLeft", "만들 수 있는 병이 없어요 (병은 나중에 살 수 있어요)", 34, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1300f, 60f), TextAlignmentOptions.Center).gameObject;
         noneLeft.SetActive(false);
+
+        // 완성한 병이 병 인벤토리로 들어갔다는 안내와, "내 병" 버튼
+        TextMeshProUGUI chooseNotice = Label(chooseBox.transform, "Notice", string.Empty, 32, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 130f), new Vector2(1300f, 50f), TextAlignmentOptions.Center);
+        chooseNotice.color = new Color(0.72f, 0.3f, 0.2f, 1f);
+        chooseNotice.gameObject.SetActive(false);
+        Button myBottlesButton = MakeSmallButton(chooseBox.transform, "MyBottlesButton", "내 병", new Vector2(0f, 1f), new Vector2(40f, -40f), new Vector2(250f, 70f), 32);
+        myBottlesButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
+
+        // 내 병 화면: 병 인벤토리의 병들을 칸으로 보여 주고, 눌러서 선반에 전시하거나 내린다. (창 전체를 덮는다)
+        GameObject invBox = Rect(bWindow.transform, "BottleInventory");
+        Stretch(invBox);
+        Image invBg = invBox.AddComponent<Image>(); invBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
+        Label(invBox.transform, "Title", "내 병", 56, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(1000f, 80f), TextAlignmentOptions.Center);
+        TextMeshProUGUI invInfo = Label(invBox.transform, "Info", string.Empty, 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1300f, 90f), TextAlignmentOptions.Center);
+        Button invBack = MakeSmallButton(invBox.transform, "BackButton", "뒤로", new Vector2(0f, 1f), new Vector2(40f, -40f), new Vector2(200f, 70f), 32);
+        const int InvCols = 5, InvRows = 2, InvCount = InvCols * InvRows;
+        Button[] invCells = new Button[InvCount];
+        Image[] invIcons = new Image[InvCount];
+        TMP_Text[] invLabels = new TMP_Text[InvCount];
+        Image[] invBgs = new Image[InvCount];
+        for (int i = 0; i < InvCount; i++)
+        {
+            int col = i % InvCols, row = i / InvCols;
+            Button b = MakeSmallButton(invBox.transform, "Cell" + i, "병", new Vector2(0.5f, 0.5f), new Vector2((col - 2f) * 280f, 150f - row * 360f - 40f), new Vector2(260f, 340f), 26);
+            invCells[i] = b;
+            invLabels[i] = b.GetComponentInChildren<TextMeshProUGUI>();
+            invBgs[i] = b.GetComponent<Image>();
+            RectTransform lr = invLabels[i].rectTransform;
+            lr.anchorMin = new Vector2(0f, 0f); lr.anchorMax = new Vector2(1f, 0f);
+            lr.pivot = new Vector2(0.5f, 0f);
+            lr.anchoredPosition = new Vector2(0f, 8f); lr.sizeDelta = new Vector2(0f, 90f);
+            GameObject ic = Rect(b.transform, "Icon");
+            Anchor(ic, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(210f, 210f));
+            Image iconImage = ic.AddComponent<Image>();
+            iconImage.raycastTarget = false;
+            invIcons[i] = iconImage;
+        }
+        Button invPrev = MakeSmallButton(invBox.transform, "PrevButton", "이전", new Vector2(0.5f, 0f), new Vector2(-150f, 50f), new Vector2(200f, 70f), 30);
+        Button invNext = MakeSmallButton(invBox.transform, "NextButton", "다음", new Vector2(0.5f, 0f), new Vector2(150f, 50f), new Vector2(200f, 70f), 30);
+        invBox.SetActive(false);
+
         closeButton.transform.SetAsLastSibling(); // 닫기 버튼이 병 만들기 화면 위에도 보이게 한다
 
+        BottleInventoryView invView = invBox.AddComponent<BottleInventoryView>();
+        SetArray(invView, "cells", invCells);
+        SetArray(invView, "icons", invIcons);
+        SetArray(invView, "labels", invLabels);
+        SetArray(invView, "backgrounds", invBgs);
+        SetArray(invView, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3) });
+        SetRef(invView, "previousButton", invPrev);
+        SetRef(invView, "nextButton", invNext);
+        SetRef(invView, "backButton", invBack);
+        SetRef(invView, "infoLabel", invInfo);
+
         BottleChooser chooser = chooseBox.AddComponent<BottleChooser>();
+        SetRef(chooser, "noticeLabel", chooseNotice);
+        SetRef(chooser, "myBottlesButton", myBottlesButton);
+        SetRef(chooser, "myBottlesLabel", myBottlesButton.GetComponentInChildren<TextMeshProUGUI>());
         SetArray(chooser, "buttons", choiceButtons);
         SetArray(chooser, "labels", choiceLabels);
         SetArray(chooser, "backgrounds", choiceBackgrounds);
@@ -449,10 +485,8 @@ public static class UISetup
         SetRef(bp, "root", bottleRoot); SetRef(bp, "closeButton", closeButton);
         SetRef(bp, "dragRotate", drag); SetRef(bp, "decorator", decorator);
         SetRef(bp, "groundSelector", groundSelector); SetRef(bp, "completeButton", complete); SetRef(bp, "chooser", chooser);
-        SetRef(bp, "bottleView", view); SetRef(bp, "newBottleButton", newBottleButton);
-        SetRef(bp, "emptyButton", emptyButton); SetRef(bp, "emptyLabel", emptyButton.GetComponentInChildren<TextMeshProUGUI>());
-        SetRef(bp, "displayButton", displayButton); SetRef(bp, "displayLabel", displayButton.GetComponentInChildren<TextMeshProUGUI>());
-        SetRef(bp, "editTools", edit); SetRef(bp, "completedLabel", completedLabel);
+        SetRef(bp, "bottleView", view); SetRef(bp, "inventoryView", invView);
+        SetRef(bp, "editTools", edit);
         SetRef(complete, "button", completeButton);
         SetRef(complete, "label", completeButton.GetComponentInChildren<TextMeshProUGUI>());
         SetRef(complete, "panel", bp); SetRef(complete, "decorator", decorator);

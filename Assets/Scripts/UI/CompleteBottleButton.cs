@@ -66,8 +66,7 @@ public class CompleteBottleButton : MonoBehaviour
 
         contents.Complete();
         ResetLabel();
-        panel.RefreshMode();
-        decorator.ShowMessage("병을 완성했어요!");
+        panel.OnBottleCompleted(); // 완성한 병은 병 인벤토리로 들어가고, 병 만들기 화면으로 돌아간다
     }
 
     private void ResetLabel()
