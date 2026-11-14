@@ -36,7 +36,7 @@ public class BottleChooser : MonoBehaviour
     [Tooltip("켜면 병을 만들 때 코인을 낸다. (시작할 때 받은 공짜 병은 먼저 쓴다)")]
     [SerializeField] private bool requirePurchase = true;
     [Tooltip("병 카드 순서(둥근, 긴, 넓은, 누운)대로의 가격(코인). 임시 값.")]
-    [SerializeField] private int[] prices = { 20, 20, 30, 40 };
+    [SerializeField] private int[] prices = { 6, 6, 10, 14 };
 
     public bool RequirePurchase => requirePurchase;
     public int PriceOf(int index) => prices != null && index < prices.Length ? prices[index] : 0;
