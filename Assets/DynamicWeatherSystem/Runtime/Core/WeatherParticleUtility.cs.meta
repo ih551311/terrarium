@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: b0e9d363ef17dfe4e8dcc6a46b57ba99
+AssetOrigin:
+  serializedVersion: 1
+  productId: 370650
+  packageName: URP Dynamic Weather System
+  packageVersion: 1.0
+  assetPath: Assets/DynamicWeatherSystem/Runtime/Core/WeatherParticleUtility.cs
+  uploadId: 1042892

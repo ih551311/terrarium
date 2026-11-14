@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 93c1cb69c514ad746a45998fa109fd34
+AssetOrigin:
+  serializedVersion: 1
+  productId: 370650
+  packageName: URP Dynamic Weather System
+  packageVersion: 1.0
+  assetPath: Assets/DynamicWeatherSystem/Editor/WeatherWelcomeWindow.cs
+  uploadId: 1042892

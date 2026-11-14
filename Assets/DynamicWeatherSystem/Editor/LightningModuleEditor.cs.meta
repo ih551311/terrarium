@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 48c10308ac89fec4482bf3a582859f92
+AssetOrigin:
+  serializedVersion: 1
+  productId: 370650
+  packageName: URP Dynamic Weather System
+  packageVersion: 1.0
+  assetPath: Assets/DynamicWeatherSystem/Editor/LightningModuleEditor.cs
+  uploadId: 1042892

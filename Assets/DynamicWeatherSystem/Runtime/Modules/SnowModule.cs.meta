@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 76d7cabc226f85e47a843cd54e8ad0ae
+AssetOrigin:
+  serializedVersion: 1
+  productId: 370650
+  packageName: URP Dynamic Weather System
+  packageVersion: 1.0
+  assetPath: Assets/DynamicWeatherSystem/Runtime/Modules/SnowModule.cs
+  uploadId: 1042892
