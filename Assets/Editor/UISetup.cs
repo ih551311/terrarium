@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -17,7 +17,7 @@ public static class UISetup
     private const string PrefabPath = "Assets/Prefabs/GameRoot.prefab";
     private const string FontAssetPath = "Assets/Resources/Fonts/Cafe24DongdongLight SDF.asset";
     private const string RenderTexturePath = "Assets/Data/Placeholder/BottleView.renderTexture";
-    private const int SlotCount = 10;
+    private const int SlotCount = 20; // 가방 칸 수 (5열 x 4행). Bag의 slotCount도 이 값으로 맞춘다.
 
     private static readonly Color TextColor = new Color(0.2f, 0.25f, 0.2f, 1f);
 
@@ -48,6 +48,12 @@ public static class UISetup
         Transform player = root.transform.Find("Player");
         if (player == null) return "프리팹 안에 Player가 없어요.";
         Bag bag = player.GetComponent<Bag>();
+        if (bag != null)
+        {
+            SerializedObject bagSo = new SerializedObject(bag);
+            bagSo.FindProperty("slotCount").intValue = SlotCount;
+            bagSo.ApplyModifiedPropertiesWithoutUndo();
+        }
 
         EnsureEventSystem(root);
 
@@ -174,7 +180,7 @@ public static class UISetup
             tmp.font = font; tmp.fontSize = 24; tmp.color = TextColor; tmp.alignment = TextAlignmentOptions.Center;
             tmp.raycastTarget = false; tmp.text = string.Empty;
             // 위에 재료 그림, 아래에 이름과 개수 (재료 칸은 낮아서 글자를 작게)
-            tmp.fontSize = 19;
+            tmp.fontSize = 15;
             SetBottomText(tmp.rectTransform, 46f);
             stripIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(52f, 52f));
             slotButtons[i] = b; slotLabels[i] = tmp; slotBackgrounds[i] = bg;
@@ -375,25 +381,26 @@ public static class UISetup
         // 왼쪽: 보내기 (가방 칸마다 하나씩, 누르면 1개 넣기)
         Label(mailWindow.transform, "SendTitle", "보내기  (내일 아침 코인이 와요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -125f), new Vector2(700f, 60f), TextAlignmentOptions.TopLeft);
         GameObject sendGrid = Rect(mailWindow.transform, "SendGrid");
-        Anchor(sendGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -195f), new Vector2(700f, 280f));
+        Anchor(sendGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -195f), new Vector2(700f, 470f));
         GridLayoutGroup sendLayout = sendGrid.AddComponent<GridLayoutGroup>();
-        sendLayout.cellSize = new Vector2(132f, 130f); sendLayout.spacing = new Vector2(8f, 10f);
+        sendLayout.cellSize = new Vector2(132f, 110f); sendLayout.spacing = new Vector2(8f, 10f);
         sendLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; sendLayout.constraintCount = 5;
         Button[] sendButtons = new Button[SlotCount];
         TMP_Text[] sendLabels = new TMP_Text[SlotCount];
         Image[] sendIcons = new Image[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
-            Button b = MakeButton(sendGrid.transform, "Send" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(132f, 130f));
+            Button b = MakeButton(sendGrid.transform, "Send" + i, string.Empty, new Vector2(0f, 1f), Vector2.zero, new Vector2(132f, 110f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
-            t.fontSize = 20;
-            SetBottomText(t.rectTransform, 56f);
-            sendIcons[i] = MakeSlotIcon(b.transform, new Vector2(0.5f, 1f), new Vector2(0f, -6f), new Vector2(66f, 66f));
+            t.fontSize = 18;
+            SetBottomText(t.rectTransform, 50f);
+            sendIcons[i] = MakeSlotIcon(b.transform, new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(56f, 56f));
             sendButtons[i] = b; sendLabels[i] = t;
         }
 
         // 보낸 것과 주문한 것 요약
-        TextMeshProUGUI mailSummary = Label(mailWindow.transform, "Summary", string.Empty, 34, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -500f), new Vector2(700f, 200f), TextAlignmentOptions.TopLeft);
+        TextMeshProUGUI mailSummary = Label(mailWindow.transform, "Summary", string.Empty, 34, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -675f), new Vector2(700f, 100f), TextAlignmentOptions.TopLeft);
+        mailSummary.fontSize = 28;
 
         // 오른쪽: 주문하기 (코인을 내고 사는 물건. 가격이 있는 재료를 모두 보여 준다)
         // 도구 강화 (도끼, 곡괭이): 코인을 내고 주문하면 다음 날 도착하고, 받으면 도구 단계가 오른다
@@ -439,7 +446,7 @@ public static class UISetup
         }
 
         // 아래: 도착한 것 받기와 알림
-        Button collectButton = MakeButton(mailWindow.transform, "CollectButton", "도착한 것 받기", new Vector2(0.5f, 0f), new Vector2(0f, 120f), new Vector2(1000f, 110f));
+        Button collectButton = MakeButton(mailWindow.transform, "CollectButton", "도착한 것 받기", new Vector2(0.5f, 0f), new Vector2(400f, 130f), new Vector2(700f, 100f));
         collectButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         TextMeshProUGUI collectLabel = collectButton.GetComponentInChildren<TextMeshProUGUI>();
         collectLabel.fontSize = 44;
@@ -452,7 +459,7 @@ public static class UISetup
         Image invDim = invRoot.AddComponent<Image>(); invDim.color = new Color(0f, 0f, 0f, 0.35f);
 
         GameObject iWindow = Rect(invRoot.transform, "Window");
-        Center(iWindow, 1500f, 950f);
+        Center(iWindow, 1300f, 780f); // 창은 직사각형, 칸은 정사각형
         Image iBg = iWindow.AddComponent<Image>(); iBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
         Label(iWindow.transform, "Title", "인벤토리", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(500f, 90f), TextAlignmentOptions.TopLeft);
         Label(iWindow.transform, "Hint", "Tab: 닫기", 40, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -45f), new Vector2(400f, 60f), TextAlignmentOptions.TopRight);
@@ -464,31 +471,35 @@ public static class UISetup
         GameObject bagGroup = Rect(iWindow.transform, "BagGroup");
         Stretch(bagGroup);
         GameObject grid = Rect(bagGroup.transform, "Slots");
-        Anchor(grid, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(1400f, 740f));
+        Anchor(grid, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(1122f, 474f));
         GridLayoutGroup glg = grid.AddComponent<GridLayoutGroup>();
-        glg.cellSize = new Vector2(268f, 350f); glg.spacing = new Vector2(12f, 30f);
-        glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; glg.constraintCount = 5;
+        glg.cellSize = new Vector2(150f, 150f); glg.spacing = new Vector2(12f, 12f);
+        glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; glg.constraintCount = 7;
         glg.childAlignment = TextAnchor.UpperCenter;
 
         // 병 탭: 완성한 병 인벤토리 (보기만 한다. 전시는 작업대의 "내 병"에서)
         GameObject bottleGroup = Rect(iWindow.transform, "BottleGroup");
         Stretch(bottleGroup);
         TextMeshProUGUI bottleInfo = Label(bottleGroup.transform, "Info", string.Empty, 34, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(1300f, 60f), TextAlignmentOptions.Center);
-        Image[] bottleIcons = new Image[10];
-        TMP_Text[] bottleTexts = new TMP_Text[10];
-        for (int i = 0; i < 10; i++)
+        GameObject bottleGrid = Rect(bottleGroup.transform, "BottleSlots");
+        Anchor(bottleGrid, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(1122f, 474f));
+        GridLayoutGroup bglg = bottleGrid.AddComponent<GridLayoutGroup>();
+        bglg.cellSize = new Vector2(150f, 150f); bglg.spacing = new Vector2(12f, 12f);
+        bglg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; bglg.constraintCount = 7;
+        bglg.childAlignment = TextAnchor.UpperCenter;
+        Image[] bottleIcons = new Image[SlotCount];
+        TMP_Text[] bottleTexts = new TMP_Text[SlotCount];
+        for (int i = 0; i < SlotCount; i++)
         {
-            int col = i % 5, row = i / 5;
-            GameObject cell = Rect(bottleGroup.transform, "BottleCell" + i);
-            Anchor(cell, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2((col - 2f) * 280f, 120f - row * 360f - 40f), new Vector2(260f, 340f));
+            GameObject cell = Rect(bottleGrid.transform, "BottleCell" + i);
             Image cbg = cell.AddComponent<Image>(); cbg.color = new Color(0.82f, 0.88f, 0.82f, 1f); cbg.raycastTarget = false;
             GameObject ct = Rect(cell.transform, "Text");
             Stretch(ct);
             TextMeshProUGUI ctmp = ct.AddComponent<TextMeshProUGUI>();
-            ctmp.font = font; ctmp.fontSize = 28; ctmp.color = TextColor;
+            ctmp.font = font; ctmp.fontSize = 20; ctmp.color = TextColor;
             ctmp.alignment = TextAlignmentOptions.Center; ctmp.raycastTarget = false; ctmp.text = string.Empty;
-            SetBottomText(ctmp.rectTransform, 90f);
-            bottleIcons[i] = MakeSlotIcon(cell.transform, new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(210f, 210f));
+            SetBottomText(ctmp.rectTransform, 56f);
+            bottleIcons[i] = MakeSlotIcon(cell.transform, new Vector2(0.5f, 1f), new Vector2(0f, -6f), new Vector2(84f, 84f));
             bottleTexts[i] = ctmp;
         }
         Button bottlePrev = MakeSmallButton(bottleGroup.transform, "PrevButton", "이전", new Vector2(0.5f, 0f), new Vector2(-150f, 30f), new Vector2(200f, 70f), 30);
@@ -504,10 +515,10 @@ public static class UISetup
             GameObject t = Rect(slot.transform, "Text");
             Stretch(t);
             TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
-            tmp.font = font; tmp.fontSize = 32; tmp.color = TextColor;
+            tmp.font = font; tmp.fontSize = 22; tmp.color = TextColor;
             tmp.alignment = TextAlignmentOptions.Center; tmp.raycastTarget = false; tmp.text = string.Empty;
-            SetBottomText(tmp.rectTransform, 100f);
-            slotIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(200f, 200f));
+            SetBottomText(tmp.rectTransform, 60f);
+            slotIcons[i] = MakeSlotIcon(slot.transform, new Vector2(0.5f, 1f), new Vector2(0f, -6f), new Vector2(84f, 84f));
             slotTexts[i] = tmp;
         }
 
