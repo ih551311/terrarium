@@ -11,7 +11,7 @@ public static class BottleIconMaker
 {
     public const string Folder = "Assets/Data/BottleIcons";
     private const int Size = 384;
-    private static readonly string[] Ids = { "round", "tall", "flask", "side" };
+    private static readonly string[] Ids = { "round", "tall", "flask", "side", "snowglobe", "lantern" };
 
     [MenuItem("유리병 정원/병 그림 만들기")]
     public static string Build()
@@ -64,9 +64,10 @@ public static class BottleIconMaker
         return Folder + "/bottle_" + id + ".png";
     }
 
-    /// <summary>번호 순서(둥근 병, 긴 병, 넓은 병, 누운 병)의 병 그림. 없으면 null.</summary>
+    /// <summary>번호 순서(둥근 병, 긴 병, 넓은 병, 누운 병, 스노우볼, 눈꽃 병)의 병 그림. 없으면 null.</summary>
     public static Sprite Load(int index)
     {
+        if (index < 0 || index >= Ids.Length) return null;
         return AssetDatabase.LoadAssetAtPath<Sprite>(PathOf(Ids[index]));
     }
 }

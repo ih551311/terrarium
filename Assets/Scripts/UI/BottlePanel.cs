@@ -151,6 +151,7 @@ public class BottlePanel : MonoBehaviour
     private void OnBottleChosen(int index)
     {
         if (station == null) return;
+        if (!BottleChooser.IsUnlocked(index)) return;
         BottleContents bottle = station.Get(index);
         if (!bottle.IsCreated)
         {

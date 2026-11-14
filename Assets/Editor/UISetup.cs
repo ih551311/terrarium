@@ -232,14 +232,14 @@ public static class UISetup
             soilButtons[i] = b; soilBackgrounds[i] = b.GetComponent<Image>();
         }
 
-        const int ChoiceCount = 4;
+        const int ChoiceCount = 6; // 둥근, 긴, 넓은, 누운 병과 눈 섬 전용 병 둘 (스노우볼, 눈꽃 병)
         Button[] choiceButtons = new Button[ChoiceCount];
         TMP_Text[] choiceLabels = new TMP_Text[ChoiceCount];
         Image[] choiceBackgrounds = new Image[ChoiceCount];
         for (int i = 0; i < ChoiceCount; i++)
         {
             // 카드: 위에 병 예시 그림, 아래에 이름과 상태
-            Button b = MakeSmallButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 0.5f), new Vector2((i - 1.5f) * 290f, -110f), new Vector2(270f, 400f), 30);
+            Button b = MakeSmallButton(chooseBox.transform, "Choice" + i, "병", new Vector2(0.5f, 0.5f), new Vector2((i - 2.5f) * 236f, -110f), new Vector2(222f, 400f), 26);
             choiceButtons[i] = b;
             choiceLabels[i] = b.GetComponentInChildren<TextMeshProUGUI>();
             choiceBackgrounds[i] = b.GetComponent<Image>();
@@ -250,7 +250,7 @@ public static class UISetup
             labelRect.anchoredPosition = new Vector2(0f, 8f); labelRect.sizeDelta = new Vector2(0f, 120f);
 
             GameObject icon = Rect(b.transform, "Icon");
-            Anchor(icon, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(240f, 240f));
+            Anchor(icon, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(204f, 240f));
             Image iconImage = icon.AddComponent<Image>();
             iconImage.sprite = BottleIconMaker.Load(i);
             iconImage.color = iconImage.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
@@ -306,7 +306,7 @@ public static class UISetup
         SetArray(invView, "icons", invIcons);
         SetArray(invView, "labels", invLabels);
         SetArray(invView, "backgrounds", invBgs);
-        SetArray(invView, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3) });
+        SetArray(invView, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3), BottleIconMaker.Load(4), BottleIconMaker.Load(5) });
         SetRef(invView, "previousButton", invPrev);
         SetRef(invView, "nextButton", invNext);
         SetRef(invView, "backButton", invBack);
@@ -626,7 +626,7 @@ public static class UISetup
         SetArray(ip, "bottleTexts", bottleTexts);
         SetArray(ip, "bottleButtons", bottleButtons);
         SetRef(ip, "bottlePrev", bottlePrev); SetRef(ip, "bottleNext", bottleNext);
-        SetArray(ip, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3) });
+        SetArray(ip, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3), BottleIconMaker.Load(4), BottleIconMaker.Load(5) });
 
         MapPanel mp = ui.AddComponent<MapPanel>();
         SetRef(mp, "root", mapRoot); SetRef(mp, "closeButton", mapCloseButton); SetRef(mp, "homeButton", homeButton);

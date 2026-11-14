@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -69,10 +69,12 @@ public static class JarSetup
         public float soilDepth;  // 세운 병: 병 바닥 안쪽에서 흙 표면까지 높이(모델 크기 기준, 미터)
         public bool sideways;    // 누운 병 (함께 온 모래 바닥 모델 <model>_floor 를 쓴다)
 
-        public Jar(string id, string displayName, string model, string bottleId, float soilDepth, bool sideways)
+        public float fit;        // 안쪽 반지름에 곱하는 값. 각진 병(열 면)은 평평한 면까지의 거리가 모서리보다 짧아서 1보다 작게 둔다
+
+        public Jar(string id, string displayName, string model, string bottleId, float soilDepth, bool sideways, float fit = 1f)
         {
             this.id = id; this.displayName = displayName; this.model = model; this.bottleId = bottleId;
-            this.soilDepth = soilDepth; this.sideways = sideways;
+            this.soilDepth = soilDepth; this.sideways = sideways; this.fit = fit;
         }
     }
 
@@ -82,6 +84,9 @@ public static class JarSetup
         new Jar("tall",  "긴 병",   "jar_tall",  "bottle1", 0.028f, false),
         new Jar("flask", "넓은 병", "jar_flask", "bottle2", 0.034f, false),
         new Jar("side",  "누운 병", "jar_side",  "bottle3", 0f,     true),
+        // 눈 섬 전용 병 (선착장을 고쳐야 만들 수 있다). 모델은 BottleModelMaker가 만든다
+        new Jar("snowglobe", "스노우볼", "jar_snowglobe", "bottle4", 0.030f, false),
+        new Jar("lantern",   "눈꽃 병",  "jar_lantern",   "bottle5", 0.032f, false, 0.95f),
     };
 
     /// <summary>높이(또는 가로 위치)마다 가장 안쪽 반지름. 정점이 없는 곳은 위아래를 이어서(보간) 구한다.</summary>
@@ -226,7 +231,7 @@ public static class JarSetup
         int samples = Mathf.CeilToInt((profile.Last - profile.First) / ProfileStep) + 1;
         float[] profileRadii = new float[samples];
         for (int i = 0; i < samples; i++)
-            profileRadii[i] = profile.Radius(profile.First + i * ProfileStep) * S;
+            profileRadii[i] = profile.Radius(profile.First + i * ProfileStep) * S * jar.fit;
 
         // 2) 흙 모양 (세운 병: 안쪽 단면에 맞춘 회전체 / 누운 병: 안쪽 둥근 모양을 따라 채운 흙)
         //    흙의 양(적게, 보통, 많이)마다 하나씩 만든다. 병을 만들 때 양을 정하고, 그에 맞는 모양이 끼워진다.
@@ -241,7 +246,7 @@ public static class JarSetup
             soilSurfaceYs[level] = levelSurfaceY;
             soilMeshes[level] = alongX
                 ? BuildSideSoilMesh(profile, axisOrigin, levelSurfaceY, seed)
-                : BuildSoilMesh(profile, floorY, levelSurfaceY, S, seed, out surfaceRadius);
+                : BuildSoilMesh(profile, floorY, levelSurfaceY, S, seed, out surfaceRadius, 0.98f * jar.fit);
             string levelPath = DataFolder + "/" + jar.id + "_soil" + level + ".asset";
             AssetDatabase.DeleteAsset(levelPath);
             AssetDatabase.CreateAsset(soilMeshes[level], levelPath);
@@ -371,7 +376,7 @@ public static class JarSetup
     /// 세운 병의 흙: 안쪽 단면을 따라가는 회전체. 바닥 모서리는 둥글게, 윗면은 언덕과 골이 있고 가장자리는 살짝 솟는다.
     /// 안쪽 바닥(floorY)에서 표면(surfaceY)까지, scale배 크기로 만든다. surfaceY는 굴곡의 평균 높이(재료를 놓는 기준)다.
     /// </summary>
-    private static Mesh BuildSoilMesh(Profile profile, float floorY, float surfaceY, float scale, float seed, out float surfaceRadius)
+    private static Mesh BuildSoilMesh(Profile profile, float floorY, float surfaceY, float scale, float seed, out float surfaceRadius, float wall = 0.98f)
     {
         const int CapRings = 6;
         const float EdgeRise = 0.0035f;   // 가장자리가 유리를 타고 살짝 올라온 높이
@@ -392,7 +397,7 @@ public static class JarSetup
         {
             float y = Mathf.Lerp(floorY, surfaceY, i / (float)(rings - 1));
             float round = Mathf.Clamp01((y - floorY) / RoundHeight);
-            float r = profile.Radius(y) * 0.98f * Mathf.Lerp(0.45f, 1f, Mathf.Sqrt(1f - (1f - round) * (1f - round)));
+            float r = profile.Radius(y) * wall * Mathf.Lerp(0.45f, 1f, Mathf.Sqrt(1f - (1f - round) * (1f - round)));
             if (i == rings - 1) surfaceRadius = r;
             for (int s = 0; s < SoilSegments; s++)
             {

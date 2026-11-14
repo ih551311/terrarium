@@ -35,8 +35,14 @@ public class BottleChooser : MonoBehaviour
     [Header("병 가격")]
     [Tooltip("켜면 병을 만들 때 코인을 낸다. (시작할 때 받은 공짜 병은 먼저 쓴다)")]
     [SerializeField] private bool requirePurchase = true;
-    [Tooltip("병 카드 순서(둥근, 긴, 넓은, 누운)대로의 가격(코인). 임시 값.")]
-    [SerializeField] private int[] prices = { 6, 6, 10, 14 };
+    [Tooltip("병 카드 순서(둥근, 긴, 넓은, 누운, 스노우볼, 눈꽃 병)대로의 가격(코인). 임시 값.")]
+    [SerializeField] private int[] prices = { 6, 6, 10, 14, 18, 22 };
+
+    /// <summary>처음 네 병은 늘 만들 수 있고, 눈 섬 전용 병(번호 4 이상)은 선착장을 고친 뒤에 만들 수 있다.</summary>
+    public static bool IsUnlocked(int index)
+    {
+        return index < 4 || GameState.DockOpen;
+    }
 
     public bool RequirePurchase => requirePurchase;
     public int PriceOf(int index) => prices != null && index < prices.Length ? prices[index] : 0;
@@ -93,9 +99,10 @@ public class BottleChooser : MonoBehaviour
 
             BottleContents bottle = station.Get(i);
             string cost = GameState.FreeBottles > 0 ? " (공짜 병 " + GameState.FreeBottles + "개)" : requirePurchase ? " (" + PriceOf(i) + "코인)" : string.Empty;
-            labels[i].text = bottle.DisplayName + "\n만들기" + cost;
-            buttons[i].interactable = true;
-            backgrounds[i].color = normalColor;
+            bool unlocked = IsUnlocked(i);
+            labels[i].text = unlocked ? bottle.DisplayName + "\n만들기" + cost : bottle.DisplayName + "\n선착장을 고치면\n열려요";
+            buttons[i].interactable = unlocked;
+            backgrounds[i].color = unlocked ? normalColor : disabledColor;
         }
 
         foreach (Button b in soilButtons) b.interactable = true;
