@@ -638,6 +638,10 @@ public static class UISetup
         BottleDetailPanel detailPanel = ui.AddComponent<BottleDetailPanel>();
         SetRef(detailPanel, "root", detailRoot); SetRef(detailPanel, "closeButton", detailClose); SetRef(detailPanel, "dragRotate", detailDrag);
         SetRef(detailPanel, "nameLabel", detailName); SetRef(detailPanel, "infoLabel", detailInfo);
+        var bottlePrefabList = new System.Collections.Generic.List<Object>();
+        foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Bottles" }))
+            bottlePrefabList.Add(AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid)));
+        SetArray(detailPanel, "bottlePrefabs", bottlePrefabList.ToArray());
         SetRef(detailPanel, "shelfButton", detailShelf); SetRef(detailPanel, "shelfLabel", detailShelf.GetComponentInChildren<TextMeshProUGUI>());
 
         // GameRoot가 새 병 패널과 우체통 패널을 가리키도록 다시 연결한다

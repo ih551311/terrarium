@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// 완성한 병을 크게 보여 주고, 마우스로 끌면 돌려 볼 수 있다. (T: 처음 방향) 이름과 종류, 선반에 놓였는지도 보인다.
 /// 병은 작업대의 병과 같은 병 프리팹을 복사해 눈에 안 보이는 먼 곳에 놓고, 병 카메라가 RenderTexture에 그려서
 /// 패널 안 RawImage로 보여 준다. (병 꾸미기 패널이 쓰는 것과 같은 그림 판이고, 두 패널이 동시에 열리지는 않는다)
-/// 병 프리팹은 집 안의 작업대(BottleStation)에서 찾으므로, 집 안에서만 열린다.
+/// 프리팹을 이 패널이 직접 들고 있어서 집 안과 밖 어디서든 열린다.
 /// 패널 화면(UISetup이 만든다)은 GameRoot 안에 있고, 이 스크립트는 Canvas 오브젝트(UI)에 붙는다.
 /// </summary>
 public class BottleDetailPanel : MonoBehaviour
@@ -23,6 +23,9 @@ public class BottleDetailPanel : MonoBehaviour
     [SerializeField] private Button shelfButton;
     [SerializeField] private TMP_Text shelfLabel;
 
+    [Tooltip("병 종류별 병 프리팹들 (UISetup이 Assets/Prefabs/Bottles에서 모아 넣는다). 작업대가 없는 섬에서도 병을 보려고 직접 들고 있는다.")]
+    [SerializeField] private GameObject[] bottlePrefabs;
+
     [Tooltip("병을 복사해 놓는 자리 (병 카메라는 병 레이어만 그리므로 눈에 띄지 않는 먼 곳이면 된다)")]
     [SerializeField] private Vector3 viewSpot = new Vector3(0f, -400f, 0f);
 
@@ -30,7 +33,6 @@ public class BottleDetailPanel : MonoBehaviour
     public static bool IsOpen { get; private set; }
 
     private string bottleId;
-    private BottleStation station;
     private GameObject copy;
     private Camera copyCamera;
     private string notice;
@@ -60,19 +62,16 @@ public class BottleDetailPanel : MonoBehaviour
     public string Open(string archivedId)
     {
         if (IsOpen) return null;
-        station = FindFirstObjectByType<BottleStation>(FindObjectsInactive.Include);
-        if (station == null) return "병은 집 안에서 자세히 볼 수 있어요";
-
         BottleRecord record = BottleStore.Get(archivedId);
-        BottleContents type = station.GetById(record.typeId);
-        if (!record.completed || type == null || type.Prefab == null) return "이 병은 자세히 볼 수 없어요";
+        GameObject prefab = record.completed ? PrefabOf(record.typeId) : null;
+        if (prefab == null) return "이 병은 자세히 볼 수 없어요";
 
         bottleId = archivedId;
         notice = null;
 
-        // 작업대와 같은 병을 복사한다. Instantiate 직전에 번호를 넣어 두면 그 병의 기록으로 병 속이 되살아난다.
+        // 병 종류의 프리팹을 복사한다. Instantiate 직전에 번호를 넣어 두면 그 병의 기록으로 병 속이 되살아난다.
         BottleContents.SpawnId = archivedId;
-        copy = Instantiate(type.Prefab, viewSpot, Quaternion.identity);
+        copy = Instantiate(prefab, viewSpot, Quaternion.identity);
         BottleContents.SpawnId = null;
         copy.name = "DetailBottle";
 
@@ -84,6 +83,18 @@ public class BottleDetailPanel : MonoBehaviour
         root.SetActive(true);
         UIFocus.Open();
         Redraw();
+        return null;
+    }
+
+    /// <summary>병 종류 번호(예: bottle1)의 병 프리팹. 없으면 null.</summary>
+    private GameObject PrefabOf(string typeId)
+    {
+        if (bottlePrefabs == null || string.IsNullOrEmpty(typeId)) return null;
+        foreach (GameObject prefab in bottlePrefabs)
+        {
+            BottleContents contents = prefab != null ? prefab.GetComponent<BottleContents>() : null;
+            if (contents != null && contents.BottleId == typeId) return prefab;
+        }
         return null;
     }
 
@@ -117,10 +128,11 @@ public class BottleDetailPanel : MonoBehaviour
 
     private void Redraw()
     {
-        if (!IsOpen || station == null) return;
+        if (!IsOpen) return;
 
         BottleRecord record = BottleStore.Get(bottleId);
-        BottleContents type = station.GetById(record.typeId);
+        GameObject prefab = PrefabOf(record.typeId);
+        BottleContents type = prefab != null ? prefab.GetComponent<BottleContents>() : null;
         string typeName = type != null ? type.DisplayName : "병";
         bool shown = BottleStore.IsDisplayed(bottleId);
 

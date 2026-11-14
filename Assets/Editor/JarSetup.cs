@@ -21,6 +21,30 @@ public static class JarSetup
 
     private const string ModelFolder = "Assets/Models/Deco";
     private const string PrefabFolder = "Assets/Prefabs/Bottles";
+
+    /// <summary>병 그림의 배경색. 연한 파랑인 유리가 묻히지 않게 한 단계 짙은 회청록이다.</summary>
+    public static readonly Color BottleViewBackground = new Color(0.50f, 0.64f, 0.63f, 1f);
+
+    /// <summary>이미 만든 병 프리팹들의 카메라 배경색만 바꾼다. (병을 다시 만들지 않는다)</summary>
+    public static string ApplyBackgroundToPrefabs()
+    {
+        int n = 0;
+        foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { PrefabFolder }))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            GameObject root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                Camera cam = root.GetComponentInChildren<Camera>(true);
+                if (cam == null) continue;
+                cam.backgroundColor = BottleViewBackground;
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+                n++;
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+        return "병 프리팹 " + n + "개의 배경색을 바꿨어요";
+    }
     private const string DataFolder = "Assets/Data/Bottles";
     private const string InteriorPath = "Assets/Scenes/HutInterior.unity";
     private const string IslandPath = "Assets/Scenes/Island.unity";
@@ -271,7 +295,7 @@ public static class JarSetup
         cam.farClipPlane = 8f;
         cam.cullingMask = 1 << layer;
         cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = new Color(0.86f, 0.92f, 0.93f, 1f);
+        cam.backgroundColor = BottleViewBackground;
         cam.targetTexture = AssetDatabase.LoadAssetAtPath<RenderTexture>(RenderTexturePath);
         cam.enabled = false;
 
