@@ -35,7 +35,7 @@ public static class MaterialSetup
 
     private const MaterialKind Plant = MaterialKind.Plant;
     private const MaterialKind Deco = MaterialKind.Decoration;
-    private const MaterialZone Forest = MaterialZone.Forest, Beach = MaterialZone.Beach, Hill = MaterialZone.FlowerHill, Shop = MaterialZone.Shop;
+    private const MaterialZone Forest = MaterialZone.Forest, Beach = MaterialZone.Beach, Hill = MaterialZone.FlowerHill, Shop = MaterialZone.Shop, Snow = MaterialZone.Snow;
     private const AcquireMethod Hand = AcquireMethod.Hand, Axe = AcquireMethod.Axe, Pick = AcquireMethod.Pickaxe, Buy = AcquireMethod.Shop, Hoe = AcquireMethod.Hoe;
 
     // model은 Assets/Models/Deco 안의 파일 이름(확장자 없이). 가격은 모두 임시 값이다.
@@ -69,6 +69,18 @@ public static class MaterialSetup
         new Entry("dew_drop",         "이슬방울",   Deco,  "deco_dew_drop",        new Color(0.60f, 0.85f, 0.92f), Hill,  Hand, 4, 0, MaterialCondition.AfterRain),
         new Entry("sea_glass",        "바다 유리",  Deco,  "deco_sea_glass",       new Color(0.45f, 0.75f, 0.85f), Beach, Hand, 5, 0, MaterialCondition.AfterStorm),
         new Entry("firefly",          "반딧불이",   Deco,  "deco_firefly",         new Color(0.95f, 0.90f, 0.40f), MaterialZone.Anywhere, Hand, 8, 0, MaterialCondition.NightOnly),
+        // ── 눈 섬(SnowIsland)에서만 나는 재료 11종: 겨울 소품. 소나무(도끼), 눈 더미(곡괭이), 바닥(줍기)
+        new Entry("pine_sprig",       "솔잎 가지",       Deco,  "deco_pine_sprig",      new Color(0.28f, 0.50f, 0.35f), Snow, Axe,  2),
+        new Entry("snowy_pinecone",   "눈 덮인 솔방울",  Deco,  "deco_snowy_pinecone",  new Color(0.85f, 0.85f, 0.88f), Snow, Axe,  3),
+        new Entry("firewood",         "장작",            Deco,  "deco_firewood",        new Color(0.60f, 0.40f, 0.25f), Snow, Axe,  2),
+        new Entry("ice_shard",        "얼음 조각",       Deco,  "deco_ice_shard",       new Color(0.65f, 0.88f, 0.95f), Snow, Pick, 4),
+        new Entry("icicle",           "고드름",          Deco,  "deco_icicle",          new Color(0.75f, 0.92f, 0.97f), Snow, Pick, 3),
+        new Entry("holly_berry",      "호랑가시 열매",   Plant, "deco_holly_berry",     new Color(0.85f, 0.25f, 0.25f), Snow, Hand, 3),
+        new Entry("frost_leaf",       "서리 낀 잎",      Plant, "deco_frost_leaf",      new Color(0.70f, 0.88f, 0.85f), Snow, Hand, 2),
+        new Entry("snowball",         "눈덩이",          Deco,  "deco_snowball",        new Color(0.95f, 0.97f, 1.00f), Snow, Hand, 1),
+        new Entry("mini_snowman",     "미니 눈사람",     Deco,  "deco_mini_snowman",    new Color(0.95f, 0.97f, 1.00f), Snow, Hand, 8),
+        new Entry("winter_bell",      "겨울 방울",       Deco,  "deco_winter_bell",     new Color(0.93f, 0.75f, 0.25f), Snow, Hand, 6),
+        new Entry("mitten",           "벙어리장갑",      Deco,  "deco_mitten",          new Color(0.85f, 0.25f, 0.25f), Snow, Hand, 5),
         // ── 섬의 풀과 꽃을 괭이로 캐면 무작위로 나오는 재료들 (따로 놓인 자리는 없다. 괭이로 풀은 풀 재료, 꽃은 꽃 재료가 나온다)
         new Entry("tulip",            "튤립",       Plant, "deco_tulip",           new Color(0.85f, 0.35f, 0.40f), Hill,  Hoe, 3),
         new Entry("sunflower",        "해바라기",   Plant, "deco_sunflower",       new Color(0.97f, 0.80f, 0.20f), Hill,  Hoe, 15, 0, MaterialCondition.Always, true),

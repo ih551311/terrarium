@@ -114,6 +114,7 @@ public class FootstepPlayer : MonoBehaviour
 
         TerrainLayer[] layers = data.terrainLayers;
         string layerName = best < layers.Length && layers[best] != null ? layers[best].name.ToLowerInvariant() : string.Empty;
+        if (layerName.Contains("snow") || layerName.Contains("ice")) return Surface.Soil; // 눈과 얼음 위: 부드러운 땅 소리 (눈 발소리 팩이 없어서)
         if (layerName.Contains("sand") || layerName.Contains("beach")) return Surface.Sand;
         if (layerName.Contains("soil") || layerName.Contains("dirt") || layerName.Contains("path")) return Surface.Soil;
         return Surface.Grass;

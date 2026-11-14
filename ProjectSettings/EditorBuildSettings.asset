@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/HutInterior.unity
     guid: 59f63def27e8c644b9015f0c8c5b9600
+  - enabled: 1
+    path: Assets/Scenes/SnowIsland.unity
+    guid: 81c806a2e8f78cf409755bac2b8dcaa4
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

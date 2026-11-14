@@ -159,6 +159,15 @@ public static class GameState
         return true;
     }
 
+    /// <summary>선착장을 열었는가 (코인을 내고 고치면 눈 섬으로 가는 배를 탈 수 있다)</summary>
+    public static bool DockOpen { get; private set; }
+
+    public static void OpenDock()
+    {
+        DockOpen = true;
+        Changed?.Invoke();
+    }
+
     // ───────── 병 주문 편지 ─────────
 
     /// <summary>지금 와 있는 병 주문 편지 번호 (BottleRequests). 없으면 -1.</summary>
@@ -323,6 +332,7 @@ public static class GameState
         data.requestSeen = RequestSeen;
         data.lastRequestId = LastRequestId;
         data.requestsDone = RequestsDone;
+        data.dockOpen = DockOpen;
         foreach (string id in taken) data.taken.Add(id);
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
@@ -358,6 +368,7 @@ public static class GameState
         RequestSeen = data.requestSeen;
         LastRequestId = data.lastRequestId;
         RequestsDone = data.requestsDone;
+        DockOpen = data.dockOpen;
 
         outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
         if (data.taken != null) foreach (string id in data.taken) taken.Add(id);
@@ -392,6 +403,7 @@ public static class GameState
         LastRequestId = -1;
         RequestsDone = 0;
         NewRequestToday = false;
+        DockOpen = false;
         DayStarted = null;
         Day = 1;
         Coins = 0;

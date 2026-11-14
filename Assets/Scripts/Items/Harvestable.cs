@@ -19,8 +19,10 @@ public class Harvestable : MonoBehaviour, IInteractable
     [Tooltip("괭이로 캐는 풀과 꽃만: 풀에서는 풀 재료, 꽃에서는 꽃 재료가 나온다")]
     [SerializeField] private PlantGroup plantGroup = PlantGroup.None;
 
+    [Tooltip("비어 있을 때 입히는 색. 흰 눈이 덮인 나무처럼 원래 색이 매우 밝은 것은 더 어둡게 해서 비어 있는 것이 눈에 띄게 한다")]
+    [SerializeField] private Color emptyTint = new Color(0.9f, 0.9f, 0.9f, 1f);
+
     // 비어 있을 때: 색을 살짝 줄이고 은은한 빛을 더해 "바랜" 느낌을 낸다. (곱하기만으로는 어두워지기만 해서)
-    private static readonly Color EmptyTint = new Color(0.9f, 0.9f, 0.9f, 1f);
     private static readonly Color EmptyGlow = new Color(0.05f, 0.05f, 0.045f, 1f);
 
     // 잎 렌더러의 이름: 줄기 이름 뒤에 소문자 l이 붙고 _LOD 번호가 온다 (예: Tree10Bl_LOD0)
@@ -57,7 +59,7 @@ public class Harvestable : MonoBehaviour, IInteractable
     private void Awake()
     {
         Vector3 p = transform.position;
-        id = "h_" + p.x.ToString("F1") + "_" + p.z.ToString("F1");
+        id = SceneKey.Prefix() + "h_" + p.x.ToString("F1") + "_" + p.z.ToString("F1");
         restPosition = transform.position;
         renderers = GetComponentsInChildren<Renderer>();
         originals = new Material[renderers.Length][];
@@ -178,7 +180,7 @@ public class Harvestable : MonoBehaviour, IInteractable
                 for (int k = 0; k < faded.Length; k++)
                 {
                     faded[k] = new Material(originals[i][k]);
-                    faded[k].SetColor("_BaseColor", EmptyTint);
+                    faded[k].SetColor("_BaseColor", emptyTint);
                     faded[k].EnableKeyword("_EMISSION");
                     faded[k].SetColor("_EmissionColor", EmptyGlow);
                 }

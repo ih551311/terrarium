@@ -135,6 +135,17 @@ public static class BottleRequests
             thanks = "요정이 정말 살 것 같아요! 문을 두드려 봐야겠어요.",
             test = r => Has(r, "fairy_door") && HasAny(r, "clover", "four_leaf_clover", "moss", "moss_dark", "fern") },
 
+        new BottleRequest { from = "눈 마을 이장님",
+            body = "눈 섬은 고요하고 포근하지요. 눈 마을의 정취가 느껴지는 병을 하나 보내 주시겠어요?",
+            condition = "눈 섬 재료를 3개 이상 넣은 병", coins = 65, rewardItemId = "snowball",
+            thanks = "마을 사람들이 모두 모여서 구경했어요. 따뜻한 마음이 전해져요.",
+            test = r => Count(r, m => m.zone == MaterialZone.Snow) >= 3 },
+
+        new BottleRequest { from = "벽난로 앞 할머니",
+            body = "겨울엔 따뜻한 게 최고예요. 장작과 포근한 겨울 물건이 들어간 병을 갖고 싶어요.",
+            condition = "장작과, 벙어리장갑 또는 겨울 방울을 넣은 병", coins = 60, rewardItemId = "winter_bell",
+            thanks = "벽난로 곁에 두고 하루 종일 바라볼게요. 고마워요.",
+            test = r => Has(r, "firewood") && HasAny(r, "mitten", "winter_bell") },
         new BottleRequest { from = "하늘을 좋아하는 소년",
             body = "하늘을 여행하는 기분을 느끼고 싶어요. 열기구가 떠 있는 병이 있으면 좋겠어요.",
             condition = "열기구와 종이배, 별 장식, 바람종 중 하나를 넣은 병", coins = 70, rewardItemId = "wind_chime",

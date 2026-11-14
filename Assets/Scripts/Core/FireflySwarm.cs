@@ -30,6 +30,7 @@ public class FireflySwarm : MonoBehaviour
     private static void Spawn()
     {
         if (Terrain.activeTerrain == null) return;           // 집 안에는 반딧불이가 없다
+        if (SceneManager.GetActiveScene().name != "Island") return; // 눈 섬에도 없다
         if (FindFirstObjectByType<FireflySwarm>() != null) return;
         new GameObject("FireflySwarm").AddComponent<FireflySwarm>();
     }

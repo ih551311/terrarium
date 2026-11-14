@@ -314,6 +314,175 @@ public static class PlantModelMaker
         b.Write("deco_sea_glass");
     }
 
+    // ───────── 눈 섬 재료 11종 ─────────
+
+    private const int Carrot = 15;
+
+    /// <summary>눈 섬에서 얻는 재료 11종: 솔잎 가지, 눈 덮인 솔방울, 장작, 얼음 조각, 고드름, 호랑가시 열매, 서리 낀 잎, 눈덩이, 미니 눈사람, 겨울 방울, 벙어리장갑.</summary>
+    [MenuItem("유리병 정원/눈 섬 재료 모델 만들기")]
+    public static string BuildWinterModels()
+    {
+        PineSprig(); SnowyPinecone(); Firewood(); IceShard(); Icicle(); HollyBerry(); FrostLeaf(); Snowball(); MiniSnowman(); WinterBell(); Mitten();
+        AssetDatabase.Refresh();
+        return "눈 섬 재료 모델 11종을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
+    }
+
+    private static void PineSprig()
+    {
+        b = new Builder();
+        Frustum(b, new Vector3(-0.026f, 0.0035f, 0f), new Vector3(0.026f, 0.0075f, 0f), 0.0012f, 0.0006f, 4, Brown);
+        for (int i = 0; i < 8; i++)
+        {
+            float x = -0.020f + i * 0.0058f, y = 0.0035f + (x + 0.026f) / 0.052f * 0.004f;
+            float len = 0.016f - i * 0.0009f;
+            Blade(new Vector3(x, y, 0.0005f), new Vector3(0f, 0.15f, 1f), len, 0.0042f, i % 2 == 0 ? DeepGreen : Green);
+            Blade(new Vector3(x + 0.002f, y, -0.0005f), new Vector3(0f, 0.15f, -1f), len, 0.0042f, i % 2 == 0 ? Green : DeepGreen);
+        }
+        Blob(new Vector3(0.027f, 0.0085f, 0f), new Vector3(0.0045f, 0.003f, 0.0045f), 2, 6, White); // 끝에 앉은 눈
+        Blob(new Vector3(-0.004f, 0.0155f, 0.0065f), new Vector3(0.0045f, 0.0025f, 0.0035f), 2, 5, White);
+        b.Write("deco_pine_sprig");
+    }
+
+    private static void SnowyPinecone()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0115f, 0f), new Vector3(0.0070f, 0.0115f, 0.0070f), 4, 7, Brown);
+        for (int k = 0; k < 7; k++) // 비늘 사이사이 연한 갈색 줄
+        {
+            float a = Mathf.PI * 2f * k / 7f;
+            Blob(Radial(a) * 0.0052f + new Vector3(0f, 0.0075f + 0.0017f * (k % 3), 0f), new Vector3(0.0032f, 0.0028f, 0.0032f), 2, 5, k % 2 == 0 ? Tan : Brown);
+        }
+        Blob(new Vector3(0f, 0.0230f, 0f), new Vector3(0.0062f, 0.0030f, 0.0062f), 3, 7, White); // 꼭대기에 쌓인 눈
+        Blob(new Vector3(0.0034f, 0.0175f, 0.0032f), new Vector3(0.0030f, 0.0021f, 0.0030f), 2, 5, White);
+        Blob(new Vector3(-0.0036f, 0.0138f, -0.0030f), new Vector3(0.0026f, 0.0018f, 0.0026f), 2, 5, Ice);
+        b.Write("deco_snowy_pinecone");
+    }
+
+    private static void Firewood()
+    {
+        b = new Builder();
+        // 통나무 세 개 (아래 둘, 위 하나). 끝면은 연한 나이테색
+        void Log(Vector3 c, float rot, float r)
+        {
+            Vector3 d = new Vector3(Mathf.Cos(rot), 0f, Mathf.Sin(rot)) * 0.020f;
+            Frustum(b, c - d, c + d, r, r * 0.95f, 7, Brown, Tan);
+        }
+        Log(new Vector3(0f, 0.0065f, -0.0075f), 0.05f, 0.0068f);
+        Log(new Vector3(0.0005f, 0.0065f, 0.0075f), -0.04f, 0.0066f);
+        Log(new Vector3(0f, 0.0185f, 0f), 0.12f, 0.0064f);
+        Blob(new Vector3(0.004f, 0.0262f, 0.0010f), new Vector3(0.0100f, 0.0022f, 0.0040f), 2, 6, White); // 위에 앉은 눈
+        b.Write("deco_firewood");
+    }
+
+    private static void IceShard()
+    {
+        b = new Builder();
+        // 육각 수정처럼 끝이 뾰족한 얼음 조각 세 개
+        void Shard(Vector3 basePos, Vector3 tilt, float h, float r, int color)
+        {
+            b.xf = Matrix4x4.TRS(basePos, Quaternion.Euler(tilt), Vector3.one);
+            Frustum(b, Vector3.zero, new Vector3(0f, h * 0.72f, 0f), r, r * 0.85f, 6, color, color);
+            Frustum(b, new Vector3(0f, h * 0.72f, 0f), new Vector3(0f, h, 0f), r * 0.85f, 0.0004f, 6, Ice, Ice);
+            b.xf = Matrix4x4.identity;
+        }
+        Shard(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f), 0.034f, 0.0085f, Cyan);
+        Shard(new Vector3(0.0105f, 0f, 0.0020f), new Vector3(0f, 0f, -16f), 0.024f, 0.0060f, SkyBlue);
+        Shard(new Vector3(-0.0095f, 0f, -0.0030f), new Vector3(8f, 0f, 20f), 0.020f, 0.0055f, Ice);
+        b.Write("deco_ice_shard");
+    }
+
+    private static void Icicle()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0400f, 0f), new Vector3(0.0170f, 0.0040f, 0.0055f), 2, 7, White); // 처마에 쌓인 눈
+        float[] xs = { -0.011f, -0.003f, 0.0045f, 0.011f };
+        float[] hs = { 0.022f, 0.036f, 0.028f, 0.018f };
+        for (int i = 0; i < 4; i++)
+            Frustum(b, new Vector3(xs[i], 0.0405f - 0.0004f, 0f), new Vector3(xs[i] * 0.95f, 0.0405f - hs[i], 0f), 0.0042f, 0.0005f, 6, i % 2 == 0 ? Cyan : Ice, Ice);
+        b.Write("deco_icicle");
+    }
+
+    private static void HollyBerry()
+    {
+        b = new Builder();
+        Frustum(b, Vector3.zero, new Vector3(0.002f, 0.015f, 0f), 0.0008f, 0.0006f, 4, Brown);
+        for (int k = 0; k < 4; k++) // 뾰족뾰족한 짙은 초록 잎 네 장
+        {
+            float a = k * 1.7f + 0.3f;
+            Vector3 r = Radial(a);
+            Petal(new Vector3(0.002f, 0.013f, 0f) + r * 0.001f, r + Vector3.up * 0.15f, new Vector3(-r.z, 0f, r.x), 0.016f, 0.0085f, k % 2 == 0 ? DeepGreen : Green, 0.0012f);
+        }
+        Blob(new Vector3(0.0020f, 0.0178f, 0.0015f), new Vector3(0.0038f, 0.0038f, 0.0038f), 3, 6, Red);
+        Blob(new Vector3(-0.0020f, 0.0172f, -0.0012f), new Vector3(0.0036f, 0.0036f, 0.0036f), 3, 6, Red);
+        Blob(new Vector3(0.0035f, 0.0172f, -0.0025f), new Vector3(0.0033f, 0.0033f, 0.0033f), 3, 6, Coral);
+        b.Write("deco_holly_berry");
+    }
+
+    private static void FrostLeaf()
+    {
+        b = new Builder();
+        Frustum(b, Vector3.zero, new Vector3(0f, 0.014f, 0.0015f), 0.0008f, 0.0006f, 4, Brown);
+        Petal(new Vector3(0f, 0.014f, 0.0015f), new Vector3(0f, 0.55f, 1f), new Vector3(1f, 0f, 0f), 0.034f, 0.020f, Leaf, 0.003f);
+        // 서리: 잎 가장자리와 가운데에 얼음빛 얼룩
+        Petal(new Vector3(0f, 0.0165f, 0.0050f), new Vector3(0f, 0.55f, 1f), new Vector3(1f, 0f, 0f), 0.024f, 0.011f, Ice, 0.0034f);
+        Petal(new Vector3(0.0045f, 0.0190f, 0.0200f), new Vector3(0.2f, 0.4f, 1f), new Vector3(1f, 0f, -0.2f), 0.009f, 0.005f, White, 0.0020f);
+        b.Write("deco_frost_leaf");
+    }
+
+    private static void Snowball()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0120f, 0f), new Vector3(0.0120f, 0.0120f, 0.0120f), 5, 9, White);
+        Blob(new Vector3(0.0045f, 0.0040f, 0.0025f), new Vector3(0.0062f, 0.0060f, 0.0062f), 3, 7, Ice);  // 아래에 눌려 붙은 얼음빛 부분
+        Blob(new Vector3(0.0140f, 0.0050f, 0.0060f), new Vector3(0.0050f, 0.0050f, 0.0050f), 3, 6, White); // 곁의 작은 눈덩이
+        b.Write("deco_snowball");
+    }
+
+    private static void MiniSnowman()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0120f, 0f), new Vector3(0.0125f, 0.0120f, 0.0125f), 5, 9, White);
+        Blob(new Vector3(0f, 0.0300f, 0f), new Vector3(0.0085f, 0.0085f, 0.0085f), 4, 8, White);
+        Blob(new Vector3(0f, 0.0222f, 0f), new Vector3(0.0098f, 0.0026f, 0.0098f), 2, 8, Red);          // 목도리
+        Blob(new Vector3(0.0050f, 0.0185f, -0.0050f), new Vector3(0.0030f, 0.0064f, 0.0024f), 2, 5, Red); // 목도리 꼬리
+        Frustum(b, new Vector3(0f, 0.0305f, -0.0070f), new Vector3(0f, 0.0295f, -0.0155f), 0.0016f, 0.0003f, 5, Carrot, Carrot); // 당근 코
+        Blob(new Vector3(-0.0030f, 0.0335f, -0.0066f), new Vector3(0.0012f, 0.0012f, 0.0012f), 2, 4, Dark); // 눈
+        Blob(new Vector3(0.0030f, 0.0335f, -0.0066f), new Vector3(0.0012f, 0.0012f, 0.0012f), 2, 4, Dark);
+        Frustum(b, new Vector3(0.0105f, 0.0140f, 0f), new Vector3(0.0215f, 0.0200f, 0f), 0.0010f, 0.0006f, 4, Brown); // 나뭇가지 팔
+        Frustum(b, new Vector3(-0.0105f, 0.0140f, 0f), new Vector3(-0.0215f, 0.0200f, 0f), 0.0010f, 0.0006f, 4, Brown);
+        for (int i = 0; i < 2; i++) Blob(new Vector3(0f, 0.0150f - i * 0.0075f, -0.0118f), new Vector3(0.0013f, 0.0013f, 0.0013f), 2, 4, Dark); // 단추
+        b.Write("deco_mini_snowman");
+    }
+
+    private static void WinterBell()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0100f, 0f), new Vector3(0.0085f, 0.0090f, 0.0085f), 4, 8, Gold);
+        Frustum(b, new Vector3(0f, 0.0010f, 0f), new Vector3(0f, 0.0040f, 0f), 0.0095f, 0.0085f, 8, Yellow, Yellow); // 벌어진 입구
+        Blob(new Vector3(0f, 0.0010f, 0f), new Vector3(0.0028f, 0.0026f, 0.0028f), 2, 5, Brown);                        // 추
+        Frustum(b, new Vector3(0f, 0.0185f, 0f), new Vector3(0f, 0.0225f, 0f), 0.0010f, 0.0010f, 4, Gold);
+        Petal(new Vector3(0f, 0.0200f, 0f), new Vector3(1f, 0.3f, 0f), new Vector3(0f, 0f, 1f), 0.0110f, 0.0060f, Red, 0.0010f); // 리본 매듭
+        Petal(new Vector3(0f, 0.0200f, 0f), new Vector3(-1f, 0.3f, 0f), new Vector3(0f, 0f, 1f), 0.0110f, 0.0060f, Red, 0.0010f);
+        Blob(new Vector3(0f, 0.0200f, 0f), new Vector3(0.0020f, 0.0020f, 0.0020f), 2, 5, Coral);
+        for (int k = 0; k < 2; k++) // 호랑가시 잎 두 장
+        {
+            float s = k == 0 ? 1f : -1f;
+            Petal(new Vector3(0f, 0.0195f, 0f), new Vector3(0.5f * s, 0.1f, -1f), new Vector3(1f, 0f, 0.5f * s), 0.0105f, 0.0050f, DeepGreen, 0.0008f);
+        }
+        b.Write("deco_winter_bell");
+    }
+
+    private static void Mitten()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0160f, 0f), new Vector3(0.0100f, 0.0140f, 0.0058f), 4, 8, Red);                         // 손
+        Blob(new Vector3(-0.0098f, 0.0140f, 0f), new Vector3(0.0050f, 0.0072f, 0.0048f), 3, 6, Red);                    // 엄지
+        Blob(new Vector3(0f, 0.0034f, 0f), new Vector3(0.0105f, 0.0036f, 0.0064f), 3, 8, White);                       // 흰 소매 끝
+        Blob(new Vector3(0f, 0.0200f, -0.0040f), new Vector3(0.0034f, 0.0034f, 0.0010f), 2, 5, White);                 // 무늬 점
+        Blob(new Vector3(0f, 0.0125f, -0.0040f), new Vector3(0.0034f, 0.0034f, 0.0010f), 2, 5, White);
+        b.Write("deco_mitten");
+    }
+
     private static void Firefly()
     {
         b = new Builder();

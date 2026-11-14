@@ -57,7 +57,7 @@ public class Pickup : MonoBehaviour, IInteractable
     private void Awake()
     {
         Vector3 p = transform.position;
-        id = "p_" + p.x.ToString("F1") + "_" + p.z.ToString("F1");
+        id = SceneKey.Prefix() + "p_" + p.x.ToString("F1") + "_" + p.z.ToString("F1");
         renderers = GetComponentsInChildren<Renderer>(true);
         colliders = GetComponentsInChildren<Collider>(true);
         collected = GameState.IsTaken(id);

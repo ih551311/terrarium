@@ -24,7 +24,8 @@ public enum MaterialZone
     Forest,     // 작은 숲
     Beach,      // 바닷가
     FlowerHill, // 꽃 언덕
-    Shop        // 자연에서는 못 구하고 우체통 상점에서만 산다
+    Shop,       // 자연에서는 못 구하고 우체통 상점에서만 산다
+    Snow        // 눈 섬(SnowIsland 씬)에서만 난다
 }
 
 /// <summary>재료를 얻는 방법 (기획서 5장, 6.8장)</summary>

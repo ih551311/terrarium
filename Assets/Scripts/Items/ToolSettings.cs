@@ -95,6 +95,7 @@ public class ToolSettings : ScriptableObject
         foreach (MaterialData m in harvestMaterials)
         {
             if (m == null || m.acquire != tool) continue;
+            if (m.zone == MaterialZone.Snow && zone != MaterialZone.Snow) continue; // 눈 섬 재료는 눈 섬의 나무와 돌에서만 나온다
             if (m.isRare) rares.Add(m);
             else
             {
