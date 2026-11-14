@@ -113,7 +113,7 @@ public class GameAudio : MonoBehaviour
         Transform player = GameRoot.Instance != null ? GameRoot.Instance.Player : null;
 
         // 음악: 낮과 밤을 섞는다. 비 오는 날은 조금 작게.
-        float musicTarget = musicOn ? 0.2f * (1f - 0.35f * rain) : 0f;
+        float musicTarget = musicOn ? 0.32f * (1f - 0.35f * rain) : 0f;
         musicLevel = Mathf.MoveTowards(musicLevel, musicTarget, Time.deltaTime * 0.3f);
         musicDay.volume = musicLevel * (1f - night);
         musicNight.volume = musicLevel * night;
@@ -125,8 +125,8 @@ public class GameAudio : MonoBehaviour
             float d = Vector2.Distance(new Vector2(player.position.x, player.position.z), new Vector2(0f, 30f));
             shore = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(70f, 140f, d));
         }
-        Fade(waves, outdoors ? Mathf.Lerp(0.05f, 0.55f, shore) : 0.02f);
-        Fade(wind, outdoors ? 0.10f + 0.12f * rain : 0.02f);
+        Fade(waves, outdoors ? Mathf.Lerp(0.14f, 0.6f, shore) : 0.03f);
+        Fade(wind, outdoors ? 0.17f + 0.12f * rain : 0.03f);
         Fade(rainLoop, 0f); // 빗소리와 폭풍 소리는 날씨 에셋(AudioModule)이 낸다
         Fade(crickets, outdoors ? 0.14f * night * (1f - rain) : 0f);
         Fade(roomTone, outdoors ? 0f : 0.10f);
@@ -139,7 +139,7 @@ public class GameAudio : MonoBehaviour
             if (outdoors && t < 0.7f && rain < 0.2f)
             {
                 sfxSource.panStereo = Random.Range(-0.7f, 0.7f);
-                sfxSource.PlayOneShot(birds[Random.Range(0, birds.Length)], Random.Range(0.12f, 0.25f));
+                sfxSource.PlayOneShot(birds[Random.Range(0, birds.Length)], Random.Range(0.22f, 0.4f));
                 sfxSource.panStereo = 0f;
             }
         }
@@ -165,7 +165,7 @@ public class GameAudio : MonoBehaviour
         stepTimer -= Time.deltaTime * Mathf.Clamp(speed, 1f, 8f) / 2.2f;
         if (stepTimer > 0f) return;
         stepTimer = 1f;
-        sfxSource.PlayOneShot(steps[Random.Range(0, steps.Length)], 0.35f);
+        sfxSource.PlayOneShot(steps[Random.Range(0, steps.Length)], 0.55f);
     }
 
     // ───────── 소리 만들기 ─────────
