@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: firefly
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: firefly
+  displayName: "\uBC18\uB527\uBD88\uC774"
+  kind: 1
+  icon: {fileID: 21300000, guid: d73f633f597923247a9961e862d7b049, type: 3}
+  zone: 0
+  acquire: 0
+  condition: 1
+  isRare: 0
+  plantGroup: 0
+  sellPrice: 8
+  buyPrice: 0
+  placedPrefab: {fileID: 919132149155446097, guid: 7070d67bea456c442aaf2620bb41c792, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.95, g: 0.9, b: 0.4, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

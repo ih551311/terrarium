@@ -59,6 +59,9 @@ public static class Weather
     /// <summary>숲에 버섯이 나는 날: 비가 오는 날과 그다음 날</summary>
     public static bool MushroomDay => RainToday || RainedYesterday;
 
+    /// <summary>바닷가에 바다 유리가 밀려오는 날: 폭풍우가 치는 날과 그다음 날</summary>
+    public static bool StormDay => Today == WeatherKind.Storm || (!Forced.HasValue && GameState.WeatherYesterday == WeatherKind.Storm);
+
     public static string NameOf(WeatherKind kind)
     {
         switch (kind)

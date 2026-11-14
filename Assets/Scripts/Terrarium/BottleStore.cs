@@ -131,6 +131,18 @@ public static class BottleStore
     /// <summary>선반의 칸 수. 처음에는 6칸이고, 완성한 병이 6개, 12개, 18개가 될 때 6칸씩 늘어 최대 24칸이다. (기획서 6.3)</summary>
     public static int ShelfCapacity => Mathf.Min(24, 6 + (CompletedCount / 6) * 6);
 
+    /// <summary>창가와 책상 자리 수. 선반 칸(최대 24)이 다 열리지 않아도 처음부터 쓸 수 있고, 칸 번호는 24번부터 이어진다.</summary>
+    public const int ExtraSlotStart = 24, ExtraSlotCount = 5;
+
+    /// <summary>병을 전시할 수 있는 자리의 수 (선반 칸 + 창가와 책상)</summary>
+    public static int DisplayCapacity => ShelfCapacity + ExtraSlotCount;
+
+    /// <summary>병 인벤토리의 병 하나를 없앤다 (편지 주문으로 보낼 때). 전시 중이면 함께 사라진다.</summary>
+    public static void Remove(string bottleId)
+    {
+        if (bottles.Remove(bottleId)) Changed?.Invoke();
+    }
+
     /// <summary>이 병이 지금 선반에 전시되어 있는가</summary>
     public static bool IsDisplayed(string bottleId)
     {
@@ -165,6 +177,8 @@ public static class BottleStore
         foreach (BottleRecord record in bottles.Values)
             if (record.completed && record.shelfSlot >= 0) used.Add(record.shelfSlot);
         for (int i = 0; i < ShelfCapacity; i++)
+            if (!used.Contains(i)) return i;
+        for (int i = ExtraSlotStart; i < ExtraSlotStart + ExtraSlotCount; i++) // 선반이 가득 차면 창가와 책상
             if (!used.Contains(i)) return i;
         return -1;
     }

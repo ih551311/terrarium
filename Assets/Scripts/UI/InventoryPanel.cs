@@ -168,7 +168,7 @@ public class InventoryPanel : MonoBehaviour
         bottleNext.interactable = bottlePage < pageCount - 1;
         bottleInfo.text = ids.Count == 0
             ? "아직 완성한 병이 없어요"
-            : "완성한 병 " + ids.Count + "개  |  선반 " + onShelf + "/" + BottleStore.ShelfCapacity + "칸" + (pageCount > 1 ? "  |  " + (bottlePage + 1) + "/" + pageCount + "쪽" : string.Empty);
+            : "완성한 병 " + ids.Count + "개  |  전시 " + onShelf + "/" + BottleStore.DisplayCapacity + "칸" + (pageCount > 1 ? "  |  " + (bottlePage + 1) + "/" + pageCount + "쪽" : string.Empty);
     }
 
     private void Refresh()

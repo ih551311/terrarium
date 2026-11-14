@@ -211,3 +211,12 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **병 속 흙과 모래의 겉모습**: SoilLook이 코드로 흙 그림(갈색 얼룩, 알갱이, 작은 자갈)과 울퉁불퉁한 법선 그림, 모래 그림을 만들어 병 속 흙(BottleContents.groundRenderer)에 입힘. 흙 메시는 쓸 때 복사해서 UV와 접선을 붙임(원래 메시 에셋은 그대로). 윤기 없는 재질.
 
 - **음악과 발소리는 사신 에셋 사용** (유료라 저장소에 올리지 않음): 배경 음악은 Dreamcore Music Vol. 1의 LOOP 곡 8개를 MusicPlayer가 때와 날씨에 맞게 고름(눈=Winter, 폭풍우=Purgatory/Oddity, 비=Fragments/Tone/Tone 2, 안개/흐림=Oddity/Tone/Tone 2, 밤=Lost/Tone 2/Fragments, 낮=Ice Cream/Tone 2/Tone. 6초 섞어 넘어가고 한 곡은 약 2분 반 뒤 같은 모음의 다른 곡으로). 곡 연결은 MusicSet(Resources, 메뉴 배경 음악 연결). 발소리는 Footsteps Sounds - Volume 02를 FootstepPlayer가 걷는 거리마다 내고, 서 있는 땅(Terrain 재질 Grass/Sand/Soil, 집 안은 나무)에 맞는 소리를 고름. 비 오는 날은 젖은 땅 소리가 섞임. 연결은 FootstepSet(Resources, 메뉴 발소리 연결). 에셋이 없으면 GameAudio가 코드로 만든 음악과 발소리를 씀.
+
+## 자동 저장, 메뉴, 병 주문 편지, 날씨 재료, 반딧불이, 창가 전시 (구현됨)
+- **자동 저장**: 침대에서 잘 때뿐 아니라 게임을 끌 때(OnApplicationQuit), 앱이 멈출 때, 집을 드나들 때, 2분마다 저절로 저장한다(`GameRoot.SaveNow`). 저장 파일을 읽지 못했으면(`SaveSystem.LoadFailed`) 덮어쓰지 않는다. 하루 시간(`timeOfDay`)과 오늘 가져간 자리(`taken`)도 저장해서, 껐다 켜도 자리가 다시 채워지지 않는다.
+- **Esc 메뉴**(`PauseMenu`, 코드로 만듦): 이어서 하기, 지금 저장하기, 소리 크기(PlayerPrefs `master_volume`), 음악 켜기/끄기, 게임 끝내기(두 번 눌러야 끝남). 열려 있는 동안 `Time.timeScale=0`. 다른 패널이 열려 있거나 방금 닫혔으면 열리지 않는다(`UIFocus.LastCloseFrame`). 코드로 UI를 만들 때는 `UIKit`(종이색 패널, 버튼, 슬라이더) 도우미를 쓴다.
+- **병 주문 편지**(`BottleRequests`, `RequestPanel`): 둘째 날부터, 완성한 병이 1개 이상이면 아침마다 약 65% 확률로 우체통에 편지가 온다(`GameState.RollRequest`, 한 번에 하나, 기한과 실패 없음). 편지는 15가지(바닷가, 숲, 꽃밭, 밤, 가득 찬 병, 모래, 캠핑, 단순한 병, 차와 책, 비, 눈꽃, 반딧불이, 바다 유리, 요정, 열기구). 우체통에서 E를 누르면 편지 화면이 먼저 열리고, 조건에 맞는 병이 있으면 두 번 눌러 보낸다(병은 `BottleStore.Remove`로 사라짐). 답례(코인과 재료)는 우체통에 도착(`GameState.CompleteRequest`). 저장: `requestId/requestSeen/lastRequestId/requestsDone`.
+- **날씨 재료**(`MaterialCondition.SnowDay/FogDay/AfterStorm` 추가): 눈꽃(눈 오는 날, 꽃 언덕), 안개꽃(안개 낀 날, 꽃 언덕), 이슬방울(비 온 날과 다음 날, 꽃 언덕), 바다 유리(폭풍우 날과 다음 날, 바닷가). 각 6곳씩 섬에 놓여 있고 그 날씨에만 보인다(`Pickup.ConditionMet`, `Weather.StormDay`). 모델은 `PlantModelMaker.BuildWeatherModels`(메뉴 날씨 재료 모델 만들기).
+- **반딧불이**(`FireflySwarm`, `FireflyBug`): 섬에서 밤(시간 0.74 이후)에 비, 폭풍우, 눈이 아닐 때 36마리가 집 둘레, 숲, 꽃 언덕 위를 떠다닌다. E로 잡으면 재료 `firefly`(오늘 밤 사라지고 다음 날 다시 나옴). 빛무리는 코드로 만든 스프라이트.
+- **밤에 빛나는 병 속 재료**(`NightGlow`): 초, 별 장식, 초승달, 달맞이꽃, 반딧불이, 캠프파이어, 요정 문, 눈꽃은 밤이 되면 병 속에서 은은히 빛나고, 병 하나에 작은 불빛이 하나 생긴다.
+- **창가와 책상 전시**: 선반 24칸 말고 책상 위 1곳, 북쪽 창턱 2곳, 동쪽 창턱 2곳이 더 있다(칸 번호 24~28, `BottleStore.ExtraSlotStart/ExtraSlotCount`). 선반이 다 안 열려도 처음부터 쓸 수 있고, 선반이 차면 이쪽으로 자동 배정된다. 집 안 가구를 다시 만들려면 메뉴 선반 다시 만들기.

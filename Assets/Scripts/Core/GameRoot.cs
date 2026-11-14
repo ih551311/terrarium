@@ -37,15 +37,46 @@ public class GameRoot : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
+        lastAutoSave = Time.realtimeSinceStartup;
 
         // 저장이 있으면 가방을 저장된 내용으로 채운다 (날짜, 코인, 병은 장면이 열리기 전에 이미 채워졌다)
         if (player != null) SaveSystem.ApplyBag(player.GetComponent<Bag>());
     }
 
+    private const float AutoSaveSeconds = 120f; // 이 시간마다 저절로 저장한다 (실제 시간)
+    private float lastAutoSave;
+    private bool quitting;
+
     private void Update()
     {
         // 하루의 시간이 흐른다 (집 안에서도 흐르고, 밤 끝에서 멈춘다)
         GameState.Tick(Time.deltaTime);
+
+        // 가끔 저절로 저장한다 (패널이 열려 있지 않을 때)
+        if (Time.realtimeSinceStartup - lastAutoSave > AutoSaveSeconds && !UIFocus.IsOpen)
+            SaveNow();
+    }
+
+    /// <summary>지금 상태를 저장한다. 성공하면 true. (읽지 못한 저장 파일이 있으면 덮어쓰지 않는다)</summary>
+    public bool SaveNow()
+    {
+        lastAutoSave = Time.realtimeSinceStartup;
+        if (SaveSystem.LoadFailed) return false;
+        Bag bag = player != null ? player.GetComponent<Bag>() : null;
+        return SaveSystem.Save(bag);
+    }
+
+    // 게임을 끄거나 앱이 멈출 때 저절로 저장한다 (침대에서 자지 않고 꺼도 진행이 남는다)
+    private void OnApplicationQuit()
+    {
+        if (Instance != this || quitting) return;
+        quitting = true;
+        SaveNow();
+    }
+
+    private void OnApplicationPause(bool paused)
+    {
+        if (paused && Instance == this) SaveNow();
     }
 
     private void OnDestroy()
@@ -59,6 +90,7 @@ public class GameRoot : MonoBehaviour
     public void GoTo(string sceneName, string spawnId)
     {
         pendingSpawnId = spawnId;
+        SaveNow(); // 집을 드나들 때도 저장한다
         SceneManager.LoadScene(sceneName);
     }
 

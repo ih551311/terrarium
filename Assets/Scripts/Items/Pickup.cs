@@ -35,6 +35,9 @@ public class Pickup : MonoBehaviour, IInteractable
             {
                 case MaterialCondition.NightOnly: return GameState.TimeOfDay >= NightStart;
                 case MaterialCondition.AfterRain: return Weather.MushroomDay;
+                case MaterialCondition.SnowDay: return Weather.Today == WeatherKind.Snow;
+                case MaterialCondition.FogDay: return Weather.Today == WeatherKind.Fog;
+                case MaterialCondition.AfterStorm: return Weather.StormDay;
                 default: return true;
             }
         }

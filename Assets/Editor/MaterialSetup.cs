@@ -63,6 +63,12 @@ public static class MaterialSetup
         new Entry("clover",           "클로버",     Plant, "deco_clover",        new Color(0.64f, 0.83f, 0.51f), Hill, Hand, 1),
         new Entry("small_rock",       "작은 바위",  Deco,  "deco_rock_small",    new Color(0.62f, 0.62f, 0.65f), Hill, Pick, 2),
         new Entry("evening_primrose", "달맞이꽃",   Plant, "deco_flower_yellow", new Color(0.97f, 0.85f, 0.40f), Hill, Hand, 3, 0, MaterialCondition.NightOnly),
+        // ── 날씨가 만드는 재료 (그 날씨에만 나타난다. 반딧불이는 밤에 날아다니는 것을 E로 잡는다 - FireflySwarm)
+        new Entry("snow_flower",      "눈꽃",       Plant, "deco_snow_flower",     new Color(0.82f, 0.93f, 0.97f), Hill,  Hand, 6, 0, MaterialCondition.SnowDay),
+        new Entry("mist_flower",      "안개꽃",     Plant, "deco_mist_flower",     new Color(0.96f, 0.96f, 0.96f), Hill,  Hand, 5, 0, MaterialCondition.FogDay),
+        new Entry("dew_drop",         "이슬방울",   Deco,  "deco_dew_drop",        new Color(0.60f, 0.85f, 0.92f), Hill,  Hand, 4, 0, MaterialCondition.AfterRain),
+        new Entry("sea_glass",        "바다 유리",  Deco,  "deco_sea_glass",       new Color(0.45f, 0.75f, 0.85f), Beach, Hand, 5, 0, MaterialCondition.AfterStorm),
+        new Entry("firefly",          "반딧불이",   Deco,  "deco_firefly",         new Color(0.95f, 0.90f, 0.40f), MaterialZone.Anywhere, Hand, 8, 0, MaterialCondition.NightOnly),
         // ── 섬의 풀과 꽃을 괭이로 캐면 무작위로 나오는 재료들 (따로 놓인 자리는 없다. 괭이로 풀은 풀 재료, 꽃은 꽃 재료가 나온다)
         new Entry("tulip",            "튤립",       Plant, "deco_tulip",           new Color(0.85f, 0.35f, 0.40f), Hill,  Hoe, 3),
         new Entry("sunflower",        "해바라기",   Plant, "deco_sunflower",       new Color(0.97f, 0.80f, 0.20f), Hill,  Hoe, 15, 0, MaterialCondition.Always, true),
@@ -109,7 +115,8 @@ public static class MaterialSetup
     // 괭이로 캘 때 꽃에서 나오는 재료 (나머지 식물, 이끼, 잎, 열매, 버섯은 풀에서 나온다)
     private static readonly System.Collections.Generic.HashSet<string> FlowerIds = new System.Collections.Generic.HashSet<string>
     {
-        "white_flower", "blue_flower", "evening_primrose", "tulip", "sunflower", "lavender", "cosmos", "dandelion", "pink_flower", "purple_flower"
+        "white_flower", "blue_flower", "evening_primrose", "tulip", "sunflower", "lavender", "cosmos", "dandelion", "pink_flower", "purple_flower",
+        "snow_flower", "mist_flower"
     };
     // 풀에서 나오는 재료. 괭이 재료(Hoe)는 모두 풀이거나 꽃이고, 맨손으로 줍던 식물 몇 가지도 풀에서 나온다.
     private static readonly System.Collections.Generic.HashSet<string> GrassHandIds = new System.Collections.Generic.HashSet<string>

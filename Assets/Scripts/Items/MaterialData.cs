@@ -50,7 +50,10 @@ public enum MaterialCondition
 {
     Always,
     NightOnly,
-    AfterRain
+    AfterRain,
+    SnowDay,    // 눈 오는 날에만
+    FogDay,     // 안개 낀 날에만
+    AfterStorm  // 폭풍우가 지나간 다음 날(과 폭풍우 치는 날)
 }
 
 /// <summary>

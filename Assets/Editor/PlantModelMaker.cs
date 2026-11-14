@@ -234,4 +234,107 @@ public static class PlantModelMaker
             Blade(new Vector3(0f, 0.001f, 0f), Radial(k * 2.2f + 1f) * 0.9f, 0.034f, 0.0038f, Leaf);
         b.Write("deco_reed");
     }
+
+    // ───────── 날씨 재료와 반딧불이 ─────────
+
+    private const int Ice = 33, White = 2, Cyan = 20, Teal = 28, SkyBlue = 19, Gray = 32;
+
+    /// <summary>날씨에 따라 나타나는 재료 5종: 눈꽃, 안개꽃, 이슬방울, 바다 유리, 반딧불이.</summary>
+    [MenuItem("유리병 정원/날씨 재료 모델 만들기")]
+    public static string BuildWeatherModels()
+    {
+        SnowFlower(); MistFlower(); DewDrop(); SeaGlass(); Firefly();
+        AssetDatabase.Refresh();
+        return "날씨 재료 모델 5종을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
+    }
+
+    private static void SnowFlower()
+    {
+        b = new Builder();
+        Frustum(b, Vector3.zero, new Vector3(0f, 0.040f, 0f), 0.0013f, 0.0011f, 5, DeepGreen);
+        Blade(new Vector3(0f, 0.001f, 0f), new Vector3(1f, 0f, 0.2f), 0.022f, 0.007f, Green);
+        Blade(new Vector3(0f, 0.001f, 0f), new Vector3(-0.9f, 0f, -0.3f), 0.018f, 0.006f, LightGreen);
+        // 눈송이 모양 꽃: 길쭉한 흰 꽃잎 여섯 장 + 사이사이 작은 얼음빛 꽃잎 여섯 장
+        b.xf = Matrix4x4.TRS(new Vector3(0f, 0.041f, 0f), Quaternion.Euler(-30f, 0f, 0f), Vector3.one);
+        for (int k = 0; k < 6; k++)
+        {
+            float a = Mathf.PI * 2f * k / 6f;
+            Vector3 r = Radial(a);
+            Petal(r * 0.002f, r + Vector3.up * 0.12f, new Vector3(-r.z, 0f, r.x), 0.0185f, 0.0058f, k % 2 == 0 ? Ice : White, 0.0006f);
+            float a2 = a + Mathf.PI / 6f;
+            Vector3 r2 = Radial(a2);
+            Petal(r2 * 0.002f, r2 + Vector3.up * 0.08f, new Vector3(-r2.z, 0f, r2.x), 0.0105f, 0.0048f, Cyan, 0.0004f);
+        }
+        Blob(new Vector3(0f, 0.0008f, 0f), new Vector3(0.0028f, 0.0022f, 0.0028f), 2, 6, Yellow);
+        b.xf = Matrix4x4.identity;
+        b.Write("deco_snow_flower");
+    }
+
+    private static void MistFlower()
+    {
+        b = new Builder();
+        // 가는 줄기 여섯 개가 부채처럼 퍼지고, 끝마다 작고 하얀 꽃송이들이 뭉쳐 있다 (안개꽃)
+        for (int i = 0; i < 6; i++)
+        {
+            float a = i * 1.05f + 0.2f;
+            Vector3 top = Radial(a) * (0.007f + 0.004f * (i % 3)) + Vector3.up * (0.036f + 0.008f * (i % 3));
+            Frustum(b, new Vector3(0f, 0f, 0f), top, 0.0009f, 0.0005f, 4, Moss);
+            for (int k = 0; k < 4; k++)
+            {
+                Vector3 off = Radial(a + k * 1.6f) * 0.0045f + Vector3.up * (0.003f * (k % 2));
+                Blob(top + off, new Vector3(0.0032f, 0.0032f, 0.0032f), 2, 5, k % 2 == 0 ? White : Ice);
+            }
+            Blob(top + Vector3.up * 0.004f, new Vector3(0.0030f, 0.0030f, 0.0030f), 2, 5, White);
+        }
+        Blade(new Vector3(0f, 0.001f, 0f), new Vector3(1f, 0f, 0.4f), 0.020f, 0.004f, Leaf);
+        Blade(new Vector3(0f, 0.001f, 0f), new Vector3(-1f, 0f, -0.2f), 0.017f, 0.004f, Green);
+        b.Write("deco_mist_flower");
+    }
+
+    private static void DewDrop()
+    {
+        b = new Builder();
+        // 초록 잎 한 장 위에 맺힌 이슬방울
+        Petal(new Vector3(-0.014f, 0.002f, 0f), new Vector3(1f, 0.12f, 0f), new Vector3(0f, 0f, 1f), 0.030f, 0.021f, Leaf, 0.0025f);
+        Petal(new Vector3(-0.014f, 0.0022f, 0f), new Vector3(1f, 0.12f, 0.35f), new Vector3(-0.35f, 0f, 1f), 0.022f, 0.012f, Green, 0.0020f);
+        Blob(new Vector3(0.001f, 0.0125f, 0f), new Vector3(0.0078f, 0.0095f, 0.0078f), 3, 7, Cyan);
+        Blob(new Vector3(-0.0015f, 0.0158f, -0.0020f), new Vector3(0.0026f, 0.0026f, 0.0026f), 2, 5, Pale); // 반짝이는 하이라이트
+        Blob(new Vector3(0.011f, 0.0085f, 0.007f), new Vector3(0.0035f, 0.0038f, 0.0035f), 2, 6, SkyBlue);   // 작은 물방울
+        b.Write("deco_dew_drop");
+    }
+
+    private static void SeaGlass()
+    {
+        b = new Builder();
+        // 파도에 닳아 둥글어진 유리 조각 세 개 (청록, 하늘, 연한 얼음빛)
+        Blob(new Vector3(0f, 0.0052f, 0f), new Vector3(0.0135f, 0.0052f, 0.0100f), 3, 6, Teal);
+        Blob(new Vector3(0.0165f, 0.0040f, 0.0070f), new Vector3(0.0082f, 0.0040f, 0.0072f), 3, 6, Cyan);
+        Blob(new Vector3(-0.0150f, 0.0032f, 0.0085f), new Vector3(0.0062f, 0.0032f, 0.0052f), 3, 5, Ice);
+        Blob(new Vector3(0.0020f, 0.0030f, -0.0120f), new Vector3(0.0070f, 0.0030f, 0.0050f), 3, 5, SkyBlue);
+        b.Write("deco_sea_glass");
+    }
+
+    private static void Firefly()
+    {
+        b = new Builder();
+        // 몸은 앞(-z)을 향한다. 꽁무니(+z)는 밝은 노란빛.
+        Blob(new Vector3(0f, 0.0075f, -0.001f), new Vector3(0.0036f, 0.0034f, 0.0075f), 3, 6, Dark);          // 가슴
+        Blob(new Vector3(0f, 0.0072f, -0.0095f), new Vector3(0.0028f, 0.0027f, 0.0028f), 2, 6, Dark);        // 머리
+        Blob(new Vector3(0f, 0.0070f, 0.0085f), new Vector3(0.0044f, 0.0040f, 0.0062f), 3, 6, Pale);          // 빛나는 꽁무니
+        Blob(new Vector3(0f, 0.0070f, 0.0100f), new Vector3(0.0030f, 0.0028f, 0.0038f), 2, 5, LightGreen);
+        // 날개 한 쌍
+        Petal(new Vector3(0.0018f, 0.0100f, -0.0030f), new Vector3(1f, 0.35f, 1.1f), new Vector3(-1f, 0f, 1f), 0.0125f, 0.0058f, White, 0.0006f);
+        Petal(new Vector3(-0.0018f, 0.0100f, -0.0030f), new Vector3(-1f, 0.35f, 1.1f), new Vector3(1f, 0f, 1f), 0.0125f, 0.0058f, White, 0.0006f);
+        // 다리 세 쌍 (짧은 막대)
+        for (int i = 0; i < 3; i++)
+        {
+            float z = -0.004f + i * 0.0045f;
+            Frustum(b, new Vector3(0.0018f, 0.0058f, z), new Vector3(0.0050f, 0.0010f, z + 0.0015f), 0.0004f, 0.0003f, 3, Dark);
+            Frustum(b, new Vector3(-0.0018f, 0.0058f, z), new Vector3(-0.0050f, 0.0010f, z + 0.0015f), 0.0004f, 0.0003f, 3, Dark);
+        }
+        // 더듬이
+        Frustum(b, new Vector3(0.0010f, 0.0085f, -0.0115f), new Vector3(0.0030f, 0.0100f, -0.0175f), 0.0003f, 0.0002f, 3, Dark);
+        Frustum(b, new Vector3(-0.0010f, 0.0085f, -0.0115f), new Vector3(-0.0030f, 0.0100f, -0.0175f), 0.0003f, 0.0002f, 3, Dark);
+        b.Write("deco_firefly");
+    }
 }

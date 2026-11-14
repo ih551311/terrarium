@@ -126,7 +126,7 @@ public class BottleInventoryView : MonoBehaviour
         foreach (string id in ids) if (BottleStore.IsDisplayed(id)) onShelf++;
         string head = ids.Count == 0
             ? "아직 완성한 병이 없어요"
-            : "내 병 " + ids.Count + "개  |  선반 " + onShelf + "/" + BottleStore.ShelfCapacity + "칸" + (pageCount > 1 ? "  |  " + (page + 1) + "/" + pageCount + "쪽" : string.Empty);
+            : "내 병 " + ids.Count + "개  |  전시 " + onShelf + "/" + BottleStore.DisplayCapacity + "칸" + (pageCount > 1 ? "  |  " + (page + 1) + "/" + pageCount + "쪽" : string.Empty);
         infoLabel.text = string.IsNullOrEmpty(notice) ? head : head + "\n" + notice;
     }
 }

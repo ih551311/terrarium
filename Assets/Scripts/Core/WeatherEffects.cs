@@ -178,11 +178,12 @@ public class WeatherEffects : MonoBehaviour
             case WeatherKind.Windy: Say("오늘은 바람이 불어요"); break;
             case WeatherKind.Drizzle: Say("이슬비가 내려요. 숲에 버섯이 나요"); break;
             case WeatherKind.Rain: Say("비가 와요. 숲에 버섯이 나요"); break;
-            case WeatherKind.Storm: Say("폭풍우가 몰아쳐요! 숲에 버섯이 나요"); break;
-            case WeatherKind.Fog: Say("안개가 짙어요"); break;
-            case WeatherKind.Snow: Say("눈이 내려요"); break;
+            case WeatherKind.Storm: Say("폭풍우가 몰아쳐요! 숲에 버섯이 나고, 바닷가에 무언가 밀려와요"); break;
+            case WeatherKind.Fog: Say("안개가 짙어요. 꽃 언덕에 안개꽃이 피었대요"); break;
+            case WeatherKind.Snow: Say("눈이 내려요. 눈꽃이 피었을지도 몰라요"); break;
             default:
-                if (Weather.RainedYesterday) Say("어제 비가 와서 숲에 버섯이 났어요");
+                if (GameState.WeatherYesterday == WeatherKind.Storm) Say("폭풍우가 지나갔어요. 바닷가에 바다 유리가 밀려왔을지도 몰라요");
+                else if (Weather.RainedYesterday) Say("어제 비가 와서 숲에 버섯이 났어요");
                 break;
         }
     }

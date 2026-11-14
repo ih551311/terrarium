@@ -275,6 +275,24 @@ public static class InteriorSetup
                 slotList.Add(slot.transform);
             }
         }
+        // 선반 말고도 병을 둘 자리 5곳: 책상 위(24번), 북쪽 창턱 둘(25, 26번), 동쪽 창턱 둘(27, 28번). 선반이 안 열려도 처음부터 쓸 수 있다.
+        // (BottleStore.ExtraSlotStart, ExtraSlotCount와 맞춰야 한다)
+        Cube(root, "SillBoard", new Vector3(0f, 1.30f, Half - 0.15f), new Vector3(1.25f, 0.04f, 0.26f), wood, false);
+        Cube(root, "SillBoard", new Vector3(Half - 0.15f, 1.30f, -1.1f), new Vector3(0.26f, 0.04f, 1.25f), wood, false);
+        Vector3[] extra =
+        {
+            new Vector3(-2.3f, 0.79f, -1.25f),
+            new Vector3(-0.28f, 1.32f, Half - 0.15f), new Vector3(0.28f, 1.32f, Half - 0.15f),
+            new Vector3(Half - 0.15f, 1.32f, -1.4f), new Vector3(Half - 0.15f, 1.32f, -0.8f)
+        };
+        for (int i = 0; i < extra.Length; i++)
+        {
+            GameObject slot = new GameObject("Slot" + (BottleStore.ExtraSlotStart + i));
+            slot.transform.SetParent(shelfRoot.transform, false);
+            slot.transform.position = extra[i];
+            slotList.Add(slot.transform);
+        }
+
         BottleShelf bottleShelf = shelfRoot.AddComponent<BottleShelf>();
         SerializedObject shelfSo = new SerializedObject(bottleShelf);
         SerializedProperty slotsProp = shelfSo.FindProperty("slots");
@@ -302,7 +320,7 @@ public static class InteriorSetup
         for (int i = furniture.transform.childCount - 1; i >= 0; i--)
         {
             Transform child = furniture.transform.GetChild(i);
-            bool shelfPart = child.name == "ShelfBoard" || child.name == "ShelfPost" || child.name == "ShelfBack" || child.name == "BottleShelf";
+            bool shelfPart = child.name == "ShelfBoard" || child.name == "ShelfPost" || child.name == "ShelfBack" || child.name == "BottleShelf" || child.name == "SillBoard";
             // 예전 위치(-2.2, -0.1)에 있던 상자는 새 선반과 겹쳐서 옮긴다
             bool oldCrate = child.name.StartsWith("Crate") && Vector3.Distance(child.position, new Vector3(-2.2f, 0f, -0.1f)) < 0.5f;
             if (oldCrate) child.position = new Vector3(-1.3f, 0f, -2.7f);
@@ -314,7 +332,7 @@ public static class InteriorSetup
 
         EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
-        return "선반을 24칸(4단 x 6칸)으로 다시 만들었어요";
+        return "선반을 24칸(4단 x 6칸)과 창가, 책상 자리 5곳으로 다시 만들었어요";
     }
 
     private static void BuildLighting()

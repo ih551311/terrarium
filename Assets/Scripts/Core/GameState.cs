@@ -159,6 +159,58 @@ public static class GameState
         return true;
     }
 
+    // ───────── 병 주문 편지 ─────────
+
+    /// <summary>지금 와 있는 병 주문 편지 번호 (BottleRequests). 없으면 -1.</summary>
+    public static int RequestId { get; private set; } = -1;
+
+    /// <summary>와 있는 편지를 읽었는가 (안 읽었으면 우체통 안내에 "편지가 왔어요"가 뜬다)</summary>
+    public static bool RequestSeen { get; private set; }
+
+    /// <summary>바로 전에 받은 편지 번호</summary>
+    public static int LastRequestId { get; private set; } = -1;
+
+    /// <summary>들어준 병 주문의 수</summary>
+    public static int RequestsDone { get; private set; }
+
+    /// <summary>방금 일어난 아침에 새 편지가 왔는가 (침대 알림용)</summary>
+    public static bool NewRequestToday { get; private set; }
+
+    public static bool HasUnreadRequest => RequestId >= 0 && !RequestSeen;
+
+    public static void MarkRequestSeen()
+    {
+        if (RequestSeen) return;
+        RequestSeen = true;
+        Changed?.Invoke();
+    }
+
+    /// <summary>편지의 부탁을 들어줬다. 편지는 사라지고, 답례(코인과 재료)가 우체통에 도착한다.</summary>
+    public static void CompleteRequest(int coins, MaterialData item)
+    {
+        LastRequestId = RequestId;
+        RequestId = -1;
+        RequestSeen = false;
+        RequestsDone++;
+        ArrivedCoins += Mathf.Max(0, coins);
+        if (item != null) arrivedItems.Add(item);
+        Changed?.Invoke();
+    }
+
+    /// <summary>
+    /// 아침에 새 편지가 올지 정한다. 편지가 이미 와 있으면 새로 오지 않고, 완성한 병이 하나도 없으면 오지 않는다.
+    /// 둘째 날부터 약 65% 확률로 온다.
+    /// </summary>
+    private static void RollRequest()
+    {
+        NewRequestToday = false;
+        if (RequestId >= 0 || Day < 2 || BottleStore.CompletedCount < 1) return;
+        if (UnityEngine.Random.value > 0.65f) return;
+        RequestId = BottleRequests.Roll(LastRequestId);
+        RequestSeen = false;
+        NewRequestToday = true;
+    }
+
     /// <summary>코인을 낸다. 모자라면 false (코인은 그대로).</summary>
     public static bool TrySpend(int amount)
     {
@@ -207,6 +259,7 @@ public static class GameState
         WeatherYesterday = WeatherToday;
         WeatherToday = next;
         TimeOfDay = 0f; // 아침이 된다
+        RollRequest();
         DayStarted?.Invoke();
         Changed?.Invoke();
         return anything;
@@ -265,6 +318,12 @@ public static class GameState
         data.weatherToday = (int)WeatherToday;
         data.weatherYesterday = (int)WeatherYesterday;
         data.freeBottles = FreeBottles;
+        data.timeOfDay = TimeOfDay;
+        data.requestId = RequestId;
+        data.requestSeen = RequestSeen;
+        data.lastRequestId = LastRequestId;
+        data.requestsDone = RequestsDone;
+        foreach (string id in taken) data.taken.Add(id);
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
         foreach (MaterialData m in arrivedItems) data.arrivedItems.Add(m.id);
@@ -294,8 +353,14 @@ public static class GameState
             WeatherToday = Weather.Roll(WeatherKind.Clear, WeatherKind.Clear);
         }
         FreeBottles = Mathf.Max(0, data.freeBottles);
+        TimeOfDay = data.timeOfDay >= 0f ? Mathf.Clamp01(data.timeOfDay) : 0f; // 예전 저장은 아침부터
+        RequestId = data.requestId < BottleRequests.Total ? data.requestId : -1;
+        RequestSeen = data.requestSeen;
+        LastRequestId = data.lastRequestId;
+        RequestsDone = data.requestsDone;
 
         outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
+        if (data.taken != null) foreach (string id in data.taken) taken.Add(id);
         foreach (string id in data.outbox) { MaterialData m = db.Find(id); if (m != null) outbox.Add(m); }
         foreach (string id in data.orders) { MaterialData m = db.Find(id); if (m != null) orders.Add(m); }
         foreach (string id in data.arrivedItems) { MaterialData m = db.Find(id); if (m != null) arrivedItems.Add(m); }
@@ -322,6 +387,11 @@ public static class GameState
         WeatherToday = WeatherKind.Clear;
         WeatherYesterday = WeatherKind.Clear;
         FreeBottles = 1;
+        RequestId = -1;
+        RequestSeen = false;
+        LastRequestId = -1;
+        RequestsDone = 0;
+        NewRequestToday = false;
         DayStarted = null;
         Day = 1;
         Coins = 0;

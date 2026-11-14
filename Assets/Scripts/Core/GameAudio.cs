@@ -19,6 +19,9 @@ public class GameAudio : MonoBehaviour
     private static GameAudio instance;
     private static bool musicOn = true;
 
+    /// <summary>배경 음악이 켜져 있는가 (P 키나 일시정지 메뉴로 바꾼다)</summary>
+    public static bool MusicOn { get { return musicOn; } set { musicOn = value; } }
+
     /// <summary>효과음을 한 번 낸다. 소리 시스템이 아직 없으면 아무 일도 하지 않는다.</summary>
     public static void Play(Sfx sfx, float volume = 1f)
     {

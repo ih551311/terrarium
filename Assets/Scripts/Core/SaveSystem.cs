@@ -16,6 +16,9 @@ public static class SaveSystem
 
     public static bool HasSave => File.Exists(FilePath);
 
+    /// <summary>저장 파일이 있는데 읽지 못했는가. 이때는 자동 저장이 읽지 못한 파일을 덮어쓰지 않는다.</summary>
+    public static bool LoadFailed { get; private set; }
+
     /// <summary>지금 상태를 저장한다. 성공하면 true.</summary>
     public static bool Save(Bag bag)
     {
@@ -87,7 +90,9 @@ public static class SaveSystem
     private static void LoadWorld()
     {
         loaded = null;
+        LoadFailed = false;
         if (!HasSave) return;
+        LoadFailed = true; // 끝까지 읽으면 아래에서 false로 바꾼다
 
         try
         {
@@ -129,6 +134,7 @@ public static class SaveSystem
             foreach (string typeId in legacy) BottleStore.Archive(typeId);
 
             loaded = data;
+            LoadFailed = false;
             Debug.Log("[저장] " + data.day + "일째 저장을 불러왔어요.");
         }
         catch (Exception e)
@@ -142,5 +148,6 @@ public static class SaveSystem
     private static void ResetStatics()
     {
         loaded = null;
+        LoadFailed = false;
     }
 }

@@ -499,6 +499,7 @@ public class BottleContents : MonoBehaviour
         }
 
         SetLayerRecursive(visual, gameObject.layer);
+        NightGlow.Attach(visual, material.id); // 밤에 빛나는 재료(초, 별, 반딧불이 등)
 
         Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)

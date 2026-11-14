@@ -14,6 +14,7 @@ public class Bed : MonoBehaviour, IInteractable
         bool mail = GameState.Sleep();
         string text = GameState.Day + "일째 아침이에요";
         if (mail) text += "\n우체통에 무언가 도착했어요";
+        if (GameState.NewRequestToday) text += "\n우체통에 편지가 왔어요";
 
         // 자고 일어나면 저장한다
         text += SaveSystem.Save(who.Bag) ? "\n저장했어요" : "\n(저장하지 못했어요)";

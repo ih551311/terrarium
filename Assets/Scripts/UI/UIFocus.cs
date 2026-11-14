@@ -12,6 +12,9 @@ public static class UIFocus
     /// <summary>패널이 하나라도 열려 있으면 true</summary>
     public static bool IsOpen => openCount > 0;
 
+    /// <summary>패널이 마지막으로 닫힌 프레임 (같은 프레임에 Esc로 패널이 닫혔다면 일시정지 메뉴를 열지 않으려고 쓴다)</summary>
+    public static int LastCloseFrame { get; private set; } = -1;
+
     public static void Open()
     {
         openCount++;
@@ -26,6 +29,7 @@ public static class UIFocus
     {
         if (openCount == 0) return;
         openCount--;
+        LastCloseFrame = Time.frameCount;
         if (openCount == 0)
         {
             Cursor.lockState = CursorLockMode.Locked;

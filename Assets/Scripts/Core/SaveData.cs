@@ -20,6 +20,13 @@ public class SaveData
     public int weatherYesterday;                          // 어제 날씨
     public bool letterRead;                               // 시작 편지를 읽었는가 (예전 저장은 한 번 보여 준다)
 
+    public float timeOfDay = -1f;                         // 저장한 때의 하루 시간 (-1이면 저장 안 됨 = 아침부터)
+    public List<string> taken = new List<string>();       // 오늘 이미 주웠거나 캔 자리 (껐다 켜도 다시 채워지지 않는다)
+    public int requestId = -1;                            // 병 주문 편지 번호 (-1이면 편지 없음)
+    public bool requestSeen;                              // 그 편지를 읽었는가
+    public int lastRequestId = -1;                        // 바로 전에 받은 편지 번호 (같은 편지가 연달아 오지 않게)
+    public int requestsDone;                              // 지금까지 들어준 병 주문 수
+
     // 우체통: 보낸 재료, 주문한 물건, 도착해서 받기를 기다리는 물건
     public List<string> outbox = new List<string>();
     public List<string> orders = new List<string>();
