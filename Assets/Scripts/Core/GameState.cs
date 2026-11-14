@@ -44,6 +44,9 @@ public static class GameState
     /// <summary>곡괭이의 강화 단계 (0이 기본, 3이 최대)</summary>
     public static int PickaxeLevel { get; private set; }
 
+    /// <summary>괭이의 강화 단계 (0이 기본, 3이 최대)</summary>
+    public static int HoeLevel { get; private set; }
+
     public const int MaxToolLevel = 3;
 
     /// <summary>방금 받은 도구 강화의 수 (우체통 안내 글자용)</summary>
@@ -81,10 +84,10 @@ public static class GameState
         return true;
     }
 
-    /// <summary>도구(Axe, Pickaxe, Hoe)의 강화 단계. 괭이는 강화가 없어 항상 0이다.</summary>
+    /// <summary>도구(Axe, Pickaxe, Hoe)의 강화 단계</summary>
     public static int LevelOf(AcquireMethod tool)
     {
-        if (tool == AcquireMethod.Hoe) return 0;
+        if (tool == AcquireMethod.Hoe) return HoeLevel;
         return tool == AcquireMethod.Axe ? AxeLevel : PickaxeLevel;
     }
 
@@ -203,6 +206,7 @@ public static class GameState
         foreach (AcquireMethod tool in arrivedUpgrades)
         {
             if (tool == AcquireMethod.Axe) AxeLevel = Mathf.Min(MaxToolLevel, AxeLevel + 1);
+            else if (tool == AcquireMethod.Hoe) HoeLevel = Mathf.Min(MaxToolLevel, HoeLevel + 1);
             else PickaxeLevel = Mathf.Min(MaxToolLevel, PickaxeLevel + 1);
         }
         arrivedUpgrades.Clear();
@@ -239,6 +243,7 @@ public static class GameState
         data.arrivedCoins = ArrivedCoins;
         data.axeLevel = AxeLevel;
         data.pickaxeLevel = PickaxeLevel;
+        data.hoeLevel = HoeLevel;
         data.freeBottles = FreeBottles;
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
@@ -255,6 +260,7 @@ public static class GameState
         ArrivedCoins = data.arrivedCoins;
         AxeLevel = data.axeLevel;
         PickaxeLevel = data.pickaxeLevel;
+        HoeLevel = data.hoeLevel;
         FreeBottles = Mathf.Max(0, data.freeBottles);
 
         outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
@@ -279,6 +285,7 @@ public static class GameState
         TimeOfDay = 0f;
         AxeLevel = 0;
         PickaxeLevel = 0;
+        HoeLevel = 0;
         FreeBottles = 1;
         DayStarted = null;
         Day = 1;

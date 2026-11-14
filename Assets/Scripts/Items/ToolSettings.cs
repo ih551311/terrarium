@@ -24,7 +24,7 @@ public class ToolSettings : ScriptableObject
     public Level[] axeLevels;
     [Tooltip("곡괭이의 0단계(기본)부터 3단계(최대)까지")]
     public Level[] pickaxeLevels;
-    [Tooltip("괭이. 강화는 없어서 첫 칸만 쓴다. 비워 두면 기본값(2번 치기, 1개)")]
+    [Tooltip("괭이의 0단계(기본)부터 3단계(최대)까지. 비워 두면 기본값(6번 치기, 1개)")]
     public Level[] hoeLevels;
     [Tooltip("도끼나 곡괭이로 캘 때 나올 수 있는 모든 재료 (희귀 재료 포함)")]
     public MaterialData[] harvestMaterials;
@@ -45,7 +45,7 @@ public class ToolSettings : ScriptableObject
     {
         if (tool == AcquireMethod.Hoe)
         {
-            if (hoeLevels == null || hoeLevels.Length == 0) return new Level { hits = 2, amount = 1, rareChance = 0f, upgradeCost = 0 };
+            if (hoeLevels == null || hoeLevels.Length == 0) return new Level { hits = 6, amount = 1, rareChance = 0.03f, upgradeCost = 0 };
             return hoeLevels[Mathf.Clamp(level, 0, hoeLevels.Length - 1)];
         }
         Level[] levels = tool == AcquireMethod.Axe ? axeLevels : pickaxeLevels;
@@ -57,22 +57,28 @@ public class ToolSettings : ScriptableObject
     /// 후보: 얻는 방법이 Hoe인 재료와, 맨손으로 줍는 식물 중 갈래가 정해진 것. (밤에만, 비 온 뒤에만 나는 것은 뺀다)
     /// zone이 Anywhere(가운데 풀밭)면 모든 구역의 재료에서 고른다.
     /// </summary>
-    public MaterialData RollHoe(PlantGroup group, MaterialZone zone)
+    public MaterialData RollHoe(PlantGroup group, MaterialZone zone, float rareChance, out bool rare)
     {
+        rare = false;
         MaterialDatabase db = MaterialDatabase.Instance;
         if (db == null || db.materials == null) return null;
 
         var all = new List<MaterialData>();
         var local = new List<MaterialData>();
+        var rares = new List<MaterialData>();
         foreach (MaterialData m in db.materials)
         {
-            if (m == null || m.isRare || m.plantGroup != group || m.condition != MaterialCondition.Always) continue;
+            if (m == null || m.plantGroup != group || m.condition != MaterialCondition.Always) continue;
+            if (m.isRare) { if (m.acquire == AcquireMethod.Hoe) rares.Add(m); continue; } // 희귀 풀과 꽃은 괭이를 강화하면 더 자주 나온다
             bool hoe = m.acquire == AcquireMethod.Hoe;
             bool plantLike = m.acquire == AcquireMethod.Hand && (m.kind == MaterialKind.Plant || m.kind == MaterialKind.Cover);
             if (!hoe && !plantLike) continue;
             all.Add(m);
             if (m.zone == zone || m.zone == MaterialZone.Anywhere) local.Add(m);
         }
+        rare = rares.Count > 0 && Random.value < rareChance;
+        if (rare) return rares[Random.Range(0, rares.Count)];
+
         List<MaterialData> pool = zone != MaterialZone.Anywhere && local.Count > 0 ? local : all;
         return pool.Count > 0 ? pool[Random.Range(0, pool.Count)] : null;
     }

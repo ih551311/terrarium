@@ -405,13 +405,13 @@ public static class UISetup
         // 오른쪽: 주문하기 (코인을 내고 사는 물건. 가격이 있는 재료를 모두 보여 준다)
         // 도구 강화 (도끼, 곡괭이): 코인을 내고 주문하면 다음 날 도착하고, 받으면 도구 단계가 오른다
         Label(mailWindow.transform, "UpgradeTitle", "도구 강화  (내일 아침 도착해요)", 40, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(810f, -115f), new Vector2(700f, 50f), TextAlignmentOptions.TopLeft);
-        Button[] upgradeButtons = new Button[2];
-        TMP_Text[] upgradeLabels = new TMP_Text[2];
-        for (int i = 0; i < 2; i++)
+        Button[] upgradeButtons = new Button[3]; // 도끼, 곡괭이, 괭이
+        TMP_Text[] upgradeLabels = new TMP_Text[3];
+        for (int i = 0; i < 3; i++)
         {
-            Button b = MakeButton(mailWindow.transform, "Upgrade" + i, string.Empty, new Vector2(0f, 1f), new Vector2(810f + i * 355f, -170f), new Vector2(345f, 100f));
+            Button b = MakeButton(mailWindow.transform, "Upgrade" + i, string.Empty, new Vector2(0f, 1f), new Vector2(810f + i * 237f, -170f), new Vector2(226f, 108f));
             TextMeshProUGUI t = b.GetComponentInChildren<TextMeshProUGUI>();
-            t.fontSize = 22;
+            t.fontSize = 18;
             b.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
             upgradeButtons[i] = b; upgradeLabels[i] = t;
         }

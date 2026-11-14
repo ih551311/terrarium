@@ -50,8 +50,7 @@ public class Harvestable : MonoBehaviour, IInteractable
     /// <summary>캐서 나올 재료 하나를 고른다. (괭이는 풀/꽃 갈래로, 도끼와 곡괭이는 구역과 희귀 확률로)</summary>
     private MaterialData Roll(ToolSettings settings, ToolSettings.Level level, out bool rare)
     {
-        rare = false;
-        if (tool == AcquireMethod.Hoe) return settings.RollHoe(plantGroup, zone);
+        if (tool == AcquireMethod.Hoe) return settings.RollHoe(plantGroup, zone, level.rareChance, out rare);
         return settings.Roll(tool, zone, level.rareChance, out rare);
     }
 

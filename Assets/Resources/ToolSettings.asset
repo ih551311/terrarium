@@ -13,39 +13,56 @@ MonoBehaviour:
   m_Name: ToolSettings
   m_EditorClassIdentifier: Assembly-CSharp::ToolSettings
   axeLevels:
-  - hits: 4
+  - hits: 8
     amount: 1
     rareChance: 0.03
     upgradeCost: 0
-  - hits: 3
+  - hits: 6
     amount: 1
     rareChance: 0.06
     upgradeCost: 30
-  - hits: 2
+  - hits: 4
     amount: 2
     rareChance: 0.1
     upgradeCost: 80
-  - hits: 2
+  - hits: 3
     amount: 3
     rareChance: 0.15
     upgradeCost: 150
   pickaxeLevels:
-  - hits: 4
+  - hits: 8
     amount: 1
     rareChance: 0.03
     upgradeCost: 0
-  - hits: 3
+  - hits: 6
     amount: 1
     rareChance: 0.06
     upgradeCost: 30
-  - hits: 2
+  - hits: 4
     amount: 2
     rareChance: 0.1
     upgradeCost: 80
-  - hits: 2
+  - hits: 3
     amount: 3
     rareChance: 0.15
     upgradeCost: 150
+  hoeLevels:
+  - hits: 6
+    amount: 1
+    rareChance: 0.03
+    upgradeCost: 0
+  - hits: 4
+    amount: 1
+    rareChance: 0.06
+    upgradeCost: 20
+  - hits: 3
+    amount: 2
+    rareChance: 0.1
+    upgradeCost: 60
+  - hits: 2
+    amount: 3
+    rareChance: 0.15
+    upgradeCost: 120
   harvestMaterials:
   - {fileID: 11400000, guid: 415c01bfa3b4c92428b192accc82f46b, type: 2}
   - {fileID: 11400000, guid: 79e8fa40d5776ce4fab335fecf9a6f1b, type: 2}

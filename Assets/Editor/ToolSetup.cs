@@ -23,8 +23,7 @@ public static class ToolSetup
         {
             settings = ScriptableObject.CreateInstance<ToolSettings>();
             // 기획서 6.8의 임시 값: 타격 수, 얻는 양, 희귀 확률, 강화 비용
-            settings.axeLevels = DefaultLevels();
-            settings.pickaxeLevels = DefaultLevels();
+            ApplyDefaultLevels(settings);
             AssetDatabase.CreateAsset(settings, AssetPath);
         }
 
@@ -63,14 +62,35 @@ public static class ToolSetup
         return m;
     }
 
-    private static ToolSettings.Level[] DefaultLevels()
+    /// <summary>
+    /// 도끼, 곡괭이, 괭이의 단계별 수치를 기본값으로 되돌린다. 손으로 고친 값도 덮어쓴다.
+    /// 처음 장비(0단계)는 여러 번 쳐야 하고, 강화할수록 적게 치고 많이 얻고 희귀 재료가 자주 나온다.
+    /// 메뉴: 유리병 정원 > 도구 수치 기본값으로.
+    /// </summary>
+    [MenuItem("유리병 정원/도구 수치 기본값으로")]
+    public static string ResetLevels()
     {
-        return new[]
-        {
-            new ToolSettings.Level { hits = 4, amount = 1, rareChance = 0.03f, upgradeCost = 0 },
-            new ToolSettings.Level { hits = 3, amount = 1, rareChance = 0.06f, upgradeCost = 30 },
-            new ToolSettings.Level { hits = 2, amount = 2, rareChance = 0.10f, upgradeCost = 80 },
-            new ToolSettings.Level { hits = 2, amount = 3, rareChance = 0.15f, upgradeCost = 150 }
-        };
+        ToolSettings settings = AssetDatabase.LoadAssetAtPath<ToolSettings>(AssetPath);
+        if (settings == null) return Build();
+        ApplyDefaultLevels(settings);
+        EditorUtility.SetDirty(settings);
+        AssetDatabase.SaveAssets();
+        return "도구 수치를 기본값으로 되돌렸어요";
+    }
+
+    private static void ApplyDefaultLevels(ToolSettings settings)
+    {
+        //                          치는 횟수(0~3단계)    얻는 양            희귀 확률                     강화 비용
+        settings.axeLevels     = Levels(new[] { 8, 6, 4, 3 }, new[] { 1, 1, 2, 3 }, new[] { 0.03f, 0.06f, 0.10f, 0.15f }, new[] { 0, 30, 80, 150 });
+        settings.pickaxeLevels = Levels(new[] { 8, 6, 4, 3 }, new[] { 1, 1, 2, 3 }, new[] { 0.03f, 0.06f, 0.10f, 0.15f }, new[] { 0, 30, 80, 150 });
+        settings.hoeLevels     = Levels(new[] { 6, 4, 3, 2 }, new[] { 1, 1, 2, 3 }, new[] { 0.03f, 0.06f, 0.10f, 0.15f }, new[] { 0, 20, 60, 120 });
+    }
+
+    private static ToolSettings.Level[] Levels(int[] hits, int[] amounts, float[] rare, int[] costs)
+    {
+        var levels = new ToolSettings.Level[hits.Length];
+        for (int i = 0; i < levels.Length; i++)
+            levels[i] = new ToolSettings.Level { hits = hits[i], amount = amounts[i], rareChance = rare[i], upgradeCost = costs[i] };
+        return levels;
     }
 }
