@@ -107,3 +107,13 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# 유료/라이선스 에셋 (공개 저장소라 올리지 않는다. 각자 에셋스토어에서 가져온다)
+/Assets/DynamicWeatherSystem/
+/Assets/Dreamcore Music/
+/Assets/The_Sound_Guild_FREE_PACK_Footsteps_Volume_02/
+/Assets/HobiSoloved/
+/Assets/Footstep(Snow and Grass)/
+/Assets/ThirdParty/LowPolyNaturePack/Scenes/Snowy_Scence.unity*
+# 글꼴 에셋은 만들 때마다 바뀌는 파일
+/Assets/Resources/Fonts/Cafe24DongdongLight SDF.asset
