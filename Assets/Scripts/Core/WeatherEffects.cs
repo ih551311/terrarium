@@ -25,6 +25,7 @@ public class WeatherEffects : MonoBehaviour
     private AudioLowPassFilter[] lowPass = new AudioLowPassFilter[0];
     private float muffle = 1f; // 1 바깥, 0 집 안
     private float announceAt = -1f;
+    private RainGround ground;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Boot()
@@ -81,6 +82,14 @@ public class WeatherEffects : MonoBehaviour
         {
             announceAt = -1f;
             Announce();
+        }
+
+        // 비 오는 날 땅의 물방울과 젖은 땅 (한 번만 만든다)
+        if (ground == null)
+        {
+            GameObject g = new GameObject("RainGround");
+            g.transform.SetParent(transform, false);
+            ground = g.AddComponent<RainGround>();
         }
 
         UpdateIndoors();
