@@ -16,6 +16,8 @@ public class SaveData
     public int axeLevel;
     public int pickaxeLevel;
     public int hoeLevel;
+    public int weatherToday = -1;                         // 오늘 날씨 (WeatherKind 번호, -1이면 저장 안 됨)
+    public int weatherYesterday;                          // 어제 날씨
     public bool letterRead;                               // 시작 편지를 읽었는가 (예전 저장은 한 번 보여 준다)
 
     // 우체통: 보낸 재료, 주문한 물건, 도착해서 받기를 기다리는 물건

@@ -133,6 +133,12 @@ public static class GameState
     /// <summary>값이 바뀔 때마다 호출된다. (화면 갱신용)</summary>
     public static event Action Changed;
 
+    /// <summary>오늘의 날씨 (아침마다 무작위로 정해지고 저장된다. 첫날은 맑음)</summary>
+    public static WeatherKind WeatherToday { get; private set; }
+
+    /// <summary>어제의 날씨 (비가 온 다음 날 버섯이 나는 데 쓴다)</summary>
+    public static WeatherKind WeatherYesterday { get; private set; }
+
     /// <summary>시작 편지를 읽었는가 (처음 시작하면 편지가 자동으로 열리고, 닫으면 읽은 것으로 적는다)</summary>
     public static bool LetterRead { get; private set; }
 
@@ -197,6 +203,9 @@ public static class GameState
         Day++;
 
         taken.Clear(); // 주운 자리와 캔 자리가 다시 채워진다
+        WeatherKind next = Weather.Roll(WeatherYesterday, WeatherToday); // 아침마다 날씨를 무작위로 뽑는다
+        WeatherYesterday = WeatherToday;
+        WeatherToday = next;
         TimeOfDay = 0f; // 아침이 된다
         DayStarted?.Invoke();
         Changed?.Invoke();
@@ -253,6 +262,8 @@ public static class GameState
         data.pickaxeLevel = PickaxeLevel;
         data.hoeLevel = HoeLevel;
         data.letterRead = LetterRead;
+        data.weatherToday = (int)WeatherToday;
+        data.weatherYesterday = (int)WeatherYesterday;
         data.freeBottles = FreeBottles;
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
@@ -271,6 +282,17 @@ public static class GameState
         PickaxeLevel = data.pickaxeLevel;
         HoeLevel = data.hoeLevel;
         LetterRead = data.letterRead;
+        if (data.weatherToday >= 0)
+        {
+            WeatherToday = (WeatherKind)Mathf.Clamp(data.weatherToday, 0, 7);
+            WeatherYesterday = (WeatherKind)Mathf.Clamp(Mathf.Max(0, data.weatherYesterday), 0, 7);
+        }
+        else
+        {
+            // 날씨가 저장되지 않은 예전 저장: 오늘 날씨를 무작위로 뽑는다
+            WeatherYesterday = WeatherKind.Clear;
+            WeatherToday = Weather.Roll(WeatherKind.Clear, WeatherKind.Clear);
+        }
         FreeBottles = Mathf.Max(0, data.freeBottles);
 
         outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
@@ -297,6 +319,8 @@ public static class GameState
         PickaxeLevel = 0;
         HoeLevel = 0;
         LetterRead = false;
+        WeatherToday = WeatherKind.Clear;
+        WeatherYesterday = WeatherKind.Clear;
         FreeBottles = 1;
         DayStarted = null;
         Day = 1;
