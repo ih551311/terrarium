@@ -205,5 +205,5 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 
 ## 분위기: 편지, 날씨, 소리 (구현됨)
 - **시작 편지**: 처음 시작하고 2.5초 뒤 LetterPanel이 저절로 열려 섬에서 하는 일을 알려 줌(E/Esc/스페이스/닫기로 닫음, 읽음은 GameState.LetterRead로 저장). 집 책상 위 편지(DeskLetter)를 보고 E로 다시 읽음.
-- **날씨**: Weather(날짜로 정해짐, 첫날은 맑음, 비 올 확률 약 1/3). 비 오는 날 WeatherEffects가 플레이어 위에 빗방울 파티클을 내리고 SkyController가 하늘, 해, 안개를 회색빛으로 어둡게 함(집 안에서는 빗방울 없음). 비가 온 날과 그다음 날(Weather.MushroomDay)에만 버섯(MaterialCondition.AfterRain) 픽업이 나타남. 아침에 날씨 알림 메시지.
+- **날씨**: Weather(날짜로 정해짐, 첫날은 맑음, 비 올 확률 약 1/3). 비 오는 날 WeatherEffects가 플레이어 위에 빗방울 파티클을 내리고 SkyController가 하늘, 해, 안개를 회색빛으로 어둡게 함(집 안에서는 빗방울 없음). 비가 온 날과 그다음 날(Weather.MushroomDay)에만 버섯(MaterialCondition.AfterRain) 픽업이 나타남. 아침에 날씨 알림 메시지. F9 키로 날씨를 맑음/비/날짜대로 바꿔 볼 수 있음(개발용).
 - **소리**: 소리 파일 없이 코드로 만든 소리(GameAudio). 낮/밤 배경 음악(시간에 따라 섞임, P 키로 켜기/끄기), 파도(바닷가에 가까울수록 큼), 바람, 낮의 새 소리, 밤의 풀벌레, 빗소리, 집 안 방 소리, 발소리, 효과음(줍기, 놓기, 빼기, 완성 종소리, 코인, 종이, 버튼). 진짜 소리 파일을 구하면 GameAudio의 clip만 바꿔 끼우면 됨.

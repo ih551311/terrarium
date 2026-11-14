@@ -41,6 +41,16 @@ public class WeatherEffects : MonoBehaviour
     {
         Outdoors = Terrain.activeTerrain != null;
 
+        // F9: 날씨를 바꿔 본다 (맑음 → 비 → 날짜대로). 개발할 때 비와 버섯을 바로 보려고 둔 키다.
+        UnityEngine.InputSystem.Keyboard keyboard = UnityEngine.InputSystem.Keyboard.current;
+        if (keyboard != null && keyboard.f9Key.wasPressedThisFrame)
+        {
+            Weather.Forced = Weather.Forced == null ? false : Weather.Forced == false ? (bool?)true : null;
+            string name = Weather.Forced == null ? "날짜대로" : Weather.Forced == true ? "비" : "맑음";
+            Interactor who = GameRoot.Instance != null && GameRoot.Instance.Player != null ? GameRoot.Instance.Player.GetComponentInChildren<Interactor>() : null;
+            if (who != null) who.ShowMessage("날씨: " + name + " (F9)");
+        }
+
         float target = Weather.RainToday ? 1f : 0f;
         Amount = Mathf.MoveTowards(Amount, target, Time.deltaTime * 0.2f); // 5초에 걸쳐 변한다
 
