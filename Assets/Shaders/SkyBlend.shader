@@ -12,6 +12,10 @@ Shader "유리병 정원/Sky Blend"
         _ExposureA ("낮 밝기", Range(0, 8)) = 1
         _ExposureB ("밤 밝기", Range(0, 8)) = 1
         _Blend ("섞기 (0 낮 ~ 1 밤)", Range(0, 1)) = 0
+        // 흐린 날: 하늘을 구름 낀 회색으로 덮는다. (색을 어둡게만 하면 짙은 남색이 되어 어색해서, 하늘 위쪽과 지평선 색을 따로 준다)
+        _Overcast ("흐림 (0 맑음 ~ 1 온통 구름)", Range(0, 1)) = 0
+        _CloudZenith ("구름 색 (머리 위)", Color) = (0.58, 0.62, 0.68, 1)
+        _CloudHorizon ("구름 색 (지평선)", Color) = (0.76, 0.78, 0.8, 1)
     }
 
     SubShader
@@ -37,6 +41,9 @@ Shader "유리병 정원/Sky Blend"
             half _ExposureA;
             half _ExposureB;
             half _Blend;
+            half _Overcast;
+            half4 _CloudZenith;
+            half4 _CloudHorizon;
 
             struct appdata_t
             {
@@ -66,7 +73,14 @@ Shader "유리병 정원/Sky Blend"
             {
                 half3 a = DecodeHDR(texCUBE(_TexA, i.texcoord), _TexA_HDR) * _TintA.rgb * unity_ColorSpaceDouble.rgb * _ExposureA;
                 half3 b = DecodeHDR(texCUBE(_TexB, i.texcoord), _TexB_HDR) * _TintB.rgb * unity_ColorSpaceDouble.rgb * _ExposureB;
-                return half4(lerp(a, b, _Blend), 1);
+                half3 sky = lerp(a, b, _Blend);
+
+                // 구름 낀 하늘: 지평선은 밝은 회색, 머리 위는 조금 짙은 회색. 원래 하늘의 밝고 어두움을 살짝 남겨서 밋밋하지 않게 한다.
+                half up = saturate(normalize(i.texcoord).y * 1.6);
+                half3 cloud = lerp(_CloudHorizon.rgb, _CloudZenith.rgb, up);
+                half luma = dot(a, half3(0.333, 0.333, 0.333));
+                cloud *= 0.88 + 0.24 * saturate(luma);
+                return half4(lerp(sky, cloud, _Overcast), 1);
             }
             ENDCG
         }

@@ -94,6 +94,14 @@ public class SkyController : MonoBehaviour
             skyInstance.SetColor("_TintB", neutral * weatherTint);
             skyInstance.SetFloat("_ExposureB", Mathf.Lerp(0.8f, 1f, night) * Mathf.Lerp(1f, weatherExposure, 0.7f));
             skyInstance.SetFloat("_Blend", night);
+
+            // 흐린 날은 하늘을 잿빛 구름으로 덮는다. 낮에는 밝은 회색, 노을에는 따뜻한 빛이 돌고, 밤에는 어둡다. 폭풍우는 더 짙다.
+            float cloudDay = Mathf.Max(0f, height) * (1f - night);
+            float cloudBright = Mathf.Lerp(1f, 0.5f, Mathf.InverseLerp(0.35f, 0.9f, dim)) * Mathf.Lerp(0.08f, 1f, cloudDay);
+            Color cloudWarm = Color.Lerp(Color.white, new Color(1f, 0.85f, 0.72f), warm * 0.8f);
+            skyInstance.SetFloat("_Overcast", Mathf.Clamp01(dim * 1.7f));
+            skyInstance.SetColor("_CloudZenith", new Color(0.58f, 0.62f, 0.68f) * cloudWarm * cloudBright);
+            skyInstance.SetColor("_CloudHorizon", new Color(0.78f, 0.8f, 0.82f) * cloudWarm * cloudBright);
         }
 
         // 해와 달빛

@@ -106,14 +106,35 @@ public class WeatherEffects : MonoBehaviour
         root.transform.SetParent(transform, false);
         manager = root.AddComponent<WeatherManager>();
         AddModule<GameWeatherModule>(root);
-        AddModule<RainModule>(root);
-        AddModule<SnowModule>(root);
+        // 빗줄기를 더 촘촘하고 가늘게 (기본값은 드문드문하고 긴 선이라 어색하다). 모듈이 켜질 때(Awake) 읽는 값이라 켜기 전에 맞춘다.
+        RainModule rainModule = AddModule<RainModule>(root);
+        SetField(rainModule, "maxEmissionRate", 1800);
+        SetField(rainModule, "spawnRadius", 16f);
+        SetField(rainModule, "spawnHeight", 11f);
+        SnowModule snowModule = AddModule<SnowModule>(root);
+        SetField(snowModule, "maxEmissionRate", 900);
         AddModule<WindModule>(root);
         AddModule<LightningModule>(root);
         AddModule<AudioModule>(root);
         root.SetActive(true);
 
         particleRenderers = root.GetComponentsInChildren<ParticleSystemRenderer>(true);
+        foreach (ParticleSystemRenderer pr in particleRenderers)
+        {
+            // 가까이 지나가는 빗방울이 화면을 가로지르는 굵은 막대로 보이지 않게 크기에 한계를 둔다
+            pr.maxParticleSize = 0.012f;
+            if (pr.renderMode == ParticleSystemRenderMode.Stretch)
+            {
+                pr.lengthScale = 0.8f;
+                pr.velocityScale = 0.035f;
+                ParticleSystem ps = pr.GetComponent<ParticleSystem>();
+                if (ps != null)
+                {
+                    var main = ps.main;
+                    main.startSize = new ParticleSystem.MinMaxCurve(0.008f, 0.016f); // 빗방울을 가늘게
+                }
+            }
+        }
 
         // 날씨 소리를 먹먹하게 만들 필터 (집 안용). 소리 재생 장치는 AudioModule이 Awake에서 만들었다.
         var filters = new System.Collections.Generic.List<AudioLowPassFilter>();
@@ -126,11 +147,18 @@ public class WeatherEffects : MonoBehaviour
         lowPass = filters.ToArray();
     }
 
-    private static void AddModule<T>(GameObject root) where T : WeatherModule
+    private static T AddModule<T>(GameObject root) where T : WeatherModule
     {
         GameObject go = new GameObject(typeof(T).Name);
         go.transform.SetParent(root.transform, false);
-        go.AddComponent<T>();
+        return go.AddComponent<T>();
+    }
+
+    /// <summary>모듈의 비공개 설정값(Inspector에 보이는 값)을 코드로 바꾼다.</summary>
+    private static void SetField(object target, string name, object value)
+    {
+        var field = target.GetType().GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        if (field != null) field.SetValue(target, value);
     }
 
     private void Announce()
