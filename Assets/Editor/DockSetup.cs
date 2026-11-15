@@ -55,7 +55,7 @@ public static class DockSetup
     /// </summary>
     public static GameObject Build(Transform parent, string name, Vector2 landPoint, Vector3 seaDir, bool needsPurchase,
                                    string targetScene, string spawnId, string travelLabel, out Vector3 landingSpot, float groundYAtLand, float length = 16f,
-                                   int dockId = 0, string islandName = "눈 섬", int cost = 150)
+                                   int dockId = 0, string islandName = "눈 섬", int cost = 150, bool hub = false)
     {
         Materials();
         PierLength = length;
@@ -81,6 +81,7 @@ public static class DockSetup
         so.FindProperty("cost").intValue = cost;
         so.FindProperty("dockId").intValue = dockId;
         so.FindProperty("islandName").stringValue = islandName;
+        so.FindProperty("hub").boolValue = hub;
         so.FindProperty("closedGroup").objectReferenceValue = needsPurchase ? closed : null;
         so.FindProperty("openGroup").objectReferenceValue = open;
         so.ApplyModifiedPropertiesWithoutUndo();
@@ -195,7 +196,7 @@ public static class DockSetup
         Terrain terrain = Terrain.activeTerrain;
         if (terrain == null) return "지형(Terrain)을 찾지 못했어요.";
 
-        foreach (string n in new[] { "MainDock", "Spawn_FromSnow" })
+        foreach (string n in new[] { "MainDock", "Spawn_FromSnow", "DesertDock", "Spawn_FromDesert" })
         {
             GameObject old = GameObject.Find(n);
             while (old != null) { Object.DestroyImmediate(old); old = GameObject.Find(n); }
@@ -253,14 +254,18 @@ public static class DockSetup
             }
             if (blocked) continue;
 
-            GameObject root = Build(null, "MainDock", land, new Vector3(dir.x, 0f, dir.y), true, "SnowIsland", "FromDock", "배 타고 눈 섬으로 가기", out Vector3 landing, landY, length);
+            GameObject root = Build(null, "MainDock", land, new Vector3(dir.x, 0f, dir.y), false, "SnowIsland", "FromDock", "배 타고 다른 섬으로 가기", out Vector3 landing, landY, length, 0, "눈 섬", 150, true);
             // 바닷가에 묻히지 않게: 땅 쪽 끝의 부두가 땅 위로 자연스럽게 이어진다 (윗면 0.75m, 땅 0.9m 이하)
-            GameObject spawn = new GameObject("Spawn_FromSnow");
-            spawn.transform.SetPositionAndRotation(landing, Quaternion.LookRotation(new Vector3(-dir.x, 0f, -dir.y)));
-            SpawnPoint sp = spawn.AddComponent<SpawnPoint>();
-            SerializedObject sps = new SerializedObject(sp);
-            sps.FindProperty("id").stringValue = "FromSnow";
-            sps.ApplyModifiedPropertiesWithoutUndo();
+            // 눈 섬과 사막 섬에서 돌아오면 같은 선착장에 선다
+            foreach (string spawnName in new[] { "FromSnow", "FromDesert" })
+            {
+                GameObject spawn = new GameObject("Spawn_" + spawnName);
+                spawn.transform.SetPositionAndRotation(landing, Quaternion.LookRotation(new Vector3(-dir.x, 0f, -dir.y)));
+                SpawnPoint sp = spawn.AddComponent<SpawnPoint>();
+                SerializedObject sps = new SerializedObject(sp);
+                sps.FindProperty("id").stringValue = spawnName;
+                sps.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             EditorSceneManager.SaveOpenScenes();
@@ -268,92 +273,5 @@ public static class DockSetup
             return "선착장을 만들었어요: 방향 " + angle + "도, 물가 (" + land.x.ToString("F0") + ", " + land.y.ToString("F0") + "), 도착 자리 " + landing + ", 부두 길이 " + length;
         }
         return "선착장을 놓을 빈 물가를 찾지 못했어요.";
-    }
-
-    /// <summary>
-    /// 원래 섬(Island)에 사막 섬으로 가는 두 번째 선착장을 만든다. 눈 섬 선착장(MainDock)과 떨어진 물가를 고르고,
-    /// 사막 섬에서 돌아왔을 때 서는 자리 Spawn_FromDesert도 함께 만든다. 처음에는 부서져 있고 250코인을 내고 고친다.
-    /// 메뉴: 유리병 정원 > 사막 선착장 만들기
-    /// </summary>
-    [MenuItem("유리병 정원/사막 선착장 만들기")]
-    public static string BuildDesertDock()
-    {
-        EditorSceneManager.SaveOpenScenes();
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != IslandPath)
-            EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
-
-        Terrain terrain = Terrain.activeTerrain;
-        if (terrain == null) return "지형(Terrain)을 찾지 못했어요.";
-
-        foreach (string n in new[] { "DesertDock", "Spawn_FromDesert" })
-        {
-            GameObject old = GameObject.Find(n);
-            while (old != null) { Object.DestroyImmediate(old); old = GameObject.Find(n); }
-        }
-        Physics.SyncTransforms();
-
-        Vector2 center = new Vector2(0f, 30f);
-        float avoid = float.NaN; // 눈 섬 선착장이 있는 방향은 피한다
-        GameObject main = GameObject.Find("MainDock");
-        if (main != null) avoid = Mathf.Atan2(main.transform.position.z - center.y, main.transform.position.x - center.x) * Mathf.Rad2Deg;
-
-        var order = new System.Collections.Generic.List<(float angle, float length)>();
-        for (float a = -180f; a < 180f; a += 12f)
-        {
-            if (!float.IsNaN(avoid) && Mathf.Abs(Mathf.DeltaAngle(a, avoid)) < 60f) continue;
-            Vector2 d0 = new Vector2(Mathf.Cos(a * Mathf.Deg2Rad), Mathf.Sin(a * Mathf.Deg2Rad));
-            float l0 = 99f; bool seenLand = false;
-            for (float r = 60f; r < 200f; r += 0.5f)
-            {
-                Vector2 p = center + d0 * r;
-                float h = terrain.SampleHeight(new Vector3(p.x, 0f, p.y)) + terrain.transform.position.y;
-                if (!seenLand && h <= 0.25f) { seenLand = true; l0 = r; }
-                if (seenLand && h <= -0.6f) { l0 = r - l0; break; }
-            }
-            order.Add((a, l0));
-        }
-        order.Sort((x, y) => x.length.CompareTo(y.length));
-        foreach (var candidate in order)
-        {
-            float angle = candidate.angle;
-            Vector2 dir = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
-            Vector2 land = Vector2.zero; float landY = 0f; bool found = false;
-            for (float r = 60f; r < 200f; r += 0.5f)
-            {
-                Vector2 p = center + dir * r;
-                float h = terrain.SampleHeight(new Vector3(p.x, 0f, p.y)) + terrain.transform.position.y;
-                if (h <= 0.25f) { land = p; landY = h; found = true; break; }
-            }
-            if (!found) continue;
-
-            float length = 16f;
-            for (float d = 0f; d < 60f; d += 0.5f)
-            {
-                Vector2 q = land + dir * d;
-                if (terrain.SampleHeight(new Vector3(q.x, 0f, q.y)) + terrain.transform.position.y <= -0.6f) { length = Mathf.Clamp(d + 3f, 14f, 36f); break; }
-            }
-            bool blocked = false;
-            for (float d = -6f; d < length && !blocked; d += 2f)
-            {
-                Vector2 p = land + dir * d;
-                float gy = terrain.SampleHeight(new Vector3(p.x, 0f, p.y)) + terrain.transform.position.y;
-                if (Physics.CheckSphere(new Vector3(p.x, Mathf.Max(gy, 0f) + 1.6f, p.y), 1.4f)) blocked = true;
-            }
-            if (blocked) continue;
-
-            Build(null, "DesertDock", land, new Vector3(dir.x, 0f, dir.y), true, "DesertIsland", "FromDock", "배 타고 사막 섬으로 가기", out Vector3 landing, landY, length, 1, "사막 섬", 250);
-            GameObject spawn = new GameObject("Spawn_FromDesert");
-            spawn.transform.SetPositionAndRotation(landing, Quaternion.LookRotation(new Vector3(-dir.x, 0f, -dir.y)));
-            SpawnPoint sp = spawn.AddComponent<SpawnPoint>();
-            SerializedObject sps = new SerializedObject(sp);
-            sps.FindProperty("id").stringValue = "FromDesert";
-            sps.ApplyModifiedPropertiesWithoutUndo();
-
-            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
-            EditorSceneManager.SaveOpenScenes();
-            AssetDatabase.SaveAssets();
-            return "사막 선착장을 만들었어요: 방향 " + angle + "도, 물가 (" + land.x.ToString("F0") + ", " + land.y.ToString("F0") + "), 부두 길이 " + length;
-        }
-        return "사막 선착장을 놓을 빈 물가를 찾지 못했어요.";
     }
 }

@@ -263,3 +263,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **사막 재료 14종**(`MaterialZone.Desert`, 사막 섬에서만 난다. 다른 섬의 도끼, 곡괭이에서는 안 나온다 - `ToolSettings.Roll`): 선인장(`cactus_piece`, 선인장을 도끼로), 대추야자(`date_fruit`, 야자나무를 도끼로) - 둘 다 나무마다 정해진 재료(`fixedMaterial`). 사암 조각, 사막 장미, 화석(희귀)은 바위를 곡괭이로. 선인장 꽃, 알로에, 마른 가지, 옛 도자기 조각(피라미드 근처), 풍뎅이(야영지에서 먼 곳)는 줍기. 낙타, 야자나무, 사막 천막, 작은 피라미드는 우체통 구매하기(26/18/20/30코인). 푸른 버섯과 번개 유리처럼 밤에 빛나는 재료는 아니다. 모델은 `PlantModelMaker.BuildDesertModels`(메뉴 사막 재료 모델 만들기).
 - 순서: 사막 에셋 재질 바꾸기 → 사막 재료 모델 만들기 → 장식 모델 가져오기 설정 → 재료 데이터 만들기 → 도구 설정 만들기 → 재료 아이콘 만들기 → 재료 목록 만들기 → 사막 선착장 만들기 → 사막 섬 만들기 → UI 만들기(Play 중에는 하지 않는다). `IslandSetup`의 재료 놓기는 `MaterialZone.Desert` 재료를 원래 섬에 놓지 않는다.
 - 아직 없는 것: 사막 전용 병 종류, 붉은 모래 바닥재.
+## 선착장 하나로 합침, 사막 섬 충돌과 높이 고침 (구현됨)
+- **선착장은 원래 섬에 하나**(`MainDock`, `Dock.hub`): E를 누르면 `DockPanel`(코드로 만든 창)이 열려 "어느 섬으로 갈까요?"를 고른다. 섬마다 따로 코인을 내고 열고(눈 섬 150, 사막 섬 250), 열린 섬은 "가기"로 이동한다. 새 섬을 더하려면 `DockPanel.Destinations`에 한 줄과 `GameState.IsDockOpen/OpenDock`에 열림 상태를 더한다. 사막 선착장(`DesertDock`)과 `DockSetup.BuildDesertDock`은 없앴다. 눈 섬과 사막 섬에서 돌아오면 원래 섬의 같은 선착장 앞(`Spawn_FromSnow`, `Spawn_FromDesert`)에 선다.
+- **사막 섬 충돌**: 천막, 낙타, 피라미드, 바위는 보이지 않는 상자 대신 모양 그대로의 `MeshCollider`(`AddMeshCollider`)를 쓴다. 선인장은 크기에 맞춘 캡슐이다.
+- **공중에 뜸 고침**: `DesertIslandSetup.Place`가 발밑 땅 여덟 곳 중 가장 낮은 곳에 맞춰 0.12m 묻는다. 모래 언덕 비탈에서도 한쪽이 뜨지 않는다.

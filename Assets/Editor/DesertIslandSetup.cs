@@ -405,7 +405,16 @@ public static class DesertIslandSetup
         float h0 = Mathf.Max(BoundsOf(go).size.y, 0.0001f);
         go.transform.localScale = Vector3.one * (targetHeight / h0);
         go.transform.position = pos;
-        go.transform.position += Vector3.up * (pos.y - BoundsOf(go).min.y - 0.03f);
+        // 발밑 땅이 가장 낮은 곳에 맞춰 살짝 묻는다 (비탈에서 한쪽이 공중에 뜨지 않게)
+        Bounds bb = BoundsOf(go);
+        float rad = Mathf.Clamp(0.35f * Mathf.Min(bb.extents.x, bb.extents.z), 0.4f, 3.5f);
+        float low = pos.y;
+        for (int i = 0; i < 8; i++)
+        {
+            float a = i * Mathf.PI / 4f;
+            low = Mathf.Min(low, GroundY(pos.x + Mathf.Cos(a) * rad, pos.z + Mathf.Sin(a) * rad));
+        }
+        go.transform.position += Vector3.up * (low - bb.min.y - 0.12f);
         return go;
     }
 
@@ -427,6 +436,16 @@ public static class DesertIslandSetup
         Vector3 s = go.transform.InverseTransformVector(b.size);
         box.size = new Vector3(Mathf.Abs(s.x), Mathf.Abs(s.y), Mathf.Abs(s.z)) * shrink;
         box.size = new Vector3(Mathf.Max(box.size.x, 0.1f), Mathf.Max(box.size.y, 0.1f), Mathf.Max(box.size.z, 0.1f));
+    }
+
+    /// <summary>모양 그대로의 충돌 (보이지 않는 상자에 막히지 않는다). 모델에 이미 충돌이 있는 부분은 건드리지 않는다.</summary>
+    private static void AddMeshCollider(GameObject go)
+    {
+        foreach (MeshFilter mf in go.GetComponentsInChildren<MeshFilter>())
+        {
+            if (mf.sharedMesh == null || mf.GetComponent<Collider>() != null) continue;
+            mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+        }
     }
 
     private static void AddTrunk(GameObject go, float radius, float height)
@@ -495,7 +514,7 @@ public static class DesertIslandSetup
             GameObject tent = Deco("deco_desert_tent", g, new Vector3(t.x, GroundY(t.x, t.y), t.y), yaw, 4.2f);
             if (tent == null) continue;
             tent.name = "Tent_" + i;
-            AddSolidBox(tent, 0.9f);
+            AddMeshCollider(tent);
             taken.Add(t);
         }
         GameObject fire = Deco("deco_campfire", g, new Vector3(0f, GroundY(0f, 0f), 0f), 0f, 1.1f);
@@ -508,7 +527,7 @@ public static class DesertIslandSetup
             GameObject camel = Deco("deco_camel", g, new Vector3(c.x, GroundY(c.x, c.y), c.y), Rand() * 360f, 2.6f);
             if (camel == null) continue;
             camel.name = "Camel_" + i;
-            AddSolidBox(camel, 0.8f);
+            AddMeshCollider(camel);
             taken.Add(c);
         }
     }
@@ -569,7 +588,7 @@ public static class DesertIslandSetup
         GameObject group = new GameObject("Ruins");
         group.transform.SetParent(parent, false);
         GameObject pyr = Deco("deco_pyramid", group.transform, new Vector3(Ruins.x, GroundY(Ruins.x, Ruins.y), Ruins.y), 20f, 18f);
-        if (pyr != null) { pyr.name = "Pyramid"; AddSolidBox(pyr, 0.85f); }
+        if (pyr != null) { pyr.name = "Pyramid"; AddMeshCollider(pyr); }
         // 피라미드 앞의 큰 바위 몇 개
         for (int i = 0; i < 5; i++)
         {
@@ -578,7 +597,7 @@ public static class DesertIslandSetup
             float x = Ruins.x + Mathf.Cos(ang) * rad, z = Ruins.y + Mathf.Sin(ang) * rad;
             if (HeightAt(x, z) < 1.2f) continue;
             GameObject rock = Asset("rock0" + (1 + i % 8) + "_m", group.transform, new Vector3(x, GroundY(x, z), z), Rand() * 360f, Range(3f, 4.5f));
-            if (rock != null) { AddSolidBox(rock, 0.8f); taken.Add(new Vector2(x, z)); }
+            if (rock != null) { AddMeshCollider(rock); taken.Add(new Vector2(x, z)); }
         }
     }
 
@@ -602,7 +621,8 @@ public static class DesertIslandSetup
             GameObject c = Asset(type, group.transform, new Vector3(q.x, GroundY(q.x, q.y), q.y), Rand() * 360f, Range(2.2f, 5.2f));
             if (c == null) continue;
             c.name = type + "_" + placed;
-            AddTrunk(c, 0.5f, 2.4f);
+            Bounds cb = BoundsOf(c);
+            AddTrunk(c, Mathf.Clamp(Mathf.Min(cb.extents.x, cb.extents.z) * 0.75f, 0.3f, 1.5f), Mathf.Min(cb.size.y, 3f));
             if (Rand() < 0.6f) AddHarvestable(c, AcquireMethod.Axe, new Color(0.62f, 0.58f, 0.44f, 1f), cactus);
             taken.Add(q);
             placed++;
@@ -623,7 +643,7 @@ public static class DesertIslandSetup
             GameObject r = Asset(type, group.transform, new Vector3(q.x, GroundY(q.x, q.y), q.y), Rand() * 360f, Range(1.0f, 2.8f));
             if (r == null) continue;
             r.name = type + "_" + placed;
-            AddSolidBox(r, 0.8f);
+            AddMeshCollider(r);
             // 바위는 곡괭이로 캘 수 있다 (사암 조각, 사막 장미, 가끔 화석). 캐면 색이 바랜다
             AddHarvestable(r, AcquireMethod.Pickaxe, new Color(0.60f, 0.56f, 0.50f, 1f));
             taken.Add(q);
