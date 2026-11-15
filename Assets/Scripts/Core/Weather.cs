@@ -23,7 +23,7 @@ public static class Weather
     public static WeatherKind? Forced;
 
     // 날씨마다 나올 가능성 (합계 100)
-    private static readonly int[] Weights = { 30, 14, 8, 11, 15, 6, 9, 7 };
+    private static readonly int[] Weights = { 28, 14, 10, 11, 15, 6, 9, 7 };
 
     /// <summary>새 날씨를 무작위로 뽑는다. yesterday, today가 같은 날씨였으면 그 날씨는 다시 뽑지 않는다(사흘 연속 방지).</summary>
     public static WeatherKind Roll(WeatherKind yesterday, WeatherKind today)
@@ -61,6 +61,16 @@ public static class Weather
 
     /// <summary>바닷가에 바다 유리가 밀려오는 날: 폭풍우가 치는 날과 그다음 날</summary>
     public static bool StormDay => Today == WeatherKind.Storm || (!Forced.HasValue && GameState.WeatherYesterday == WeatherKind.Storm);
+
+    /// <summary>무지개가 뜨는 날: 어제 비가 왔고 오늘은 맑거나 흐린 날 (바닷가에 무지개 조약돌이 나온다). 개발용 고정(F9) 중에는 맑음/흐림이면 된다.</summary>
+    public static bool RainbowDay
+    {
+        get
+        {
+            bool dry = Today == WeatherKind.Clear || Today == WeatherKind.Cloudy;
+            return dry && (Forced.HasValue || IsWet(GameState.WeatherYesterday));
+        }
+    }
 
     public static string NameOf(WeatherKind kind)
     {

@@ -54,7 +54,10 @@ public enum MaterialCondition
     AfterRain,
     SnowDay,    // 눈 오는 날에만
     FogDay,     // 안개 낀 날에만
-    AfterStorm  // 폭풍우가 지나간 다음 날(과 폭풍우 치는 날)
+    AfterStorm, // 폭풍우가 지나간 다음 날(과 폭풍우 치는 날)
+    WindDay,    // 바람 부는 날에만
+    StormOnly,  // 폭풍우 치는 날에만 (번개가 친 날)
+    RainbowDay  // 비가 그친 뒤 맑게 갠 날에만 (무지개가 뜨는 날)
 }
 
 /// <summary>

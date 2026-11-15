@@ -38,6 +38,9 @@ public class Pickup : MonoBehaviour, IInteractable
                 case MaterialCondition.SnowDay: return Weather.Today == WeatherKind.Snow;
                 case MaterialCondition.FogDay: return Weather.Today == WeatherKind.Fog;
                 case MaterialCondition.AfterStorm: return Weather.StormDay;
+                case MaterialCondition.WindDay: return Weather.Today == WeatherKind.Windy;
+                case MaterialCondition.StormOnly: return Weather.Today == WeatherKind.Storm;
+                case MaterialCondition.RainbowDay: return Weather.RainbowDay;
                 default: return true;
             }
         }

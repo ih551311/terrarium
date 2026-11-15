@@ -253,3 +253,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **병 버리기**: 병 꾸미기 화면의 "완성" 아래 분홍 "병 버리기" 버튼(`BottlePanel.OnCancelClicked`). 두 번 눌러야 지워진다(첫 클릭은 확인 문구). 만들 때 낸 코인(`BottleRecord.paidCoins`) 또는 공짜 병(`usedFree`)을 돌려주고, 병 안 재료와 바닥재는 가방으로 돌려준다(가방이 차면 우체통 도착함). 저장 파일에도 `paidCoins`, `usedFree`가 들어간다.
 - **병 종류**: 눈 구슬(snowglobe)은 없애고 **원기둥 병**(`cylinder`, 조금 넓은 원기둥, 10코인)으로 바꿨다. 키가 큰 병(`tall`)은 목록에서 뺐다(`BottleChooser.IsRetired`, 모델은 남아 있다). 가격: 6, 6, 10, 14, 10, 22.
 - **흙 옆면**: `SoilLook.Styled`가 윗면은 평면 UV, 옆면은 (각도×반지름, 높이) UV로 다시 만든다(이음새 정점 복제).
+## 날씨 재료 더 8종 (구현됨)
+- 날씨마다 나타나는 재료가 8종 늘었다. 모두 섬에 6곳씩 놓여 있고 그 날씨에만 보인다(`Pickup.ConditionMet`). **비 온 날과 그다음 날(숲)**: 빗물 이끼(`rain_moss`), 푸른 버섯(`blue_mushroom`, 밤에 병 속에서 푸르게 빛남), 청개구리(`tree_frog`). **안개 낀 날(숲)**: 이슬 거미줄(`spider_web`). **바람 부는 날(꽃 언덕)**: 바람 깃털(`wind_feather`), 민들레 홀씨(`dandelion_puff`). **폭풍우 치는 날(바닷가)**: 번개 유리(`lightning_glass`, 밤에 은은히 빛남). **비가 그친 뒤 맑거나 흐린 날(바닷가)**: 무지개 조약돌(`rainbow_pebble`).
+- `MaterialCondition`에 `WindDay`, `StormOnly`, `RainbowDay` 추가. `Weather.RainbowDay`(어제 비 + 오늘 맑음/흐림, F9로 고정했을 때는 맑음/흐림이면 true). 바람 날씨 확률을 8%에서 10%로, 맑음을 30%에서 28%로 바꿨다. 날씨 알림 문구(`WeatherEffects.Announce`)에 새 재료 힌트를 넣었다.
+- 모델은 `PlantModelMaker.BuildMoreWeatherModels`(메뉴 날씨 재료 모델 더 만들기), 아이콘은 `IconBaker`가 3D 모델에서 찍는다. 순서: 모델 → 장식 모델 가져오기 설정 → 재료 데이터 만들기 → 재료 아이콘 만들기 → 재료 목록 만들기 → 섬에 새 재료 놓기(Play 중에는 하지 않는다).

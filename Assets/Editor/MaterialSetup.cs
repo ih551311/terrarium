@@ -69,6 +69,15 @@ public static class MaterialSetup
         new Entry("dew_drop",         "이슬방울",   Deco,  "deco_dew_drop",        new Color(0.60f, 0.85f, 0.92f), Hill,  Hand, 4, 0, MaterialCondition.AfterRain),
         new Entry("sea_glass",        "바다 유리",  Deco,  "deco_sea_glass",       new Color(0.45f, 0.75f, 0.85f), Beach, Hand, 5, 0, MaterialCondition.AfterStorm),
         new Entry("firefly",          "반딧불이",   Deco,  "deco_firefly",         new Color(0.95f, 0.90f, 0.40f), MaterialZone.Anywhere, Hand, 8, 0, MaterialCondition.NightOnly),
+        // ── 날씨가 만드는 재료 더 8종: 비 온 뒤 숲(이끼, 푸른 버섯, 청개구리), 안개 낀 날 숲(이슬 거미줄), 바람 부는 날 꽃 언덕(깃털, 홀씨), 폭풍우 치는 날 바닷가(번개 유리), 비 갠 날 바닷가(무지개 조약돌)
+        new Entry("rain_moss",        "빗물 이끼",     Plant, "deco_rain_moss",       new Color(0.40f, 0.66f, 0.40f), Forest, Hand, 3, 0, MaterialCondition.AfterRain),
+        new Entry("blue_mushroom",    "푸른 버섯",     Deco,  "deco_blue_mushroom",   new Color(0.44f, 0.67f, 0.85f), Forest, Hand, 5, 0, MaterialCondition.AfterRain),
+        new Entry("tree_frog",        "청개구리",      Deco,  "deco_tree_frog",       new Color(0.45f, 0.70f, 0.42f), Forest, Hand, 7, 0, MaterialCondition.AfterRain),
+        new Entry("spider_web",       "이슬 거미줄",   Deco,  "deco_spider_web",      new Color(0.95f, 0.95f, 0.92f), Forest, Hand, 5, 0, MaterialCondition.FogDay),
+        new Entry("wind_feather",     "바람 깃털",     Deco,  "deco_wind_feather",    new Color(0.96f, 0.92f, 0.84f), Hill,   Hand, 4, 0, MaterialCondition.WindDay),
+        new Entry("dandelion_puff",   "민들레 홀씨",   Plant, "deco_dandelion_puff",  new Color(0.96f, 0.95f, 0.88f), Hill,   Hand, 4, 0, MaterialCondition.WindDay),
+        new Entry("lightning_glass",  "번개 유리",     Deco,  "deco_lightning_glass", new Color(0.80f, 0.92f, 0.95f), Beach,  Hand, 8, 0, MaterialCondition.StormOnly),
+        new Entry("rainbow_pebble",   "무지개 조약돌", Deco,  "deco_rainbow_pebble",  new Color(0.70f, 0.60f, 0.88f), Beach,  Hand, 6, 0, MaterialCondition.RainbowDay),
         // ── 눈 섬(SnowIsland)에서만 나는 재료 11종: 겨울 소품. 소나무(도끼), 눈 더미(곡괭이), 바닥(줍기)
         new Entry("pine_sprig",       "솔잎 가지",       Deco,  "deco_pine_sprig",      new Color(0.28f, 0.50f, 0.35f), Snow, Axe,  2),
         new Entry("snowy_pinecone",   "눈 덮인 솔방울",  Deco,  "deco_snowy_pinecone",  new Color(0.85f, 0.85f, 0.88f), Snow, Axe,  3),

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: dandelion_puff
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: dandelion_puff
+  displayName: "\uBBFC\uB4E4\uB808 \uD640\uC528"
+  kind: 0
+  icon: {fileID: 21300000, guid: 92d0782609fdfbd45872f94b19e84771, type: 3}
+  zone: 3
+  acquire: 0
+  condition: 6
+  isRare: 0
+  plantGroup: 0
+  sellPrice: 4
+  buyPrice: 0
+  placedPrefab: {fileID: 919132149155446097, guid: 72a1b35b5c3556146baed181b9e2d392, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.96, g: 0.95, b: 0.88, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

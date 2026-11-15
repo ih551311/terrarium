@@ -314,6 +314,225 @@ public static class PlantModelMaker
         b.Write("deco_sea_glass");
     }
 
+    // ───────── 날씨 재료 더 8종 ─────────
+
+    /// <summary>날씨 재료 8종 더: 빗물 이끼, 푸른 버섯, 청개구리(비 온 뒤 숲), 이슬 거미줄(안개 낀 날 숲), 바람 깃털, 민들레 홀씨(바람 부는 날 꽃 언덕), 번개 유리(폭풍우 치는 날 바닷가), 무지개 조약돌(비 갠 날 바닷가).</summary>
+    [MenuItem("유리병 정원/날씨 재료 모델 더 만들기")]
+    public static string BuildMoreWeatherModels()
+    {
+        RainMoss(); BlueMushroom(); TreeFrog(); SpiderWeb(); WindFeather(); DandelionPuff(); LightningGlass(); RainbowPebble();
+        AssetDatabase.Refresh();
+        return "날씨 재료 모델 8종을 더 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
+    }
+
+    /// <summary>얇은 끈 하나 (거미줄). side는 끈이 놓인 면 안에서 끈과 직각인 방향이라 앞에서 보면 선으로 보인다.</summary>
+    private static void Strand(Vector3 p0, Vector3 p1, float width, int color)
+    {
+        Vector3 side = Vector3.Cross(p1 - p0, Vector3.forward).normalized * width * 0.5f;
+        b.DoubleTri(p0 + side, p1 + side, p1 - side, color);
+        b.DoubleTri(p0 + side, p1 - side, p0 - side, color);
+    }
+
+    /// <summary>띠마다 색이 다른 타원체 (무지개 조약돌). 위에서부터 한 줄(ring)씩 cols의 색을 쓴다.</summary>
+    private static void BandBlob(Vector3 c, Vector3 r, int rings, int sec, int[] cols)
+    {
+        Vector3 P(int i, int j)
+        {
+            float th = Mathf.PI * i / rings, ph = Mathf.PI * 2f * j / sec;
+            return c + new Vector3(r.x * Mathf.Sin(th) * Mathf.Cos(ph), r.y * Mathf.Cos(th), r.z * Mathf.Sin(th) * Mathf.Sin(ph));
+        }
+        for (int i = 0; i < rings; i++)
+            for (int j = 0; j < sec; j++)
+                b.Quad(P(i, j), P(i, j + 1), P(i + 1, j + 1), P(i + 1, j), cols[i % cols.Length], c);
+    }
+
+    private static void RainMoss()
+    {
+        b = new Builder();
+        // 비를 머금은 이끼 방석: 초록 덩어리 여러 개가 겹치고, 꼭대기마다 물방울이 맺혀 있다
+        Blob(new Vector3(0f, 0.0060f, 0f), new Vector3(0.0200f, 0.0075f, 0.0160f), 3, 8, Moss);
+        Blob(new Vector3(0.0120f, 0.0050f, 0.0060f), new Vector3(0.0110f, 0.0060f, 0.0090f), 3, 7, Green);
+        Blob(new Vector3(-0.0110f, 0.0045f, 0.0070f), new Vector3(0.0100f, 0.0055f, 0.0080f), 3, 7, LightGreen);
+        Blob(new Vector3(-0.0020f, 0.0125f, -0.0040f), new Vector3(0.0110f, 0.0055f, 0.0090f), 3, 7, Leaf);
+        Blob(new Vector3(0.0070f, 0.0115f, 0.0070f), new Vector3(0.0070f, 0.0045f, 0.0060f), 3, 6, LightGreen);
+        Blob(new Vector3(-0.0040f, 0.0172f, -0.0040f), new Vector3(0.0024f, 0.0026f, 0.0024f), 2, 5, Cyan);
+        Blob(new Vector3(0.0090f, 0.0150f, 0.0080f), new Vector3(0.0020f, 0.0022f, 0.0020f), 2, 5, Pale);
+        Blob(new Vector3(-0.0100f, 0.0100f, 0.0060f), new Vector3(0.0020f, 0.0022f, 0.0020f), 2, 5, SkyBlue);
+        Blob(new Vector3(0.0150f, 0.0105f, 0.0020f), new Vector3(0.0019f, 0.0020f, 0.0019f), 2, 5, Cyan);
+        // 가는 포자 줄기 몇 가닥
+        for (int i = 0; i < 4; i++)
+        {
+            Vector3 foot = new Vector3(-0.007f + i * 0.0055f, 0.011f, -0.007f + (i % 2) * 0.004f);
+            Frustum(b, foot, foot + new Vector3(0.001f * (i - 1.5f), 0.008f, 0f), 0.0005f, 0.0004f, 4, DeepGreen);
+            Blob(foot + new Vector3(0.0015f * (i - 1.5f), 0.0095f, 0f), new Vector3(0.0018f, 0.0020f, 0.0018f), 2, 5, i % 2 == 0 ? Pink : Pale);
+        }
+        b.Write("deco_rain_moss");
+    }
+
+    private static void BlueMushroomOne(Vector3 baseP, float stemH, float stemR, float capR, int cap, int spot)
+    {
+        Frustum(b, baseP, baseP + Vector3.up * stemH, stemR, stemR * 0.75f, 6, Cream);
+        Vector3 c = baseP + Vector3.up * (stemH + capR * 0.12f);
+        Blob(c, new Vector3(capR, capR * 0.6f, capR), 4, 8, cap);
+        for (int k = 0; k < 3; k++)
+        {
+            Vector3 d = Radial(k * 2.1f + baseP.x * 80f);
+            Blob(c + d * capR * 0.52f + Vector3.up * capR * 0.42f, new Vector3(capR * 0.2f, capR * 0.12f, capR * 0.2f), 2, 5, spot);
+        }
+    }
+
+    private static void BlueMushroom()
+    {
+        b = new Builder();
+        BlueMushroomOne(new Vector3(0f, 0f, 0f), 0.021f, 0.0030f, 0.0150f, Teal, Pale);
+        BlueMushroomOne(new Vector3(0.0170f, 0f, 0.0060f), 0.012f, 0.0022f, 0.0092f, SkyBlue, Ice);
+        BlueMushroomOne(new Vector3(-0.0130f, 0f, 0.0100f), 0.009f, 0.0018f, 0.0072f, Teal, Ice);
+        b.Write("deco_blue_mushroom");
+    }
+
+    private static void TreeFrog()
+    {
+        b = new Builder();
+        // 앞(+x)을 보고 앉은 청개구리
+        Blob(new Vector3(0f, 0.0085f, 0f), new Vector3(0.0115f, 0.0075f, 0.0105f), 4, 8, Green);
+        Blob(new Vector3(0.0020f, 0.0045f, 0f), new Vector3(0.0090f, 0.0035f, 0.0085f), 3, 8, Cream);                 // 배
+        Blob(new Vector3(0.0095f, 0.0105f, 0f), new Vector3(0.0062f, 0.0055f, 0.0072f), 3, 8, Green);                  // 머리
+        for (int s = -1; s <= 1; s += 2)
+        {
+            Blob(new Vector3(0.0100f, 0.0158f, 0.0046f * s), new Vector3(0.0024f, 0.0024f, 0.0024f), 3, 6, White);     // 눈
+            Blob(new Vector3(0.0120f, 0.0160f, 0.0046f * s), new Vector3(0.0013f, 0.0016f, 0.0013f), 2, 5, Dark);      // 눈동자
+            Blob(new Vector3(0.0075f, 0.0025f, 0.0078f * s), new Vector3(0.0045f, 0.0025f, 0.0022f), 2, 6, LightGreen); // 앞다리
+            Blob(new Vector3(0.0105f, 0.0016f, 0.0092f * s), new Vector3(0.0030f, 0.0014f, 0.0030f), 2, 6, LightGreen); // 앞발
+            Blob(new Vector3(-0.0070f, 0.0040f, 0.0100f * s), new Vector3(0.0085f, 0.0040f, 0.0034f), 3, 6, Green);    // 뒷다리
+            Blob(new Vector3(0.0000f, 0.0016f, 0.0115f * s), new Vector3(0.0050f, 0.0016f, 0.0034f), 2, 6, LightGreen); // 뒷발
+            Blob(new Vector3(0.0125f, 0.0085f, 0.0050f * s), new Vector3(0.0018f, 0.0018f, 0.0018f), 2, 5, Coral);      // 볼
+        }
+        Blob(new Vector3(0.0010f, 0.0145f, 0.0030f), new Vector3(0.0020f, 0.0010f, 0.0020f), 2, 5, LightGreen);        // 등 얼룩
+        Blob(new Vector3(-0.0030f, 0.0140f, -0.0030f), new Vector3(0.0022f, 0.0010f, 0.0022f), 2, 5, DeepGreen);
+        b.Write("deco_tree_frog");
+    }
+
+    private static void SpiderWeb()
+    {
+        b = new Builder();
+        // 나뭇가지 두 개 사이에 걸린 거미줄. 줄마다 이슬이 맺혀 있다 (앞에서 볼 때 가장 예쁘다)
+        Vector3 c = new Vector3(0f, 0.027f, 0f);
+        Frustum(b, new Vector3(-0.0215f, 0f, 0f), new Vector3(-0.0185f, 0.044f, 0f), 0.0017f, 0.0011f, 5, Brown);
+        Frustum(b, new Vector3(0.0215f, 0f, 0f), new Vector3(0.0185f, 0.044f, 0f), 0.0017f, 0.0011f, 5, Brown);
+        const float R = 0.0165f;
+        const int spokes = 8;
+        for (int i = 0; i < spokes; i++)
+        {
+            float a = Mathf.PI * 2f * i / spokes;
+            Strand(c, c + new Vector3(Mathf.Cos(a) * R, Mathf.Sin(a) * R, 0f), 0.0011f, White);
+        }
+        float[] rings = { 0.30f, 0.55f, 0.80f, 1.0f };
+        for (int rg = 0; rg < rings.Length; rg++)
+            for (int i = 0; i < spokes; i++)
+            {
+                float a0 = Mathf.PI * 2f * i / spokes, a1 = Mathf.PI * 2f * (i + 1) / spokes;
+                float rr = R * rings[rg];
+                Strand(c + new Vector3(Mathf.Cos(a0) * rr, Mathf.Sin(a0) * rr, 0f), c + new Vector3(Mathf.Cos(a1) * rr, Mathf.Sin(a1) * rr, 0f), 0.0009f, Pale);
+            }
+        // 가지에 거는 줄
+        Strand(c + new Vector3(R, 0f, 0f), new Vector3(0.0198f, 0.030f, 0f), 0.0011f, White);
+        Strand(c + new Vector3(-R, 0f, 0f), new Vector3(-0.0198f, 0.030f, 0f), 0.0011f, White);
+        // 이슬
+        for (int i = 0; i < spokes; i += 2)
+        {
+            float a = Mathf.PI * 2f * (i + 0.5f) / spokes + 0.2f;
+            float rr = R * (i % 4 == 0 ? 0.80f : 0.55f);
+            Blob(c + new Vector3(Mathf.Cos(a) * rr, Mathf.Sin(a) * rr, 0f), new Vector3(0.0019f, 0.0022f, 0.0019f), 2, 5, i % 4 == 0 ? Cyan : Ice);
+        }
+        Blob(c + new Vector3(0.0035f, -0.0050f, 0f), new Vector3(0.0022f, 0.0026f, 0.0022f), 2, 5, Cyan);
+        b.Write("deco_spider_web");
+    }
+
+    private static void WindFeather()
+    {
+        b = new Builder();
+        // 바람에 날려 온 깃털 한 장이 흙에 꽂힌 모습: 살짝 휜 깃대와 양쪽의 깃
+        Vector3 Pt(float t) => new Vector3(0.012f * t * t, 0.048f * t, 0f);
+        const int segs = 8;
+        for (int i = 0; i < segs; i++)
+            Frustum(b, Pt(i / (float)segs), Pt((i + 1) / (float)segs), 0.0011f * (1f - i / (float)segs * 0.7f), 0.0011f * (1f - (i + 1) / (float)segs * 0.7f), 4, i < 2 ? Cream : Tan);
+        int[] cols = { Cream, White, Sand, White };
+        for (int s = -1; s <= 1; s += 2)
+        {
+            for (int i = 2; i < segs; i++)
+            {
+                float t0 = i / (float)segs, t1 = (i + 1) / (float)segs;
+                float w0 = Mathf.Sin(Mathf.PI * (t0 - 0.2f) / 0.82f) * 0.0085f, w1 = Mathf.Sin(Mathf.PI * Mathf.Min(t1 - 0.2f, 0.82f) / 0.82f) * 0.0085f;
+                Vector3 a0 = Pt(t0), a1 = Pt(t1);
+                Vector3 e0 = a0 + new Vector3(s * w0, 0.0040f, 0f), e1 = a1 + new Vector3(s * w1, 0.0040f, 0f); // 깃이 앞(-z)에서 넓게 보이도록 좌우(x)로 편다
+                int col = cols[i % cols.Length];
+                b.DoubleTri(a0, a1, e1, col);
+                b.DoubleTri(a0, e1, e0, col);
+            }
+            // 깃털 끝으로 모이는 뾰족한 끝
+            b.DoubleTri(Pt(1f) + new Vector3(0f, 0.002f, 0f), Pt(0.9f) + new Vector3(s * 0.0010f, 0.0040f, 0f), Pt(0.9f), Cream);
+        }
+        // 깃털에 묻은 작은 하늘빛 줄무늬
+        Blob(Pt(0.55f) + new Vector3(0.0050f, 0.0020f, -0.0006f), new Vector3(0.0016f, 0.0016f, 0.0010f), 2, 5, SkyBlue);
+        Blob(Pt(0.55f) + new Vector3(-0.0050f, 0.0020f, -0.0006f), new Vector3(0.0016f, 0.0016f, 0.0010f), 2, 5, SkyBlue);
+        b.Write("deco_wind_feather");
+    }
+
+    private static void DandelionPuff()
+    {
+        b = new Builder();
+        // 솜털 공이 된 민들레 홀씨: 줄기 끝에 씨앗 십여 개가 공처럼 퍼져 있다
+        Frustum(b, Vector3.zero, new Vector3(0f, 0.032f, 0f), 0.0013f, 0.0011f, 5, Green);
+        Blade(new Vector3(0f, 0.001f, 0f), new Vector3(1f, 0f, 0.3f), 0.016f, 0.0065f, Leaf);
+        Blade(new Vector3(0f, 0.001f, 0f), new Vector3(-0.9f, 0f, -0.4f), 0.013f, 0.0055f, Green);
+        Vector3 c = new Vector3(0f, 0.040f, 0f);
+        Blob(c, new Vector3(0.0036f, 0.0036f, 0.0036f), 2, 6, Tan);
+        const int n = 18;
+        for (int i = 0; i < n; i++)
+        {
+            float y = 1f - 2f * (i + 0.5f) / n;
+            float rad = Mathf.Sqrt(1f - y * y), ph = i * 2.39996f;
+            Vector3 d = new Vector3(Mathf.Cos(ph) * rad, y, Mathf.Sin(ph) * rad);
+            Frustum(b, c + d * 0.0030f, c + d * 0.0140f, 0.00040f, 0.00025f, 3, i % 3 == 0 ? Cream : Pale);
+            Blob(c + d * 0.0148f, new Vector3(0.0022f, 0.0016f, 0.0022f), 2, 5, White);
+        }
+        b.Write("deco_dandelion_puff");
+    }
+
+    private static void LightningGlass()
+    {
+        b = new Builder();
+        // 번개가 모래에 내리꽂혀 녹아 굳은 유리관(섬전암): 지그재그 줄기와 곁가지
+        Vector3[] p =
+        {
+            new Vector3(0.0000f, 0.000f, 0.000f), new Vector3(0.0040f, 0.011f, 0.0020f), new Vector3(-0.0030f, 0.022f, 0.0010f),
+            new Vector3(0.0035f, 0.033f, -0.0020f), new Vector3(-0.0005f, 0.045f, 0.0020f)
+        };
+        for (int i = 0; i < p.Length - 1; i++)
+        {
+            float r0 = 0.0050f * (1f - i * 0.18f), r1 = 0.0050f * (1f - (i + 1) * 0.18f);
+            Frustum(b, p[i], p[i + 1], r0, r1, 5, i % 2 == 0 ? Ice : Pale, Sand);
+            Blob(p[i + 1], new Vector3(r1 * 1.35f, r1 * 0.9f, r1 * 1.35f), 2, 5, Sand);                    // 모래가 달라붙은 마디
+        }
+        Frustum(b, p[1], new Vector3(0.0160f, 0.020f, 0.0010f), 0.0026f, 0.0013f, 4, Ice, Sand);
+        Blob(new Vector3(0.0165f, 0.0205f, 0.0010f), new Vector3(0.0020f, 0.0016f, 0.0020f), 2, 5, Pale);
+        Frustum(b, p[2], new Vector3(-0.0150f, 0.030f, 0.0040f), 0.0024f, 0.0012f, 4, Pale, Sand);
+        Blob(new Vector3(-0.0155f, 0.0305f, 0.0040f), new Vector3(0.0018f, 0.0015f, 0.0018f), 2, 5, Ice);
+        Blob(new Vector3(0f, 0.0015f, 0f), new Vector3(0.0105f, 0.0030f, 0.0095f), 3, 7, Sand);            // 밑동의 모래 덩어리
+        Blob(p[4] + new Vector3(0f, 0.0020f, 0f), new Vector3(0.0022f, 0.0030f, 0.0022f), 2, 5, Yellow);   // 끝에 남은 번갯불 색
+        b.Write("deco_lightning_glass");
+    }
+
+    private static void RainbowPebble()
+    {
+        b = new Builder();
+        // 무지개 빛깔 띠가 둘러진 매끈한 조약돌 (띠가 비스듬히 지나가게 기울여 만든다)
+        b.xf = Matrix4x4.TRS(new Vector3(0f, 0.0115f, 0f), Quaternion.Euler(0f, 0f, 28f), Vector3.one);
+        BandBlob(Vector3.zero, new Vector3(0.0170f, 0.0105f, 0.0130f), 6, 10, new[] { Red, Carrot, Yellow, Green, SkyBlue, Purple });
+        b.xf = Matrix4x4.identity;
+        b.Write("deco_rainbow_pebble");
+    }
+
     // ───────── 눈 섬 재료 11종 ─────────
 
     private const int Carrot = 15;
