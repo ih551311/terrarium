@@ -162,6 +162,18 @@ public static class GameState
     /// <summary>선착장을 열었는가 (코인을 내고 고치면 눈 섬으로 가는 배를 탈 수 있다)</summary>
     public static bool DockOpen { get; private set; }
 
+    /// <summary>사막 섬 선착장을 열었는가</summary>
+    public static bool DesertDockOpen { get; private set; }
+
+    /// <summary>번호로 선착장이 열렸는지 묻는다 (0 눈 섬, 1 사막 섬)</summary>
+    public static bool IsDockOpen(int dockId) => dockId == 1 ? DesertDockOpen : DockOpen;
+
+    public static void OpenDock(int dockId)
+    {
+        if (dockId == 1) DesertDockOpen = true; else DockOpen = true;
+        Changed?.Invoke();
+    }
+
     public static void OpenDock()
     {
         DockOpen = true;
@@ -356,6 +368,7 @@ public static class GameState
         data.lastRequestId = LastRequestId;
         data.requestsDone = RequestsDone;
         data.dockOpen = DockOpen;
+        data.desertDockOpen = DesertDockOpen;
         foreach (string id in taken) data.taken.Add(id);
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
@@ -392,6 +405,7 @@ public static class GameState
         LastRequestId = data.lastRequestId;
         RequestsDone = data.requestsDone;
         DockOpen = data.dockOpen;
+        DesertDockOpen = data.desertDockOpen;
 
         outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
         if (data.taken != null) foreach (string id in data.taken) taken.Add(id);
@@ -427,6 +441,7 @@ public static class GameState
         RequestsDone = 0;
         NewRequestToday = false;
         DockOpen = false;
+        DesertDockOpen = false;
         DayStarted = null;
         Day = 1;
         Coins = 0;

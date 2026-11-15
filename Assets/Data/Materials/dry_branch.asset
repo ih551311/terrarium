@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: dry_branch
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: dry_branch
+  displayName: "\uB9C8\uB978 \uAC00\uC9C0"
+  kind: 1
+  icon: {fileID: 21300000, guid: f4af2c7fe92a9414b8318cff1fd9fe29, type: 3}
+  zone: 6
+  acquire: 0
+  condition: 0
+  isRare: 0
+  plantGroup: 0
+  sellPrice: 2
+  buyPrice: 0
+  placedPrefab: {fileID: 919132149155446097, guid: d8896dafcc6efd94c9f6be0ab4ddb767, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.76, g: 0.65, b: 0.48, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

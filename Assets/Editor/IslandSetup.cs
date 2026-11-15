@@ -857,7 +857,7 @@ public static class IslandSetup
         {
             MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(AssetDatabase.GUIDToAssetPath(guid));
             // 상점 품목과 희귀 재료는 섬에 놓지 않는다 (희귀 재료는 도끼와 곡괭이로 칠 때 나온다)
-            if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Snow || data.zone == MaterialZone.Anywhere || data.isRare) continue;
+            if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Snow || data.zone == MaterialZone.Desert || data.zone == MaterialZone.Anywhere || data.isRare) continue;
             // 도끼와 곡괭이로 얻는 재료는 바닥에 놓지 않고, 나무와 돌(Harvestable)에서 나온다. 괭이로 캐는 재료(Hoe)는 풀과 꽃(Harvestable)에서 나온다.
             if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe || data.acquire == AcquireMethod.Hoe) continue;
 
@@ -905,7 +905,7 @@ public static class IslandSetup
         foreach (string guid in AssetDatabase.FindAssets("t:MaterialData", new[] { MaterialFolder }))
         {
             MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(AssetDatabase.GUIDToAssetPath(guid));
-            if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Snow || data.zone == MaterialZone.Anywhere || data.isRare) continue;
+            if (data.zone == MaterialZone.Shop || data.zone == MaterialZone.Snow || data.zone == MaterialZone.Desert || data.zone == MaterialZone.Anywhere || data.isRare) continue;
             if (data.acquire == AcquireMethod.Axe || data.acquire == AcquireMethod.Pickaxe || data.acquire == AcquireMethod.Hoe) continue;
             if (group.Find("Pickup_" + data.id + "_0") != null) continue; // 이미 있다
 

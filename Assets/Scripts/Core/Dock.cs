@@ -14,13 +14,16 @@ public class Dock : MonoBehaviour, IInteractable
     [SerializeField] private string travelLabel = "배 타고 눈 섬으로 가기";
     [SerializeField] private bool needsPurchase = true;
     [SerializeField] private int cost = 150;
+    [Tooltip("몇 번 선착장인가 (0 눈 섬, 1 사막 섬). 열렸는지는 이 번호로 저장된다")]
+    [SerializeField] private int dockId;
+    [SerializeField] private string islandName = "눈 섬";
 
     [Tooltip("부서진 선착장 모습 (고치기 전에만 보인다)")]
     [SerializeField] private GameObject closedGroup;
     [Tooltip("고친 선착장 모습: 긴 부두와 배 (고친 뒤에 보인다)")]
     [SerializeField] private GameObject openGroup;
 
-    public bool IsOpen => !needsPurchase || GameState.DockOpen;
+    public bool IsOpen => !needsPurchase || GameState.IsDockOpen(dockId);
     public int Cost => cost;
 
     public string Prompt => IsOpen ? "[E] " + travelLabel : "[E] 부서진 선착장 고치기 (" + cost + "코인)";
@@ -46,9 +49,9 @@ public class Dock : MonoBehaviour, IInteractable
             return;
         }
 
-        GameState.OpenDock();
+        GameState.OpenDock(dockId);
         GameAudio.Play(GameAudio.Sfx.Coin, 1f);
-        who.ShowMessage("선착장을 고쳤어요! 이제 배를 타고 눈 섬에 갈 수 있어요");
+        who.ShowMessage("선착장을 고쳤어요! 이제 배를 타고 " + islandName + "에 갈 수 있어요");
         if (GameRoot.Instance != null) GameRoot.Instance.SaveNow();
     }
 }

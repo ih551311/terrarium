@@ -27,6 +27,7 @@ public class SaveData
     public int lastRequestId = -1;                        // 바로 전에 받은 편지 번호 (같은 편지가 연달아 오지 않게)
     public int requestsDone;                              // 지금까지 들어준 병 주문 수
     public bool dockOpen;                                 // 선착장을 코인으로 열었는가 (눈 섬으로 가는 배)
+    public bool desertDockOpen;                           // 사막 섬 선착장을 코인으로 열었는가
 
     // 우체통: 보낸 재료, 주문한 물건, 도착해서 받기를 기다리는 물건
     public List<string> outbox = new List<string>();

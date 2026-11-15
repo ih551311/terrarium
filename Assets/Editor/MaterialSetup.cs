@@ -35,7 +35,7 @@ public static class MaterialSetup
 
     private const MaterialKind Plant = MaterialKind.Plant;
     private const MaterialKind Deco = MaterialKind.Decoration;
-    private const MaterialZone Forest = MaterialZone.Forest, Beach = MaterialZone.Beach, Hill = MaterialZone.FlowerHill, Shop = MaterialZone.Shop, Snow = MaterialZone.Snow;
+    private const MaterialZone Forest = MaterialZone.Forest, Beach = MaterialZone.Beach, Hill = MaterialZone.FlowerHill, Shop = MaterialZone.Shop, Snow = MaterialZone.Snow, Desert = MaterialZone.Desert;
     private const AcquireMethod Hand = AcquireMethod.Hand, Axe = AcquireMethod.Axe, Pick = AcquireMethod.Pickaxe, Buy = AcquireMethod.Shop, Hoe = AcquireMethod.Hoe;
 
     // model은 Assets/Models/Deco 안의 파일 이름(확장자 없이). 가격은 모두 임시 값이다.
@@ -90,7 +90,21 @@ public static class MaterialSetup
         new Entry("mini_snowman",     "미니 눈사람",     Deco,  "deco_mini_snowman",    new Color(0.95f, 0.97f, 1.00f), Snow, Hand, 8),       // 눈 섬의 눈사람을 곡괭이로 캐서 얻는다 (Harvestable.fixedMaterial)
         new Entry("winter_bell",      "겨울 방울",       Deco,  "deco_winter_bell",     new Color(0.93f, 0.75f, 0.25f), Snow, Hand, 6),
         new Entry("mitten",           "벙어리장갑",      Deco,  "deco_mitten",          new Color(0.85f, 0.25f, 0.25f), Shop, Buy, 5, 14),   // 눈 섬에서 줍지 않고 우체통에서 산다
-        // ── 섬의 풀과 꽃을 괭이로 캐면 무작위로 나오는 재료들 (따로 놓인 자리는 없다. 괭이로 풀은 풀 재료, 꽃은 꽃 재료가 나온다)
+        // ── 사막 섬(DesertIsland)에서만 나는 재료 14종: 선인장과 야자나무(도끼, 하나씩 정해져 있다), 바위(곡괭이), 바닥(줍기). 낙타, 야자나무, 천막, 피라미드는 우체통에서 산다
+        new Entry("cactus_piece",     "선인장",          Plant, "deco_cactus_piece",    new Color(0.45f, 0.70f, 0.42f), Desert, Axe,  3),
+        new Entry("date_fruit",       "대추야자",        Plant, "deco_date_fruit",      new Color(0.60f, 0.35f, 0.20f), Desert, Axe,  4),
+        new Entry("sandstone",        "사암 조각",       Deco,  "deco_sandstone",       new Color(0.85f, 0.72f, 0.52f), Desert, Pick, 2),
+        new Entry("desert_rose",      "사막 장미",       Deco,  "deco_desert_rose",     new Color(0.96f, 0.82f, 0.76f), Desert, Pick, 5),
+        new Entry("fossil",           "화석",            Deco,  "deco_fossil",          new Color(0.76f, 0.65f, 0.48f), Desert, Pick, 20, 0, MaterialCondition.Always, true),
+        new Entry("cactus_flower",    "선인장 꽃",       Plant, "deco_cactus_flower",   new Color(0.96f, 0.68f, 0.75f), Desert, Hand, 4),
+        new Entry("aloe_leaf",        "알로에",          Plant, "deco_aloe_leaf",       new Color(0.45f, 0.70f, 0.42f), Desert, Hand, 3),
+        new Entry("dry_branch",       "마른 가지",       Deco,  "deco_dry_branch",      new Color(0.76f, 0.65f, 0.48f), Desert, Hand, 2),
+        new Entry("pottery_shard",    "옛 도자기 조각",  Deco,  "deco_pottery_shard",   new Color(0.81f, 0.40f, 0.36f), Desert, Hand, 6),
+        new Entry("scarab",           "풍뎅이",          Deco,  "deco_scarab",          new Color(0.44f, 0.67f, 0.85f), Desert, Hand, 6),
+        new Entry("camel",            "낙타",            Deco,  "deco_camel",           new Color(0.77f, 0.61f, 0.44f), Shop, Buy, 5, 26),
+        new Entry("palm_tree",        "야자나무",        Deco,  "deco_palm_tree",       new Color(0.45f, 0.70f, 0.42f), Shop, Buy, 4, 18),
+        new Entry("desert_tent",      "사막 천막",       Deco,  "deco_desert_tent",     new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 4, 20),
+        new Entry("pyramid",          "작은 피라미드",   Deco,  "deco_pyramid",         new Color(0.93f, 0.82f, 0.60f), Shop, Buy, 6, 30),        // ── 섬의 풀과 꽃을 괭이로 캐면 무작위로 나오는 재료들 (따로 놓인 자리는 없다. 괭이로 풀은 풀 재료, 꽃은 꽃 재료가 나온다)
         new Entry("tulip",            "튤립",       Plant, "deco_tulip",           new Color(0.85f, 0.35f, 0.40f), Hill,  Hoe, 3),
         new Entry("sunflower",        "해바라기",   Plant, "deco_sunflower",       new Color(0.97f, 0.80f, 0.20f), Hill,  Hoe, 15, 0, MaterialCondition.Always, true),
         new Entry("lavender",         "라벤더",     Plant, "deco_lavender",        new Color(0.70f, 0.60f, 0.88f), Hill,  Hoe, 3),

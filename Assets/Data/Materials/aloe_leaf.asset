@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: aloe_leaf
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: aloe_leaf
+  displayName: "\uC54C\uB85C\uC5D0"
+  kind: 0
+  icon: {fileID: 21300000, guid: b8c533b42b1a6d44097c0961a9857871, type: 3}
+  zone: 6
+  acquire: 0
+  condition: 0
+  isRare: 0
+  plantGroup: 0
+  sellPrice: 3
+  buyPrice: 0
+  placedPrefab: {fileID: 919132149155446097, guid: 63876f7a5fa7ce0428a5ef99624b617f, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.45, g: 0.7, b: 0.42, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

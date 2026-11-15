@@ -533,6 +533,279 @@ public static class PlantModelMaker
         b.Write("deco_rainbow_pebble");
     }
 
+    // ───────── 사막 섬 재료 14종 ─────────
+
+    private const int Mid = 4, CamelTan = 6, DarkTan = 8, Orange = 24, Terra = 29;
+
+    /// <summary>사막 섬 재료 14종: 선인장, 대추야자, 사암 조각, 사막 장미, 화석, 선인장 꽃, 알로에 잎, 마른 가지, 옛 도자기 조각, 풍뎅이, 낙타, 야자나무, 사막 천막, 작은 피라미드. 야자나무, 천막, 피라미드, 낙타는 사막 섬 풍경에도 크게 키워서 쓴다.</summary>
+    [MenuItem("유리병 정원/사막 재료 모델 만들기")]
+    public static string BuildDesertModels()
+    {
+        CactusPiece(); DateFruit(); Sandstone(); DesertRose(); Fossil(); CactusFlower(); AloeLeaf(); DryBranch(); PotteryShard(); Scarab();
+        Camel(); PalmTree(); DesertTent(); MiniPyramid();
+        AssetDatabase.Refresh();
+        return "사막 재료 모델 14종을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
+    }
+
+    private static void CactusPiece()
+    {
+        b = new Builder();
+        Frustum(b, Vector3.zero, new Vector3(0f, 0.034f, 0f), 0.0065f, 0.0058f, 8, Green);
+        Blob(new Vector3(0f, 0.034f, 0f), new Vector3(0.0058f, 0.0050f, 0.0058f), 3, 8, LightGreen);
+        Frustum(b, new Vector3(0.005f, 0.016f, 0f), new Vector3(0.0155f, 0.020f, 0f), 0.0034f, 0.0034f, 6, Green);
+        Frustum(b, new Vector3(0.0155f, 0.019f, 0f), new Vector3(0.0165f, 0.031f, 0f), 0.0033f, 0.0030f, 6, Green);
+        Blob(new Vector3(0.0165f, 0.031f, 0f), new Vector3(0.0031f, 0.0030f, 0.0031f), 3, 6, LightGreen);
+        Frustum(b, new Vector3(-0.005f, 0.022f, 0f), new Vector3(-0.0135f, 0.025f, 0f), 0.0030f, 0.0030f, 6, Green);
+        Frustum(b, new Vector3(-0.0135f, 0.024f, 0f), new Vector3(-0.0142f, 0.032f, 0f), 0.0029f, 0.0027f, 6, Green);
+        Blob(new Vector3(-0.0142f, 0.032f, 0f), new Vector3(0.0028f, 0.0027f, 0.0028f), 3, 6, LightGreen);
+        for (int i = 0; i < 10; i++) // 가시
+            Blob(Radial(i * 0.9f) * 0.0068f + Vector3.up * (0.004f + i * 0.0029f), new Vector3(0.0007f, 0.0009f, 0.0007f), 2, 4, Cream);
+        Blob(new Vector3(0f, 0.0385f, 0f), new Vector3(0.0022f, 0.0018f, 0.0022f), 2, 5, Pink);
+        b.Write("deco_cactus_piece");
+    }
+
+    private static void DateFruit()
+    {
+        b = new Builder();
+        Frustum(b, Vector3.zero, new Vector3(0f, 0.030f, 0f), 0.0012f, 0.0010f, 5, Brown);
+        for (int k = 0; k < 3; k++)
+        {
+            float a = k * 2.1f + 0.4f;
+            Petal(new Vector3(0f, 0.030f, 0f), Radial(a) + Vector3.up * 0.7f, new Vector3(-Mathf.Sin(a), 0f, Mathf.Cos(a)), 0.020f, 0.0065f, k % 2 == 0 ? Green : Leaf, 0.0010f);
+        }
+        for (int k = 0; k < 8; k++)
+        {
+            float a = k * 0.8f;
+            Vector3 pos = new Vector3(0f, 0.025f, 0f) + Radial(a) * 0.0070f + Vector3.up * (-0.004f * (k % 3));
+            Blob(pos, new Vector3(0.0032f, 0.0055f, 0.0032f), 3, 6, k % 3 == 0 ? Orange : (k % 2 == 0 ? Mid : Brown));
+        }
+        b.Write("deco_date_fruit");
+    }
+
+    private static void Sandstone()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0040f, 0f), new Vector3(0.0170f, 0.0045f, 0.0130f), 3, 8, Sand);
+        Blob(new Vector3(0.0010f, 0.0105f, 0.0010f), new Vector3(0.0140f, 0.0040f, 0.0110f), 3, 8, CamelTan);
+        Blob(new Vector3(0.0020f, 0.0160f, -0.0010f), new Vector3(0.0105f, 0.0038f, 0.0085f), 3, 7, DarkTan);
+        Blob(new Vector3(-0.0005f, 0.0205f, 0f), new Vector3(0.0065f, 0.0030f, 0.0055f), 3, 6, Sand);
+        b.Write("deco_sandstone");
+    }
+
+    private static void DesertRose()
+    {
+        b = new Builder();
+        for (int k = 0; k < 8; k++)
+        {
+            float a = k * 0.785f + 0.3f;
+            Vector3 pos = Radial(a) * 0.0070f + Vector3.up * (0.0060f + (k % 3) * 0.0030f);
+            b.xf = Matrix4x4.TRS(pos, Quaternion.Euler(0f, -a * Mathf.Rad2Deg, 55f - (k % 3) * 10f), Vector3.one);
+            Blob(Vector3.zero, new Vector3(0.0085f, 0.0013f, 0.0060f), 2, 6, k % 2 == 0 ? Peach : Cream);
+            b.xf = Matrix4x4.identity;
+        }
+        Blob(new Vector3(0f, 0.0080f, 0f), new Vector3(0.0060f, 0.0040f, 0.0060f), 3, 6, Sand);
+        b.Write("deco_desert_rose");
+    }
+
+    private static void Fossil()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0035f, 0f), new Vector3(0.0165f, 0.0035f, 0.0150f), 3, 8, DarkTan);
+        for (int i = 0; i < 26; i++)
+        {
+            float t = i / 25f;
+            float ang = t * Mathf.PI * 5f, rad = 0.0017f + t * 0.0100f, s = 0.0017f + 0.0012f * t;
+            Blob(Radial(ang) * rad + Vector3.up * 0.0062f, new Vector3(s, 0.0014f, s), 2, 5, i % 2 == 0 ? Cream : Sand);
+        }
+        b.Write("deco_fossil");
+    }
+
+    private static void CactusFlower()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0085f, 0f), new Vector3(0.0095f, 0.0085f, 0.0095f), 4, 8, Green);
+        for (int i = 0; i < 8; i++)
+            Blob(Radial(i * 0.8f) * 0.0094f + Vector3.up * (0.004f + (i % 3) * 0.0035f), new Vector3(0.0007f, 0.0009f, 0.0007f), 2, 4, Cream);
+        b.xf = Matrix4x4.TRS(new Vector3(0f, 0.0165f, 0f), Quaternion.identity, Vector3.one);
+        for (int k = 0; k < 7; k++)
+        {
+            float a = Mathf.PI * 2f * k / 7f;
+            Vector3 r = Radial(a);
+            Petal(r * 0.0015f, r + Vector3.up * 0.35f, new Vector3(-r.z, 0f, r.x), 0.0085f, 0.0045f, k % 2 == 0 ? Pink : Coral, 0.0004f);
+        }
+        Blob(new Vector3(0f, 0.0006f, 0f), new Vector3(0.0022f, 0.0016f, 0.0022f), 2, 5, Yellow);
+        b.xf = Matrix4x4.identity;
+        b.Write("deco_cactus_flower");
+    }
+
+    private static void AloeLeaf()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0020f, 0f), new Vector3(0.0050f, 0.0030f, 0.0050f), 2, 6, Moss);
+        for (int k = 0; k < 9; k++)
+        {
+            bool outer = k < 6;
+            float a = k * 2.399f;
+            Vector3 r = Radial(a);
+            Petal(r * 0.002f + Vector3.up * 0.002f, r + Vector3.up * (outer ? 0.9f : 2.2f), new Vector3(-r.z, 0f, r.x), outer ? 0.030f : 0.026f, 0.0085f,
+                  k % 3 == 0 ? LightGreen : (k % 3 == 1 ? Green : Leaf), 0.0010f);
+        }
+        b.Write("deco_aloe_leaf");
+    }
+
+    private static void DryBranch()
+    {
+        b = new Builder();
+        Vector3[] p =
+        {
+            new Vector3(0f, 0f, 0f), new Vector3(0.003f, 0.010f, 0.002f), new Vector3(-0.002f, 0.020f, 0.001f),
+            new Vector3(0.004f, 0.031f, -0.001f), new Vector3(0.001f, 0.042f, 0.002f)
+        };
+        for (int i = 0; i < p.Length - 1; i++)
+            Frustum(b, p[i], p[i + 1], 0.0030f * (1f - i * 0.15f), 0.0030f * (1f - (i + 1) * 0.15f), 5, i % 2 == 0 ? Tan : DarkTan);
+        Frustum(b, p[2], new Vector3(-0.0130f, 0.030f, 0.0020f), 0.0016f, 0.0009f, 4, DarkTan);
+        Frustum(b, p[3], new Vector3(0.0140f, 0.040f, -0.0020f), 0.0014f, 0.0008f, 4, Tan);
+        Frustum(b, new Vector3(-0.0130f, 0.030f, 0.0020f), new Vector3(-0.0190f, 0.036f, 0.0030f), 0.0009f, 0.0005f, 3, Tan);
+        Blob(new Vector3(0f, 0.0015f, 0f), new Vector3(0.0050f, 0.0025f, 0.0050f), 2, 6, DarkTan);
+        b.Write("deco_dry_branch");
+    }
+
+    private static void PotteryShard()
+    {
+        b = new Builder();
+        // 항아리에서 떨어진 둥글게 휜 조각: 테라코타 색에 크림색 띠와 검은 지그재그 무늬
+        const float R = 0.016f;
+        const int segs = 8;
+        float[] ys = { 0f, 0.007f, 0.011f, 0.016f, 0.018f, 0.024f };
+        int[] cols = { Terra, Cream, Terra, Dark, Terra };
+        b.xf = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(-14f, 0f, 0f), Vector3.one);
+        for (int i = 0; i < segs; i++)
+        {
+            float a0 = Mathf.Deg2Rad * (-55f + 110f * i / segs), a1 = Mathf.Deg2Rad * (-55f + 110f * (i + 1) / segs);
+            for (int band = 0; band < cols.Length; band++)
+            {
+                int col = cols[band];
+                if (band == 3 && i % 2 == 1) col = Terra; // 지그재그
+                Vector3 p00 = Radial(a0) * R + Vector3.up * ys[band], p10 = Radial(a1) * R + Vector3.up * ys[band];
+                Vector3 p01 = Radial(a0) * R + Vector3.up * ys[band + 1], p11 = Radial(a1) * R + Vector3.up * ys[band + 1];
+                b.DoubleTri(p00, p10, p11, col);
+                b.DoubleTri(p00, p11, p01, col);
+            }
+        }
+        b.xf = Matrix4x4.identity;
+        b.Write("deco_pottery_shard");
+    }
+
+    private static void Scarab()
+    {
+        b = new Builder();
+        Blob(new Vector3(0f, 0.0048f, 0.0030f), new Vector3(0.0105f, 0.0048f, 0.0042f), 3, 8, Teal);
+        Blob(new Vector3(0f, 0.0048f, -0.0030f), new Vector3(0.0105f, 0.0048f, 0.0042f), 3, 8, SkyBlue);
+        Blob(new Vector3(0f, 0.0052f, 0f), new Vector3(0.0105f, 0.0042f, 0.0007f), 2, 6, Dark);
+        Blob(new Vector3(0.0108f, 0.0030f, 0f), new Vector3(0.0042f, 0.0030f, 0.0050f), 2, 6, Dark);
+        for (int s = -1; s <= 1; s += 2)
+            for (int k = 0; k < 3; k++)
+            {
+                float x = -0.004f + k * 0.0045f;
+                Frustum(b, new Vector3(x, 0.0025f, s * 0.0050f), new Vector3(x + (k - 1) * 0.0015f, 0.0003f, s * 0.0110f), 0.0004f, 0.0003f, 3, Dark);
+            }
+        Blob(new Vector3(-0.0020f, 0.0092f, 0f), new Vector3(0.0018f, 0.0012f, 0.0018f), 2, 5, Gold);
+        b.Write("deco_scarab");
+    }
+
+    private static void Camel()
+    {
+        b = new Builder();
+        foreach (float x in new[] { 0.0140f, -0.0140f })
+            foreach (float z in new[] { 0.0055f, -0.0055f })
+            {
+                Frustum(b, new Vector3(x, 0f, z), new Vector3(x * 0.95f, 0.026f, z * 0.8f), 0.0022f, 0.0030f, 5, Mid);
+                Blob(new Vector3(x, 0.0008f, z), new Vector3(0.0028f, 0.0010f, 0.0028f), 2, 5, Dark);
+            }
+        Blob(new Vector3(0f, 0.0320f, 0f), new Vector3(0.0215f, 0.0105f, 0.0095f), 4, 8, CamelTan);
+        Blob(new Vector3(-0.0020f, 0.0435f, 0f), new Vector3(0.0075f, 0.0075f, 0.0075f), 3, 7, CamelTan);
+        Blob(new Vector3(0.0105f, 0.0425f, 0f), new Vector3(0.0065f, 0.0070f, 0.0065f), 3, 7, CamelTan);
+        Blob(new Vector3(0.0040f, 0.0390f, 0f), new Vector3(0.0058f, 0.0035f, 0.0108f), 2, 6, Red);
+        Frustum(b, new Vector3(0.0190f, 0.0360f, 0f), new Vector3(0.0300f, 0.0560f, 0f), 0.0045f, 0.0032f, 6, CamelTan);
+        Blob(new Vector3(0.0345f, 0.0585f, 0f), new Vector3(0.0072f, 0.0042f, 0.0036f), 3, 6, CamelTan);
+        Blob(new Vector3(0.0405f, 0.0565f, 0f), new Vector3(0.0035f, 0.0030f, 0.0032f), 2, 5, Sand);
+        Blob(new Vector3(0.0348f, 0.0610f, 0.0030f), new Vector3(0.0010f, 0.0018f, 0.0010f), 2, 4, Mid);
+        Blob(new Vector3(0.0348f, 0.0610f, -0.0030f), new Vector3(0.0010f, 0.0018f, 0.0010f), 2, 4, Mid);
+        Blob(new Vector3(0.0378f, 0.0594f, 0.0031f), new Vector3(0.0007f, 0.0007f, 0.0007f), 2, 4, Dark);
+        Blob(new Vector3(0.0378f, 0.0594f, -0.0031f), new Vector3(0.0007f, 0.0007f, 0.0007f), 2, 4, Dark);
+        Frustum(b, new Vector3(-0.0205f, 0.0360f, 0f), new Vector3(-0.0245f, 0.0260f, 0f), 0.0012f, 0.0008f, 4, Mid);
+        b.Write("deco_camel");
+    }
+
+    private static void PalmTree()
+    {
+        b = new Builder();
+        Vector3[] p =
+        {
+            new Vector3(0f, 0f, 0f), new Vector3(0.003f, 0.015f, 0f), new Vector3(0.0065f, 0.030f, 0.001f),
+            new Vector3(0.007f, 0.046f, 0.002f), new Vector3(0.0055f, 0.060f, 0.002f)
+        };
+        for (int i = 0; i < p.Length - 1; i++)
+            Frustum(b, p[i], p[i + 1], 0.0032f - i * 0.0004f, 0.0032f - (i + 1) * 0.0004f, 6, i % 2 == 0 ? Mid : DarkTan);
+        Vector3 top = p[p.Length - 1];
+        for (int k = 0; k < 8; k++)
+        {
+            float a = Mathf.PI * 2f * k / 8f + 0.2f;
+            Vector3 r = Radial(a);
+            Vector3 side = new Vector3(-r.z, 0f, r.x);
+            Vector3 d1 = (r + Vector3.up * 0.35f).normalized;
+            int col = k % 2 == 0 ? Green : Leaf;
+            Petal(top, d1, side, 0.016f, 0.0075f, col, 0.0008f);
+            Vector3 tip = top + d1 * 0.016f;
+            Petal(tip, (r - Vector3.up * 0.55f).normalized, side, 0.015f, 0.0055f, k % 2 == 0 ? LightGreen : Green, 0.0005f);
+        }
+        for (int k = 0; k < 3; k++)
+            Blob(top + Radial(k * 2.1f) * 0.0030f + Vector3.down * 0.0030f, new Vector3(0.0028f, 0.0030f, 0.0028f), 2, 6, Brown);
+        b.Write("deco_palm_tree");
+    }
+
+    private static void DesertTent()
+    {
+        b = new Builder();
+        // 유목민의 천막: 붉은 줄무늬 지붕, 어두운 입구, 양쪽 기둥
+        Vector3 A = new Vector3(-0.017f, 0f, -0.015f), B = new Vector3(0.017f, 0f, -0.015f), C = new Vector3(0.017f, 0f, 0.015f), D = new Vector3(-0.017f, 0f, 0.015f);
+        Vector3 R0 = new Vector3(-0.019f, 0.026f, 0f), R1 = new Vector3(0.019f, 0.026f, 0f), inside = new Vector3(0f, 0.01f, 0f);
+        for (int i = 0; i < 5; i++)
+        {
+            float t0 = i / 5f, t1 = (i + 1) / 5f;
+            int col = i % 2 == 0 ? Cream : Red;
+            b.Quad(Vector3.Lerp(A, B, t0), Vector3.Lerp(A, B, t1), Vector3.Lerp(R0, R1, t1), Vector3.Lerp(R0, R1, t0), col, inside);
+            b.Quad(Vector3.Lerp(D, C, t0), Vector3.Lerp(D, C, t1), Vector3.Lerp(R0, R1, t1), Vector3.Lerp(R0, R1, t0), col, inside);
+        }
+        b.Tri(A, D, R0, Cream, inside);
+        b.Tri(B, C, R1, Cream, inside);
+        b.Tri(new Vector3(0.0172f, 0f, -0.0060f), new Vector3(0.0172f, 0f, 0.0060f), new Vector3(0.0172f, 0.0165f, 0f), Dark, inside);
+        foreach (float x in new[] { -0.019f, 0.019f })
+            Frustum(b, new Vector3(x, 0.024f, 0f), new Vector3(x, 0.034f, 0f), 0.0009f, 0.0007f, 4, Brown);
+        b.Tri(new Vector3(-0.019f, 0.034f, 0f), new Vector3(-0.019f, 0.029f, 0f), new Vector3(-0.0115f, 0.0315f, 0f), Red, inside);
+        b.Write("deco_desert_tent");
+    }
+
+    private static void Pyr(Vector3 center, float s, float h, int c0, int c1, int c2, int c3)
+    {
+        Vector3[] k = { center + new Vector3(-s, 0f, -s), center + new Vector3(s, 0f, -s), center + new Vector3(s, 0f, s), center + new Vector3(-s, 0f, s) };
+        Vector3 apex = center + new Vector3(0f, h, 0f), inside = center + new Vector3(0f, h * 0.35f, 0f);
+        b.Tri(k[0], k[1], apex, c0, inside);
+        b.Tri(k[1], k[2], apex, c1, inside);
+        b.Tri(k[2], k[3], apex, c2, inside);
+        b.Tri(k[3], k[0], apex, c3, inside);
+    }
+
+    private static void MiniPyramid()
+    {
+        b = new Builder();
+        Pyr(Vector3.zero, 0.020f, 0.026f, Sand, Tan, DarkTan, Cream);
+        Pyr(new Vector3(0.0300f, 0f, -0.0110f), 0.0110f, 0.0145f, Sand, Tan, DarkTan, Cream);
+        Pyr(new Vector3(0.0200f, 0f, 0.0200f), 0.0075f, 0.0100f, Tan, Sand, Cream, DarkTan);
+        b.Tri(new Vector3(-0.0045f, 0f, -0.0202f), new Vector3(0.0045f, 0f, -0.0202f), new Vector3(0f, 0.0070f, -0.0185f), Dark, new Vector3(0f, 0.01f, 0f)); // 입구
+        b.Write("deco_pyramid");
+    }
+
     // ───────── 눈 섬 재료 11종 ─────────
 
     private const int Carrot = 15;
