@@ -43,6 +43,12 @@ public class GameRoot : MonoBehaviour
         if (player != null) SaveSystem.ApplyBag(player.GetComponent<Bag>());
     }
 
+    // 게임을 처음 켰을 때는 집 앞(FromHut 도착 지점)에서 시작한다. (다른 씬에서 넘어온 것이 아닐 때만)
+    private void Start()
+    {
+        if (string.IsNullOrEmpty(pendingSpawnId) && player != null) GoHome();
+    }
+
     private const float AutoSaveSeconds = 120f; // 이 시간마다 저절로 저장한다 (실제 시간)
     private float lastAutoSave;
     private bool quitting;

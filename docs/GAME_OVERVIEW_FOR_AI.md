@@ -267,3 +267,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **선착장은 원래 섬에 하나**(`MainDock`, `Dock.hub`): E를 누르면 `DockPanel`(코드로 만든 창)이 열려 "어느 섬으로 갈까요?"를 고른다. 섬마다 따로 코인을 내고 열고(눈 섬 150, 사막 섬 250), 열린 섬은 "가기"로 이동한다. 새 섬을 더하려면 `DockPanel.Destinations`에 한 줄과 `GameState.IsDockOpen/OpenDock`에 열림 상태를 더한다. 사막 선착장(`DesertDock`)과 `DockSetup.BuildDesertDock`은 없앴다. 눈 섬과 사막 섬에서 돌아오면 원래 섬의 같은 선착장 앞(`Spawn_FromSnow`, `Spawn_FromDesert`)에 선다.
 - **사막 섬 충돌**: 천막, 낙타, 피라미드, 바위는 보이지 않는 상자 대신 모양 그대로의 `MeshCollider`(`AddMeshCollider`)를 쓴다. 선인장은 크기에 맞춘 캡슐이다.
 - **공중에 뜸 고침**: `DesertIslandSetup.Place`가 발밑 땅 여덟 곳 중 가장 낮은 곳에 맞춰 0.12m 묻는다. 모래 언덕 비탈에서도 한쪽이 뜨지 않는다.
+## 시작 위치, 미쿠 NPC와 꾸밈 재료 (구현됨)
+- **시작 위치**: 게임을 처음 켜면 `GameRoot.Start`가 `GoHome()`으로 집 앞(Spawn_FromHut)에서 시작한다(다른 씬에서 넘어온 것이 아닐 때만. 집 안에서 켠 경우에는 그 씬에 FromHut이 없어서 아무 일도 없다).
+- **미쿠 NPC**(`MikuNPC`, 원래 섬 집 앞 시작 자리에서 오른쪽 2.5m, 앞으로 4m, 프리팹 `Assets/Prefabs/Miku.prefab`): 바라보고 E를 누르면 "안녕 나는 미쿠야"가 뜬다(`NpcTalk`, 대사는 lines에 줄을 더하면 누를 때마다 다음 줄). 7m 안에서는 플레이어를 천천히 바라본다. 모델은 `Assets/Models/Miku/MIKU.fbx`(받은 파일. 피부색과 흰색 재질밖에 없어서 `MikuSetup`이 부분별로 색 재질을 입힌다: Box001, d 피부, Box003, Box004, Cone001 머리, Box005 옷, Box008 입, Sphere002, Sphere003 눈). 모델은 -z를 보고 있어서 NPC는 180도 돌려 쓴다. 메뉴 미쿠 만들기(`MikuSetup.Build`)로 다시 만든다.
+- **미쿠 꾸밈 재료**(`miku`, 우체통 구매하기 12코인, 되팔기 6코인): 키 8cm 모델 `Assets/Models/Deco/deco_miku.prefab`. 아이콘에서 얼굴이 보이게 -z를 본다. 순서: 미쿠 만들기 → 재료 데이터 만들기 → 재료 아이콘 만들기 → 재료 목록 만들기 → UI 만들기.
