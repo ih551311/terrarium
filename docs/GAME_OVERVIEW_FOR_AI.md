@@ -272,3 +272,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **미쿠 NPC**(`MikuNPC`, 원래 섬 집 앞 시작 자리에서 오른쪽 2.5m, 앞으로 4m, 프리팹 `Assets/Prefabs/Miku.prefab`): 바라보고 E를 누르면 "안녕 나는 미쿠야"가 뜬다(`NpcTalk`, 대사는 lines에 줄을 더하면 누를 때마다 다음 줄). 7m 안에서는 플레이어를 천천히 바라본다. 모델은 `Assets/Models/Miku/MIKU.fbx`(받은 파일. 피부색과 흰색 재질밖에 없어서 `MikuSetup`이 부분별로 색 재질을 입힌다: Box001, d 피부, Box003, Box004, Cone001 머리, Box005 옷, Box008 입, Sphere002, Sphere003 눈). 모델은 -z를 보고 있어서 NPC는 180도 돌려 쓴다. 메뉴 미쿠 만들기(`MikuSetup.Build`)로 다시 만든다.
 - **미쿠 꾸밈 재료**(`miku`, 우체통 구매하기 12코인, 되팔기 6코인): 키 8cm 모델 `Assets/Models/Deco/deco_miku.prefab`. 아이콘에서 얼굴이 보이게 -z를 본다. 순서: 미쿠 만들기 → 재료 데이터 만들기 → 재료 아이콘 만들기 → 재료 목록 만들기 → UI 만들기.
 - **사막 섬 피라미드**: 작은 피라미드를 겹쳐 키우면 면이 맞닿은 곳에 어두운 쐐기가 보여서, 섬 풍경에는 단이 열두 개인 계단식 피라미드(deco_pyramid_steps, 키 16m)를 쓴다. 꾸밈 재료 피라미드(deco_pyramid)는 그대로다.
+
+## 치비 NPC와 꾸밈 재료 (구현됨)
+- **치비**(`ChibiNPC`, 집 앞 시작 자리에서 왼쪽 2.8m, 앞으로 4m. 오른쪽은 미쿠): 인사하는 자세의 SD 캐릭터. 바라보고 E를 누르면 "안녕!"(`NpcTalk`). 모델 `Assets/Models/Chibi/Chibi.fbx`는 뼈대가 있는 모델(SkinnedMeshRenderer 15개)이라 `ChibiSetup`이 자세 그대로 일반 메쉬로 굳힌 `Chibi_Baked.prefab`(메쉬는 `Baked/`)을 만들어 쓴다. 굳힐 때 부품 크기는 `lossyScale`로 따로 줘야 한다(팔찌, 별, 리본이 틀어진 적이 있다). 모델은 +z를 본다. 메뉴 치비 만들기(`ChibiSetup.Build`)로 다시 만든다.
+- **치비 꾸밈 재료**(`chibi`, 우체통 14코인, 되팔기 7코인): 키 9cm 모델 `Assets/Models/Deco/deco_chibi.prefab`. 순서는 미쿠와 같다(치비 만들기 → 재료 데이터 → 아이콘 → 재료 목록 → UI 만들기).

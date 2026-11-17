@@ -106,6 +106,8 @@ public static class MaterialSetup
         new Entry("desert_tent",      "사막 천막",       Deco,  "deco_desert_tent",     new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 4, 20),
         new Entry("pyramid",          "작은 피라미드",   Deco,  "deco_pyramid",         new Color(0.93f, 0.82f, 0.60f), Shop, Buy, 6, 30),        // ── 미쿠: 집 앞에 서 있는 NPC를 작게 줄인 꾸밈 재료 (MikuSetup이 모델을 만든다). 우체통 구매하기
         new Entry("miku",             "미쿠",            Deco,  "deco_miku",            new Color(0.22f, 0.78f, 0.78f), Shop, Buy, 6, 12),
+        // ── 치비: 집 앞에 서 있는 NPC를 작게 줄인 꾸밈 재료 (ChibiSetup이 모델을 만든다). 우체통 구매하기
+        new Entry("chibi",            "치비",            Deco,  "deco_chibi",           new Color(0.70f, 0.70f, 0.72f), Shop, Buy, 7, 14),
         // ── 섬의 풀과 꽃을 괭이로 캐면 무작위로 나오는 재료들 (따로 놓인 자리는 없다. 괭이로 풀은 풀 재료, 꽃은 꽃 재료가 나온다)
         new Entry("tulip",            "튤립",       Plant, "deco_tulip",           new Color(0.85f, 0.35f, 0.40f), Hill,  Hoe, 3),
         new Entry("sunflower",        "해바라기",   Plant, "deco_sunflower",       new Color(0.97f, 0.80f, 0.20f), Hill,  Hoe, 15, 0, MaterialCondition.Always, true),
