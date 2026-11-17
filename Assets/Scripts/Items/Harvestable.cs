@@ -268,17 +268,35 @@ public class Harvestable : MonoBehaviour, IInteractable
 
     private IEnumerator ShakeRoutine()
     {
-        const float Duration = 0.22f;
+        // 한 번에 한 방향으로 짧게 떨리고 빠르게 잦아든다. 크기는 물체 크기에 맞춰 작게 (작은 풀은 거의 안 움직이고, 큰 나무도 몇 cm만)
+        const float Duration = 0.16f;
+        float amplitude = Mathf.Clamp(ObjectSize() * 0.008f, 0.004f, 0.025f);
+        float angle = Random.value * Mathf.PI * 2f;
+        Vector3 dir = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
         float t = 0f;
         while (t < Duration)
         {
             t += Time.deltaTime;
             float strength = 1f - t / Duration;
-            Vector3 jitter = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)) * 0.06f * strength;
-            transform.position = restPosition + jitter;
+            transform.position = restPosition + dir * Mathf.Sin(t * 70f) * amplitude * strength * strength;
             yield return null;
         }
         transform.position = restPosition;
         shaking = null;
+    }
+
+    /// <summary>물체의 가장 긴 변(미터)</summary>
+    private float ObjectSize()
+    {
+        if (renderers == null || renderers.Length == 0) return 1f;
+        Bounds b = default;
+        bool first = true;
+        foreach (Renderer r in renderers)
+        {
+            if (r == null) continue;
+            if (first) { b = r.bounds; first = false; }
+            else b.Encapsulate(r.bounds);
+        }
+        return first ? 1f : Mathf.Max(b.size.x, b.size.y, b.size.z);
     }
 }
