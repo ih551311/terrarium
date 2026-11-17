@@ -40,12 +40,15 @@ public class Interactor : MonoBehaviour
         if (UIFocus.IsOpen)
         {
             target = null;
+            if (ToolView != null) ToolView.SetAim(null);
             if (hud != null) hud.SetPrompt(null);
             return;
         }
 
         target = FindTarget();
         if (hud != null) hud.SetPrompt(target != null ? target.Prompt : null);
+        // 캘 수 있는 것을 바라보면 그 도구를 든다 (비어 있으면 들지 않는다)
+        if (ToolView != null) ToolView.SetAim(target is Harvestable aimed && !aimed.IsEmpty ? aimed.Tool : (AcquireMethod?)null);
 
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && target != null && keyboard.eKey.wasPressedThisFrame)

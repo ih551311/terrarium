@@ -42,6 +42,9 @@ public class Harvestable : MonoBehaviour, IInteractable
 
     public bool IsEmpty => depleted;
 
+    /// <summary>이것을 캘 때 쓰는 도구 (ToolView가 바라볼 때 그 도구를 든다)</summary>
+    public AcquireMethod Tool => tool;
+
     public string Prompt
     {
         get
@@ -119,8 +122,7 @@ public class Harvestable : MonoBehaviour, IInteractable
 
         hits++;
         who.ToolView.Swing(tool, GameState.LevelOf(tool));
-        ToolSound.Play(transform.position, last ? 0.8f : 1f);
-        Shake();
+        StartCoroutine(Impact(last ? 0.8f : 1f)); // 도구가 내려와 맞는 순간에 소리와 흔들림
 
         if (last) hits = 0;
     }
@@ -258,6 +260,13 @@ public class Harvestable : MonoBehaviour, IInteractable
     }
 
     // ───────── 흔들림 ─────────
+
+    private IEnumerator Impact(float volume)
+    {
+        yield return new WaitForSeconds(ToolView.ImpactDelay);
+        ToolSound.Play(transform.position, volume);
+        Shake();
+    }
 
     private void Shake()
     {

@@ -1,160 +1,255 @@
-using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// 화면 오른쪽 아래에 나타나 휘둘러지는 도끼와 곡괭이. 모델 파일이 없어서 상자로 만든 임시 모양이고,
-/// 휘두르는 움직임은 애니메이션 없이 코드로 회전시킨다. 자루 아래쪽을 쥔 손과 소매 낀 팔뚝이 도구와 함께 움직인다(AddHand).
-/// 강화 단계가 오르면 머리 색이 달라진다. Interactor가 카메라 아래에 만들어 둔다.
+/// 1인칭으로 보이는 도구(도끼, 곡괭이, 괭이)와 그것을 쥔 오른손. Interactor가 카메라 아래에 만든다.
+/// - 캘 수 있는 나무, 돌, 풀을 바라보면 그 도구를 화면 오른쪽 아래에서 들어 올리고(SetAim), 시선을 돌리면 잠시 뒤 내려놓는다.
+/// - 좌클릭하면 어깨를 축으로 들었다가(Windup) 내려치고(Strike) 잠깐 멈춘 뒤 되돌아온다. 맞는 순간은 ImpactDelay초 뒤이고,
+///   Harvestable이 그때 소리와 흔들림을 낸다.
+/// - 들고 있는 동안 숨쉬듯 조금 오르내리고, 걸으면 흔들리고, 시선을 돌리면 살짝 늦게 따라온다.
+/// 모델은 Resources/ToolRig 프리팹(ToolModelMaker가 만든다: 팔레트 로우폴리 도구 3종과 손). 없으면 상자로 만든 임시 모양을 쓴다.
+/// 강화 단계가 오르면 도구 머리 색이 바뀐다(머리는 흰색이라 색을 곱하면 그 색이 된다).
 /// </summary>
 public class ToolView : MonoBehaviour
 {
     private static readonly Color[] HeadColors =
     {
-        new Color(0.62f, 0.64f, 0.68f), // 0단계: 쇠
-        new Color(0.78f, 0.52f, 0.30f), // 1단계: 구리
-        new Color(0.55f, 0.78f, 0.88f), // 2단계: 푸른 쇠
-        new Color(0.95f, 0.80f, 0.32f)  // 3단계: 금
+        new Color(0.66f, 0.68f, 0.72f), // 0단계: 쇠
+        new Color(0.85f, 0.56f, 0.34f), // 1단계: 구리
+        new Color(0.58f, 0.80f, 0.92f), // 2단계: 푸른 쇠
+        new Color(0.98f, 0.82f, 0.34f)  // 3단계: 금
     };
 
+    // 휘두르기 시간(초): 들기, 내려치기, 멈춤, 되돌아오기
+    private const float Windup = 0.10f, Strike = 0.07f, Hold = 0.06f, Recover = 0.24f;
+
+    /// <summary>좌클릭부터 도구가 맞는 순간까지(초). 소리와 흔들림을 이때 낸다.</summary>
+    public const float ImpactDelay = Windup + Strike;
+
+    // 카메라 기준 자리(미터): 어깨(돌리는 축, 화면 밖 오른쪽 아래 뒤)와 손(자루를 쥔 곳)
+    private static readonly Vector3 ShoulderPos = new Vector3(0.36f, -0.56f, 0.16f);
+    private static readonly Vector3 GripPos = new Vector3(0.22f, -0.15f, 0.52f);
+    private static readonly Vector3 GripEuler = new Vector3(18f, -30f, -50f); // 자루가 오른쪽 위로 비스듬히 눕고, 도구 머리 옆면이 보이게 돌린다
+    private const float ModelScale = 0.7f;
+    // 휘두르기 각도(도): 들어 올릴 때와 내려칠 때의 어깨와 손목. 양수는 앞으로 숙여 내려친다
+    private const float RaiseShoulderDeg = -18f, RaiseWristDeg = -38f, StrikeShoulderDeg = 7f, StrikeWristDeg = 50f;
+
+    private Transform shoulder, grip, wrist;
     private GameObject axe, pickaxe, hoe;
     private Renderer axeHead, pickaxeHead, hoeHead;
-    private Coroutine swinging;
+
+    private AcquireMethod? aim;       // 지금 바라보는 대상에 맞는 도구 (없으면 null)
+    private float lastAimTime = -10f;
+    private AcquireMethod shown = AcquireMethod.Axe;
+    private float raise;              // 0 내려놓음 ~ 1 들고 있음
+    private bool hasShown;
+
+    private float swingTime = -1f;    // 휘두르기 시작 뒤 지난 시간 (-1이면 휘두르는 중이 아님)
+    private float shoulderPitch, wristPitch, fromShoulder, fromWrist;
+
+    private Transform cameraTransform;
+    private Quaternion lastCameraRotation;
+    private Vector2 sway, swayVelocity;
+    private CharacterController body;
+    private float bobPhase;
 
     /// <summary>카메라 아래에 도구 보기를 만든다.</summary>
     public static ToolView Create(Transform camera)
     {
         GameObject go = new GameObject("ToolView");
         go.transform.SetParent(camera, false);
-        go.transform.localPosition = new Vector3(0.3f, -0.24f, 0.75f); // 쥔 손이 화면 아래에 묻히지 않을 만큼
-        go.transform.localScale = Vector3.one * 0.7f;
-        return go.AddComponent<ToolView>();
+        ToolView view = go.AddComponent<ToolView>();
+        view.cameraTransform = camera;
+        return view;
     }
 
     private void Awake()
     {
-        Color handle = new Color(0.45f, 0.30f, 0.18f);
+        shoulder = new GameObject("Shoulder").transform;
+        shoulder.SetParent(transform, false);
+        shoulder.localPosition = ShoulderPos;
+        grip = new GameObject("Grip").transform;
+        grip.SetParent(shoulder, false);
+        grip.localPosition = GripPos - ShoulderPos;
+        grip.localRotation = Quaternion.Euler(GripEuler);
+        wrist = new GameObject("Wrist").transform;
+        wrist.SetParent(grip, false);
+        wrist.localScale = Vector3.one * ModelScale;
 
-        axe = new GameObject("Axe");
-        axe.transform.SetParent(transform, false);
-        Part(axe.transform, "Handle", new Vector3(0f, 0.2f, 0f), new Vector3(0.05f, 0.55f, 0.05f), handle);
-        axeHead = Part(axe.transform, "Head", new Vector3(0.09f, 0.42f, 0f), new Vector3(0.2f, 0.15f, 0.04f), HeadColors[0]);
-
-        pickaxe = new GameObject("Pickaxe");
-        pickaxe.transform.SetParent(transform, false);
-        Part(pickaxe.transform, "Handle", new Vector3(0f, 0.2f, 0f), new Vector3(0.05f, 0.55f, 0.05f), handle);
-        pickaxeHead = Part(pickaxe.transform, "Head", new Vector3(0f, 0.45f, 0f), new Vector3(0.42f, 0.05f, 0.05f), HeadColors[0]);
-
-        // 괭이: 자루 끝에 납작한 날이 앞쪽으로 꺾여 있다
-        hoe = new GameObject("Hoe");
-        hoe.transform.SetParent(transform, false);
-        Part(hoe.transform, "Handle", new Vector3(0f, 0.2f, 0f), new Vector3(0.05f, 0.55f, 0.05f), handle);
-        hoeHead = Part(hoe.transform, "Head", new Vector3(0f, 0.47f, 0.07f), new Vector3(0.17f, 0.04f, 0.14f), HeadColors[0]);
-
-        // 세 도구 모두 자루 아래쪽을 손으로 쥐고 있다
-        AddHand(axe.transform);
-        AddHand(pickaxe.transform);
-        AddHand(hoe.transform);
-
-        axe.SetActive(false);
-        pickaxe.SetActive(false);
-        hoe.SetActive(false);
+        GameObject rig = Resources.Load<GameObject>("ToolRig");
+        if (rig != null)
+        {
+            GameObject inst = Instantiate(rig, wrist, false);
+            inst.name = "ToolRig";
+            axe = inst.transform.Find("Axe").gameObject;
+            pickaxe = inst.transform.Find("Pickaxe").gameObject;
+            hoe = inst.transform.Find("Hoe").gameObject;
+            axeHead = axe.transform.Find("Head").GetComponent<Renderer>();
+            pickaxeHead = pickaxe.transform.Find("Head").GetComponent<Renderer>();
+            hoeHead = hoe.transform.Find("Head").GetComponent<Renderer>();
+        }
+        else
+        {
+            BuildFallback();
+        }
+        foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
+        {
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+        }
+        shoulder.gameObject.SetActive(false);
     }
 
-    private static readonly Color Skin = new Color(0.97f, 0.80f, 0.68f);
-    private static readonly Color SkinShade = new Color(0.90f, 0.70f, 0.58f);
-    private static readonly Color Sleeve = new Color(0.56f, 0.70f, 0.60f);   // 연두빛 스웨터
-    private static readonly Color Cuff = new Color(0.95f, 0.92f, 0.84f);     // 소맷부리
-
-    /// <summary>
-    /// 도구 자루를 쥔 오른손. 주먹(손바닥), 자루를 감싼 손가락 마디 네 개, 엄지, 그리고 화면 오른쪽 아래로 빠지는 팔뚝과 소매.
-    /// 도구의 자식이라 휘두르면 같이 움직인다. 카메라는 +z를 보고 있어서 손가락은 카메라 쪽(-z)에 둔다.
-    /// </summary>
-    private static void AddHand(Transform tool)
+    private void Start()
     {
-        GameObject hand = new GameObject("Hand");
-        hand.transform.SetParent(tool, false);
-        hand.transform.localScale = Vector3.one * 1.2f;
-        Transform h = hand.transform;
-        Shape(h, PrimitiveType.Sphere, "Palm", new Vector3(0.012f, 0.03f, 0.008f), new Vector3(0.105f, 0.115f, 0.095f), Vector3.zero, Skin);
-        for (int i = 0; i < 4; i++) // 자루를 감싼 손가락 마디 (위에서 아래로 조금씩 작게)
-            Shape(h, PrimitiveType.Sphere, "Knuckle" + i, new Vector3(-0.012f, 0.072f - i * 0.026f, -0.04f), new Vector3(0.052f, 0.032f, 0.04f) * (1f - i * 0.06f), Vector3.zero, i % 2 == 0 ? Skin : SkinShade);
-        Shape(h, PrimitiveType.Capsule, "Thumb", new Vector3(-0.035f, 0.075f, -0.012f), new Vector3(0.03f, 0.035f, 0.03f), new Vector3(0f, 0f, 50f), Skin);
-        // 손목, 소맷부리, 팔뚝 (오른쪽 아래 뒤로 빠진다)
-        Shape(h, PrimitiveType.Cylinder, "Wrist", new Vector3(0.03f, -0.045f, 0.012f), new Vector3(0.065f, 0.04f, 0.065f), new Vector3(0f, 0f, 22f), Skin);
-        Shape(h, PrimitiveType.Cylinder, "Cuff", new Vector3(0.05f, -0.09f, 0.018f), new Vector3(0.095f, 0.025f, 0.095f), new Vector3(0f, 0f, 22f), Cuff);
-        Shape(h, PrimitiveType.Cylinder, "Sleeve", new Vector3(0.11f, -0.24f, 0.03f), new Vector3(0.11f, 0.16f, 0.11f), new Vector3(0f, 0f, 22f), Sleeve);
+        body = GetComponentInParent<CharacterController>();
+        if (cameraTransform == null) cameraTransform = transform.parent;
+        lastCameraRotation = cameraTransform != null ? cameraTransform.rotation : Quaternion.identity;
     }
 
-    private static void Shape(Transform parent, PrimitiveType type, string name, Vector3 pos, Vector3 scale, Vector3 euler, Color color)
+    /// <summary>지금 바라보는 대상에 맞는 도구를 알려 준다 (Interactor가 매 프레임 부른다). 캘 것이 없으면 null.</summary>
+    public void SetAim(AcquireMethod? tool)
     {
-        GameObject go = GameObject.CreatePrimitive(type);
-        go.name = name;
-        Destroy(go.GetComponent<Collider>());
-        go.transform.SetParent(parent, false);
-        go.transform.localPosition = pos;
-        go.transform.localScale = scale;
-        go.transform.localRotation = Quaternion.Euler(euler);
-        Renderer r = go.GetComponent<Renderer>();
-        r.material.color = color;
-        r.material.SetFloat("_Smoothness", 0.1f);
-        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        aim = tool;
+        if (tool.HasValue) lastAimTime = Time.time;
     }
 
-    private static Renderer Part(Transform parent, string name, Vector3 pos, Vector3 scale, Color color)
-    {
-        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        Destroy(go.GetComponent<Collider>());
-        go.transform.SetParent(parent, false);
-        go.transform.localPosition = pos;
-        go.transform.localScale = scale;
-        Renderer r = go.GetComponent<Renderer>();
-        r.material.color = color;
-        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        return r;
-    }
-
-    /// <summary>도구를 보이고 한 번 휘두른다. 진행 중이던 휘두르기는 새로 시작한다.</summary>
+    /// <summary>도구를 (들고 있지 않으면 들면서) 한 번 휘두른다.</summary>
     public void Swing(AcquireMethod tool, int level)
     {
-        GameObject model = tool == AcquireMethod.Axe ? axe : tool == AcquireMethod.Hoe ? hoe : pickaxe;
+        lastAimTime = Time.time;
+        if (!hasShown || raise <= 0.01f || shown != tool) { Show(tool); raise = Mathf.Max(raise, 0.6f); }
         Renderer head = tool == AcquireMethod.Axe ? axeHead : tool == AcquireMethod.Hoe ? hoeHead : pickaxeHead;
-        head.material.color = HeadColors[Mathf.Clamp(level, 0, HeadColors.Length - 1)];
+        if (head != null) head.material.color = HeadColors[Mathf.Clamp(level, 0, HeadColors.Length - 1)];
 
-        if (swinging != null) StopCoroutine(swinging);
-        swinging = StartCoroutine(SwingRoutine(model));
+        // 지금 자세에서 이어서 다시 들어 올린다 (연달아 눌러도 튀지 않게)
+        fromShoulder = shoulderPitch;
+        fromWrist = wristPitch;
+        swingTime = 0f;
     }
 
-    private IEnumerator SwingRoutine(GameObject model)
+    private void Show(AcquireMethod tool)
     {
-        axe.SetActive(false);
-        pickaxe.SetActive(false);
-        hoe.SetActive(false);
-        model.SetActive(true);
+        shown = tool;
+        hasShown = true;
+        if (axe != null) axe.SetActive(tool == AcquireMethod.Axe);
+        if (pickaxe != null) pickaxe.SetActive(tool == AcquireMethod.Pickaxe);
+        if (hoe != null) hoe.SetActive(tool == AcquireMethod.Hoe);
+    }
 
-        // 위로 들었다가(0.12초) 내려친다(0.1초). 잠깐 머물다 사라진다.
-        const float Up = 0.12f, Down = 0.1f, Hold = 0.35f;
-        // X축 회전: 음수는 머리가 나(카메라) 쪽으로 젖혀지고, 양수는 앞쪽으로 숙여진다.
-        Quaternion rest = Quaternion.Euler(10f, 0f, -12f);
-        Quaternion raised = Quaternion.Euler(-30f, 0f, -12f);
-        Quaternion struck = Quaternion.Euler(70f, 0f, -12f);
+    private static float EaseOut(float t) { t = Mathf.Clamp01(t); return 1f - (1f - t) * (1f - t); }
+    private static float EaseIn(float t) { t = Mathf.Clamp01(t); return t * t; }
+    private static float EaseInOut(float t) { t = Mathf.Clamp01(t); return t * t * (3f - 2f * t); }
 
-        float t = 0f;
-        while (t < Up)
+    private void Update()
+    {
+        float dt = Time.deltaTime;
+        bool swinging = swingTime >= 0f;
+
+        // ── 들기와 내려놓기: 바라보는 도구가 있거나 휘두르는 중이면 든다. 바라보지 않아도 0.7초는 들고 있다.
+        //    다른 도구로 바뀌면 먼저 내렸다가 바꿔 든다.
+        bool wantUp = swinging || Time.time - lastAimTime < 0.7f;
+        if (aim.HasValue && (!hasShown || aim.Value != shown) && !swinging)
         {
-            t += Time.deltaTime;
-            model.transform.localRotation = Quaternion.Slerp(rest, raised, t / Up);
-            yield return null;
+            if (raise <= 0.02f || !hasShown) Show(aim.Value);
+            else wantUp = false;
         }
-        t = 0f;
-        while (t < Down)
+        float speed = wantUp ? 1f / 0.22f : 1f / 0.26f;
+        raise = Mathf.MoveTowards(raise, wantUp ? 1f : 0f, dt * speed);
+        bool visible = raise > 0.001f;
+        if (shoulder.gameObject.activeSelf != visible) shoulder.gameObject.SetActive(visible);
+        if (!visible) { swingTime = -1f; shoulderPitch = wristPitch = 0f; return; }
+
+        // ── 휘두르기: 어깨와 손목 각도 (양수는 앞으로 숙여 내려친다)
+        const float RaisedShoulder = RaiseShoulderDeg, RaisedWrist = RaiseWristDeg, StruckShoulder = StrikeShoulderDeg, StruckWrist = StrikeWristDeg;
+        if (swinging)
         {
-            t += Time.deltaTime;
-            model.transform.localRotation = Quaternion.Slerp(raised, struck, t / Down);
-            yield return null;
+            swingTime += dt;
+            float t = swingTime;
+            if (t < Windup)
+            {
+                float k = EaseOut(t / Windup);
+                shoulderPitch = Mathf.Lerp(fromShoulder, RaisedShoulder, k);
+                wristPitch = Mathf.Lerp(fromWrist, RaisedWrist, k);
+            }
+            else if ((t -= Windup) < Strike)
+            {
+                float k = EaseIn(t / Strike);
+                shoulderPitch = Mathf.Lerp(RaisedShoulder, StruckShoulder, k);
+                wristPitch = Mathf.Lerp(RaisedWrist, StruckWrist, k);
+            }
+            else if ((t -= Strike) < Hold)
+            {
+                float shake = Mathf.Sin(t * 90f) * (1f - t / Hold) * 1.6f; // 맞은 순간의 떨림
+                shoulderPitch = StruckShoulder + shake;
+                wristPitch = StruckWrist;
+            }
+            else if ((t -= Hold) < Recover)
+            {
+                float k = EaseInOut(t / Recover);
+                shoulderPitch = Mathf.Lerp(StruckShoulder, 0f, k);
+                wristPitch = Mathf.Lerp(StruckWrist, 0f, k);
+            }
+            else
+            {
+                shoulderPitch = wristPitch = 0f;
+                swingTime = -1f;
+            }
         }
-        yield return new WaitForSeconds(Hold);
-        model.SetActive(false);
-        swinging = null;
+
+        // ── 시선을 돌리면 살짝 늦게 따라온다
+        if (cameraTransform != null)
+        {
+            Quaternion delta = Quaternion.Inverse(lastCameraRotation) * cameraTransform.rotation;
+            lastCameraRotation = cameraTransform.rotation;
+            Vector3 e = delta.eulerAngles;
+            float yaw = Mathf.DeltaAngle(0f, e.y), pitch = Mathf.DeltaAngle(0f, e.x);
+            Vector2 target = new Vector2(Mathf.Clamp(-yaw * 0.0022f, -0.03f, 0.03f), Mathf.Clamp(pitch * 0.0018f, -0.025f, 0.025f));
+            sway = Vector2.SmoothDamp(sway, target, ref swayVelocity, 0.09f, Mathf.Infinity, dt);
+        }
+
+        // ── 걸으면 흔들리고, 서 있으면 숨쉬듯 오르내린다
+        float moving = 0f;
+        if (body != null)
+        {
+            Vector3 v = body.velocity; v.y = 0f;
+            moving = Mathf.Clamp01(v.magnitude / 3.5f);
+            bobPhase += dt * 9f * moving;
+        }
+        float breathe = Mathf.Sin(Time.time * 1.7f) * 0.0035f * (1f - moving);
+        Vector3 bob = new Vector3(Mathf.Cos(bobPhase) * 0.007f, -Mathf.Abs(Mathf.Sin(bobPhase)) * 0.012f, 0f) * moving + new Vector3(0f, breathe, 0f);
+
+        // ── 들어 올린 정도: 내려놓을 때는 아래로 빠지며 앞으로 숙여진다
+        float lowered = 1f - EaseOut(raise);
+        shoulder.localPosition = ShoulderPos + new Vector3(sway.x, sway.y, 0f) + bob + new Vector3(0.04f, -0.22f, 0f) * lowered;
+        shoulder.localRotation = Quaternion.Euler(shoulderPitch + 38f * lowered, 0f, 0f);
+        wrist.localRotation = Quaternion.Euler(wristPitch, 0f, 0f);
+    }
+
+    // ───────── 프리팹이 없을 때: 상자로 만든 임시 도구 (손은 없다) ─────────
+
+    private void BuildFallback()
+    {
+        Color handle = new Color(0.45f, 0.30f, 0.18f);
+        axe = new GameObject("Axe"); axe.transform.SetParent(wrist, false);
+        Part(axe.transform, new Vector3(0f, 0.17f, 0f), new Vector3(0.04f, 0.6f, 0.04f), handle);
+        axeHead = Part(axe.transform, new Vector3(0f, 0.45f, 0.07f), new Vector3(0.03f, 0.1f, 0.12f), Color.white);
+        pickaxe = new GameObject("Pickaxe"); pickaxe.transform.SetParent(wrist, false);
+        Part(pickaxe.transform, new Vector3(0f, 0.17f, 0f), new Vector3(0.04f, 0.6f, 0.04f), handle);
+        pickaxeHead = Part(pickaxe.transform, new Vector3(0f, 0.46f, 0f), new Vector3(0.03f, 0.03f, 0.34f), Color.white);
+        hoe = new GameObject("Hoe"); hoe.transform.SetParent(wrist, false);
+        Part(hoe.transform, new Vector3(0f, 0.17f, 0f), new Vector3(0.04f, 0.6f, 0.04f), handle);
+        hoeHead = Part(hoe.transform, new Vector3(0f, 0.45f, 0.08f), new Vector3(0.15f, 0.09f, 0.01f), Color.white);
+    }
+
+    private static Renderer Part(Transform parent, Vector3 pos, Vector3 scale, Color color)
+    {
+        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Destroy(go.GetComponent<Collider>());
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = pos;
+        go.transform.localScale = scale;
+        Renderer r = go.GetComponent<Renderer>();
+        r.material.color = color;
+        return r;
     }
 }
