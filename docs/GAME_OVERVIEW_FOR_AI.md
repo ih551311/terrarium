@@ -279,3 +279,6 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 ## 모래시계 병과 붉은 모래 바닥재 (구현됨, 사막 섬 전용)
 - **모래시계 병**(`hourglass`, 병 번호 6, `bottle6`, 24코인): 아래 큰 방울, 잘록한 허리, 위 작은 방울, 좁은 목의 호리병 모양. 모델 `jar_hourglass`(+`_cork`)는 `BottleModelMaker.Hourglass`(메뉴 눈 섬 병 모델 만들기)가 만든다. **사막 섬 배를 열어야 만들 수 있다**(`BottleChooser.IsUnlocked(6)` = `GameState.DesertDockOpen`, 눈꽃 병 5번은 `DockOpen`). 병 종류를 더하려면 `JarSetup.Jars`, `BottleIconMaker.Ids`, UISetup `ChoiceCount`와 typeIcons(두 곳), `BottleChooser.prices`를 함께 늘린다. 재료는 흙이 있는 아래 방울에 놓는다.
 - **붉은 모래 바닥재**(`red_sand`, `MaterialKind.Ground`, 구역 Desert): 사막 섬의 붉은 모래 지대에서 14곳, 더미 모양 임시 모델로 줍는다. 병 꾸미기의 바닥재 상자에 "붉은 모래 xN" 버튼(`GroundSelector.redSand`)이 있고, 그림은 `SoilLook.BuildRedSand`가 코드로 만든다(주황빛 붉은 바탕에 바람 물결). 순서: 눈 섬 병 모델 만들기 → 장식 모델 가져오기 설정 → 재료 데이터 만들기 → 병 만들기(JarSetup, 끝나면 병 프리팹 강제로 다시 가져오기) → 병 그림 만들기 → 재료 아이콘 만들기 → 재료 목록 만들기 → UI 만들기 → 사막 섬 만들기.
+## 전체 점검 (2026-11-18)
+- 재료 125종(아이디 중복, 아이콘, 모델, 이름, 상점 가격), 씬 4개(빠진 스크립트, 빈 재료 줍는 자리, 빈 메쉬, 빈 재질)를 검사했고 문제 없음. 섬 4곳을 배로 오가며 콘솔 오류와 경고 0개.
+- 고친 것: 섬을 옮기면 날씨를 6초에 걸쳐 바꾸던 탓에 눈 섬에서 사막 섬으로 가면 눈이 계속 내렸다. 이제 씬이 바뀌면 날씨를 바로 바꾸고 남은 눈, 비 입자를 지운다(`WeatherEffects.sceneChanged`, 그때는 날씨 알림도 띄우지 않는다). 우체통 구매하기 화면에서 제목과 쪽 번호(1/2쪽)가 겹쳐서 쪽 번호를 "다음" 버튼 오른쪽으로 옮겼다.

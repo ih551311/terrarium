@@ -26,6 +26,11 @@ public class WeatherEffects : MonoBehaviour
     private float muffle = 1f; // 1 바깥, 0 집 안
     private float announceAt = -1f;
     private RainGround ground;
+    private bool sceneChanged; // 섬을 옮겼다: 날씨를 천천히 바꾸지 않고 바로 바꾼다 (눈 섬에서 사막 섬으로 가도 눈이 계속 내리지 않게)
+
+    private void OnEnable() { UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded; }
+    private void OnDisable() { UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded; }
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode) { sceneChanged = true; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Boot()
@@ -71,12 +76,15 @@ public class WeatherEffects : MonoBehaviour
             WeatherStateData state = Resources.Load<WeatherStateData>("Weather/WS_" + today);
             if (state != null)
             {
-                manager.SetWeather(state, applied == null ? 0f : 6f);
-                if (applied == null) announceAt = Time.time + 3f;
+                bool instant = applied == null || sceneChanged;
+                manager.SetWeather(state, instant ? 0f : 6f);
+                if (sceneChanged && applied != null) ClearParticles(); // 앞 섬의 눈이나 비가 남아 떨어지지 않게
+                else if (applied == null) announceAt = Time.time + 3f;
                 else Announce();
             }
             applied = today;
         }
+        sceneChanged = false;
 
         if (announceAt > 0f && Time.time >= announceAt && GameRoot.Instance != null && GameRoot.Instance.Player != null)
         {
@@ -105,6 +113,16 @@ public class WeatherEffects : MonoBehaviour
         float cutoff = Mathf.Lerp(500f, 22000f, muffle * muffle);
         foreach (AudioLowPassFilter f in lowPass)
             if (f != null) f.cutoffFrequency = cutoff;
+    }
+
+    private void ClearParticles()
+    {
+        foreach (ParticleSystemRenderer r in particleRenderers)
+        {
+            if (r == null) continue;
+            ParticleSystem ps = r.GetComponent<ParticleSystem>();
+            if (ps != null) ps.Clear(true);
+        }
     }
 
     private void BuildSystem()

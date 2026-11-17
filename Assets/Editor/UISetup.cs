@@ -487,7 +487,7 @@ public static class UISetup
         }
         Button orderPrev = MakeSmallButton(mailPages[3].transform, "OrderPrev", "< 이전", new Vector2(1f, 1f), new Vector2(-300f, -5f), new Vector2(190f, 72f), 34);
         Button orderNext = MakeSmallButton(mailPages[3].transform, "OrderNext", "다음 >", new Vector2(1f, 1f), new Vector2(-100f, -5f), new Vector2(190f, 72f), 34);
-        TextMeshProUGUI orderPageLabel = Label(mailPages[3].transform, "OrderPage", "1/1쪽", 34, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-520f, -22f), new Vector2(200f, 50f), TextAlignmentOptions.Right);
+        TextMeshProUGUI orderPageLabel = Label(mailPages[3].transform, "OrderPage", "1/1쪽", 30, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-4f, -22f), new Vector2(92f, 50f), TextAlignmentOptions.Right); // "다음" 버튼 오른쪽 (제목과 겹치지 않게)
         TextMeshProUGUI orderSummary = Label(mailPages[3].transform, "Summary", string.Empty, 32, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -570f), new Vector2(1400f, 80f), TextAlignmentOptions.TopLeft);
 
         // 4쪽 받기: 큰 버튼 하나와, 도착한 것의 목록
