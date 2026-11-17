@@ -915,6 +915,7 @@ public static class IslandSetup
         }
         EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
+        PickupSize.FixOpenScene();
         return "새 재료 " + total + "곳을 놓았어요: " + report;
     }
 

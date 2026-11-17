@@ -132,6 +132,7 @@ public static class DesertIslandSetup
         int deco = ScatterDecor(rt);
         Physics.SyncTransforms();
         int pickups = PlacePickups(rt);
+        PickupSize.FixOpenScene(); // 풍뎅이처럼 작은 재료가 모래 위에서 안 보이지 않게
 
         Texture2D mapImage = BakeMap(rt, landing2, pierLen);
         GameObject mapGo = new GameObject("SceneMapInfo");
@@ -511,20 +512,20 @@ public static class DesertIslandSetup
             Vector2 t = tents[i];
             // 천막은 모닥불을 바라본다
             float yaw = Mathf.Atan2(-t.x, -t.y) * Mathf.Rad2Deg - 90f;
-            GameObject tent = Deco("deco_desert_tent", g, new Vector3(t.x, GroundY(t.x, t.y), t.y), yaw, 4.2f);
+            GameObject tent = Deco("deco_desert_tent", g, new Vector3(t.x, GroundY(t.x, t.y), t.y), yaw, 3.2f); // 기둥까지 3.2m (천막 지붕 약 2.4m)
             if (tent == null) continue;
             tent.name = "Tent_" + i;
             AddMeshCollider(tent);
             taken.Add(t);
         }
-        GameObject fire = Deco("deco_campfire", g, new Vector3(0f, GroundY(0f, 0f), 0f), 0f, 1.1f);
+        GameObject fire = Deco("deco_campfire", g, new Vector3(0f, GroundY(0f, 0f), 0f), 0f, 0.7f);
         if (fire != null) { fire.name = "Campfire"; taken.Add(Vector2.zero); }
 
         Vector2[] camels = { new Vector2(-4f, 13f), new Vector2(16f, -3f), new Vector2(-17f, 2f) };
         for (int i = 0; i < camels.Length; i++)
         {
             Vector2 c = camels[i];
-            GameObject camel = Deco("deco_camel", g, new Vector3(c.x, GroundY(c.x, c.y), c.y), Rand() * 360f, 2.6f);
+            GameObject camel = Deco("deco_camel", g, new Vector3(c.x, GroundY(c.x, c.y), c.y), Rand() * 360f, 2.3f);
             if (camel == null) continue;
             camel.name = "Camel_" + i;
             AddMeshCollider(camel);

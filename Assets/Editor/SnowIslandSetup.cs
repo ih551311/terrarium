@@ -104,6 +104,7 @@ public static class SnowIslandSetup
         BuildAurora(rt);
         Physics.SyncTransforms();
         int pickups = PlacePickups(rt);
+        PickupSize.FixOpenScene(); // 작은 재료가 눈 위에서 안 보이지 않게
 
         // 지도: 지도 그림을 만들고, 이 씬의 지도 정보(SceneMapInfo)를 둔다
         Texture2D mapImage = BakeMap(rt, landing2, pierLen);
@@ -457,8 +458,8 @@ public static class SnowIslandSetup
         foreach (GameObject s in new[] { sign1, sign2 }) if (s != null) AddTrunk(s, 0.2f, 2f);
 
         // 울타리와 낮은 돌담: 집 뒤와 길가
-        Fence(g, "Fence_1", new Vector2(-24f, 4f), new Vector2(-24f, 18f), 4.4f);
-        Fence(g, "Fence_2", new Vector2(8f, 20f), new Vector2(24f, 20f), 4.4f);
+        Fence(g, "Fence_1", new Vector2(-24f, 4f), new Vector2(-24f, 18f), 4.4f * FenceScale / 2.4f);
+        Fence(g, "Fence_2", new Vector2(8f, 20f), new Vector2(24f, 20f), 4.4f * FenceScale / 2.4f);
         Wall(g, "Wall1", new Vector2(-12f, -24f), new Vector2(6f, -24f), 3.6f);
         Wall(g, "Wall3", new Vector2(22f, -2f), new Vector2(22f, -12f), 3.6f);
 
@@ -482,6 +483,9 @@ public static class SnowIslandSetup
         }
     }
 
+    // 울타리 크기: 2.4배였을 때 2.2m로 사람(1.8m)보다 커서, 허리 높이(약 1.2m)가 되게 줄였다
+    private const float FenceScale = 1.3f;
+
     private static void Fence(Transform parent, string prefab, Vector2 a, Vector2 b, float segment)
     {
         float len = Vector2.Distance(a, b);
@@ -490,7 +494,7 @@ public static class SnowIslandSetup
         for (int i = 0; i < count; i++)
         {
             Vector2 p = Vector2.Lerp(a, b, (i + 0.5f) / count);
-            GameObject f = Instantiate(prefab, parent, new Vector3(p.x, GroundY(p.x, p.y), p.y), yaw, 2.4f);
+            GameObject f = Instantiate(prefab, parent, new Vector3(p.x, GroundY(p.x, p.y), p.y), yaw, FenceScale);
             if (f != null) AddSolidBox(f, 1f);
         }
     }
