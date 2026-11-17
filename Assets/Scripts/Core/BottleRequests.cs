@@ -78,7 +78,7 @@ public static class BottleRequests
         new BottleRequest { from = "수집가 아저씨",
             body = "저는 가득 찬 것을 좋아해요. 빈틈없이 꽉 채운 병을 보고 싶어요.",
             condition = "재료를 10개 이상 넣은 병", coins = 60, rewardItemId = "crystal",
-            thanks = "이렇게 가득 채우다니, 정성이 느껴져요. 이건 답례예요.",
+            thanks = "이렇게 꽉 채웠군요. 한참 들여다봤어요. 약소하지만 답례예요.",
             test = r => r.items.Count >= 10 },
 
         new BottleRequest { from = "모래성 아이",
@@ -96,7 +96,7 @@ public static class BottleRequests
         new BottleRequest { from = "조용한 할아버지",
             body = "복잡한 건 눈이 아파요. 딱 몇 개만 놓인, 단순하고 고요한 병이면 좋겠어요.",
             condition = "재료를 1~4개만 넣은 병", coins = 35, rewardItemId = "pebble",
-            thanks = "비어 있는 곳이 오히려 마음을 편하게 하네요. 고마워요.",
+            thanks = "휑한 데가 있으니까 오히려 눈이 편하네요. 고마워요.",
             test = r => r.items.Count >= 1 && r.items.Count <= 4 },
 
         new BottleRequest { from = "책방 주인",
@@ -138,7 +138,7 @@ public static class BottleRequests
         new BottleRequest { from = "눈 마을 이장님",
             body = "눈 섬은 고요하고 포근하지요. 눈 마을의 정취가 느껴지는 병을 하나 보내 주시겠어요?",
             condition = "눈 섬 재료를 3개 이상 넣은 병", coins = 65, rewardItemId = "snowball",
-            thanks = "마을 사람들이 모두 모여서 구경했어요. 따뜻한 마음이 전해져요.",
+            thanks = "마을 사람들이 다 모여서 구경했어요. 다들 좋아하네요.",
             test = r => Count(r, m => m.zone == MaterialZone.Snow) >= 3 },
 
         new BottleRequest { from = "벽난로 앞 할머니",

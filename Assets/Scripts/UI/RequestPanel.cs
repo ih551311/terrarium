@@ -159,8 +159,8 @@ public class RequestPanel : MonoBehaviour
 
         if (matching.Count == 0)
             noteLabel.text = BottleStore.ArchivedIds().Count == 0
-                ? "아직 완성한 병이 없어요. 천천히 만들어 봐요."
-                : "조건에 맞는 병이 아직 없어요. 서두르지 않아도 돼요. (다른 병 " + others + "개)";
+                ? "아직 완성한 병이 없어요."
+                : "조건에 맞는 병이 없어요. (가진 병 " + others + "개)";
         else if (matching.Count > MaxRows)
             noteLabel.text = "조건에 맞는 병이 " + matching.Count + "개 있어요. (앞의 " + MaxRows + "개만 보여요)";
         else

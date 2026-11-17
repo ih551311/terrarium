@@ -130,7 +130,7 @@ public class BottlePanel : MonoBehaviour
         string id = BottleStore.Archive(done.BottleId, givenName);
         done.ResetToEmpty();
         station.ShowOnlyInProgress();
-        ShowChooser(id != null ? "병을 완성했어요! 병 인벤토리에 넣었어요 (" + BottleStore.NameOf(id, typeName) + ")" : null);
+        ShowChooser(id != null ? "병을 완성했어요! 내 병에 넣었어요 (" + BottleStore.NameOf(id, typeName) + ")" : null);
     }
 
     /// <summary>병 만들기 화면을 보인다. (보고 있던 병은 놓고, 병 그림과 꾸미기 도구는 숨긴다)</summary>
@@ -215,7 +215,7 @@ public class BottlePanel : MonoBehaviour
     private void RefreshCancelLabel()
     {
         if (cancelLabel == null) return;
-        cancelLabel.text = cancelAsked ? "정말 버릴까요?\n(코인 돌려받아요)" : "병 버리기";
+        cancelLabel.text = cancelAsked ? "정말 버릴까요?\n(낸 코인은 돌려받아요)" : "병 버리기";
         if (cancelButton != null) cancelButton.gameObject.SetActive(contents != null && !contents.IsCompleted);
     }
 

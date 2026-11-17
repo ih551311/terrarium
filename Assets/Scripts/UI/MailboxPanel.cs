@@ -239,7 +239,7 @@ public class MailboxPanel : MonoBehaviour
     private static string CollectInfo()
     {
         if (!GameState.HasMail)
-            return "아직 도착한 것이 없어요.\n재료를 판매하거나 물건을 구매하면 다음 날 아침 도착해요.";
+            return "아직 도착한 게 없어요.\n재료를 팔거나 물건을 사면 다음 날 아침에 와요.";
 
         string text = string.Empty;
         if (GameState.ArrivedCoins > 0) text += "코인  " + GameState.ArrivedCoins + "개\n";
@@ -317,9 +317,9 @@ public class MailboxPanel : MonoBehaviour
             upgradeLabels[i].text = UpgradeText(NameOf(i), tool);
         }
 
-        summaryText.text = "보낸 재료 " + GameState.Outbox.Count + "개 : 내일 아침 " + GameState.PendingSellCoins + "코인이 와요\n(잠은 집 안의 침대에서 자요)";
+        summaryText.text = "보낸 재료 " + GameState.Outbox.Count + "개 : 내일 아침 " + GameState.PendingSellCoins + "코인이 와요";
         if (orderSummaryText != null)
-            orderSummaryText.text = "주문한 물건 " + GameState.Orders.Count + "개 : 내일 아침 도착해요\n(잠은 집 안의 침대에서 자요)";
+            orderSummaryText.text = "주문한 물건 " + GameState.Orders.Count + "개 : 내일 아침 도착해요";
 
         collectButton.interactable = GameState.HasMail;
         collectLabel.text = GameState.HasMail
@@ -331,7 +331,7 @@ public class MailboxPanel : MonoBehaviour
         if (hubLabels != null && hubLabels.Length >= 4)
         {
             hubLabels[0].text = "판매하기\n<size=32>가방의 재료를 보내요\n(보낸 재료 " + GameState.Outbox.Count + "개)</size>";
-            hubLabels[1].text = "업그레이드\n<size=32>도끼, 곡괭이, 괭이를 튼튼하게\n(내일 아침 도착)</size>";
+            hubLabels[1].text = "도구 강화\n<size=32>도끼, 곡괭이, 괭이를 좋은 걸로\n(내일 아침 도착)</size>";
             hubLabels[2].text = "구매하기\n<size=32>코인으로 물건을 주문해요\n(주문한 물건 " + GameState.Orders.Count + "개)</size>";
             hubLabels[3].text = GameState.HasMail
                 ? "받기  (!)\n<size=32>도착했어요: 코인 " + GameState.ArrivedCoins + ", 물건 " + GameState.ArrivedItems.Count + "개</size>"

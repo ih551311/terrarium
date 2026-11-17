@@ -260,7 +260,7 @@ public static class UISetup
             iconImage.color = iconImage.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             iconImage.raycastTarget = false;
         }
-        GameObject noneLeft = Label(chooseBox.transform, "NoneLeft", "만들 수 있는 병이 없어요 (병은 나중에 살 수 있어요)", 34, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1300f, 60f), TextAlignmentOptions.Center).gameObject;
+        GameObject noneLeft = Label(chooseBox.transform, "NoneLeft", "만들 수 있는 병이 없어요", 34, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(1300f, 60f), TextAlignmentOptions.Center).gameObject;
         noneLeft.SetActive(false);
 
         // 완성한 병이 병 인벤토리로 들어갔다는 안내와, "내 병" 버튼
@@ -373,7 +373,7 @@ public static class UISetup
         Button homeButton = MakeButton(mWindow.transform, "HomeButton", "집으로 돌아가기", new Vector2(1f, 1f), new Vector2(-60f, -230f), new Vector2(560f, 130f));
         homeButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         homeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 54;
-        Label(mWindow.transform, "Legend", "지도를 누르면 그 자리로 이동해요\n\n빨간 표시: 지금 내 위치\n(흰 막대가 바라보는 방향)\n갈색 \"집\": 오두막 앞\n위쪽이 북쪽이에요\n\nM 또는 Esc: 닫기  |  N: 작은 지도 켜기/끄기",
+        Label(mWindow.transform, "Legend", "지도를 누르면 그 자리로 가요\n\n빨간 표시: 지금 내 위치\n(흰 막대: 바라보는 방향)\n갈색 \"집\": 오두막 앞\n위쪽이 북쪽\n\nM, Esc: 닫기\nN: 작은 지도 켜고 끄기",
             38, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-60f, -400f), new Vector2(560f, 400f), TextAlignmentOptions.TopLeft);
         TextMeshProUGUI mapMessage = Label(mWindow.transform, "Message", string.Empty, 40, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-60f, 60f), new Vector2(560f, 140f), TextAlignmentOptions.BottomLeft);
         mapMessage.color = new Color(0.72f, 0.3f, 0.2f, 1f);
@@ -401,13 +401,13 @@ public static class UISetup
         }
 
         // 0쪽 메뉴: 큰 버튼 네 개
-        string[] hubNames = { "판매하기", "업그레이드", "구매하기", "받기" };
+        string[] hubNames = { "판매하기", "도구 강화", "구매하기", "받기" };
         Color[] hubColors = { new Color(0.66f, 0.8f, 0.72f, 1f), new Color(0.98f, 0.82f, 0.45f, 1f), new Color(0.7f, 0.82f, 0.95f, 1f), new Color(0.97f, 0.72f, 0.55f, 1f) };
         Button[] hubButtons = new Button[4];
         TMP_Text[] hubLabels = new TMP_Text[4];
         for (int i = 0; i < 4; i++)
         {
-            Button hb = MakeButton(mailPages[0].transform, "Hub" + i, hubNames[i], new Vector2(0f, 1f), new Vector2(30f + (i % 2) * 740f, -30f - (i / 2) * 330f), new Vector2(700f, 300f));
+            Button hb = MakeButton(mailPages[0].transform, "Hub" + i, hubNames[i], new Vector2(0f, 1f), new Vector2(30f + (i % 2) * 740f, -20f - (i / 2) * 345f), new Vector2(700f, 325f)); // 두 줄이 창 아래까지 차게
             hb.GetComponent<Image>().color = hubColors[i];
             TextMeshProUGUI ht = hb.GetComponentInChildren<TextMeshProUGUI>();
             ht.fontSize = 64; ht.lineSpacing = 12f;
@@ -415,7 +415,7 @@ public static class UISetup
         }
 
         // 1~4쪽 공통: 메뉴로 돌아가기 버튼과 제목
-        string[] pageTitles = { null, "판매하기  (내일 아침 코인이 와요)", "업그레이드  (내일 아침 도착해요)", "구매하기  (내일 아침 도착)", "받기  (도착한 것을 가방과 지갑으로)" };
+        string[] pageTitles = { null, "판매하기  (내일 아침 코인으로)", "도구 강화  (내일 아침 도착)", "구매하기  (내일 아침 도착)", "받기" };
         Button[] backButtons = new Button[4];
         for (int p = 1; p <= 4; p++)
         {
@@ -504,7 +504,7 @@ public static class UISetup
         GameObject iWindow = Rect(invRoot.transform, "Window");
         Center(iWindow, 1400f, 920f); // 창은 직사각형, 칸은 정사각형 (8열 x 4행 = 32칸)
         Image iBg = iWindow.AddComponent<Image>(); iBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
-        Label(iWindow.transform, "Title", "인벤토리", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(500f, 90f), TextAlignmentOptions.TopLeft);
+        Label(iWindow.transform, "Title", "내 물건", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(500f, 90f), TextAlignmentOptions.TopLeft);
         Label(iWindow.transform, "Hint", "Tab: 닫기", 40, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -45f), new Vector2(400f, 60f), TextAlignmentOptions.TopRight);
 
         // 탭: 가방 / 병
