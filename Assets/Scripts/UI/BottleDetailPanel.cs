@@ -22,6 +22,9 @@ public class BottleDetailPanel : MonoBehaviour
     [Tooltip("선반에 올리거나 내리는 버튼")]
     [SerializeField] private Button shelfButton;
     [SerializeField] private TMP_Text shelfLabel;
+    [Tooltip("병을 지우는 버튼 (두 번 눌러야 지워진다)")]
+    [SerializeField] private Button deleteButton;
+    [SerializeField] private TMP_Text deleteLabel;
 
     [Tooltip("병 종류별 병 프리팹들 (UISetup이 Assets/Prefabs/Bottles에서 모아 넣는다). 작업대가 없는 섬에서도 병을 보려고 직접 들고 있는다.")]
     [SerializeField] private GameObject[] bottlePrefabs;
@@ -36,12 +39,14 @@ public class BottleDetailPanel : MonoBehaviour
     private GameObject copy;
     private Camera copyCamera;
     private string notice;
+    private bool deleteAsked;
 
     private void Awake()
     {
         root.SetActive(false);
         closeButton.onClick.AddListener(Close);
         shelfButton.onClick.AddListener(OnShelfClicked);
+        if (deleteButton != null) deleteButton.onClick.AddListener(OnDeleteClicked);
     }
 
     private void OnEnable() { BottleStore.Changed += Redraw; }
@@ -68,6 +73,8 @@ public class BottleDetailPanel : MonoBehaviour
 
         bottleId = archivedId;
         notice = null;
+        deleteAsked = false;
+        if (deleteLabel != null) deleteLabel.text = "병 지우기";
 
         // 병 종류의 프리팹을 복사한다. Instantiate 직전에 번호를 넣어 두면 그 병의 기록으로 병 속이 되살아난다.
         BottleContents.SpawnId = archivedId;
@@ -124,6 +131,31 @@ public class BottleDetailPanel : MonoBehaviour
             notice = BottleStore.TryDisplay(bottleId) ? null : "선반이 가득 찼어요 (병을 더 만들면 칸이 늘어요)";
         }
         Redraw();
+    }
+
+    /// <summary>병 지우기: 처음 누르면 한 번 더 묻고, 다시 누르면 병을 지운다(선반에 있었으면 선반에서도 사라진다). 되돌릴 수 없다.</summary>
+    private void OnDeleteClicked()
+    {
+        if (!deleteAsked)
+        {
+            deleteAsked = true;
+            if (deleteLabel != null) deleteLabel.text = "정말 지울까요?\n한 번 더 누르면 지워져요";
+            return;
+        }
+        string name = nameLabel != null ? nameLabel.text : "병";
+        string id = bottleId;
+        Close();
+        BottleStore.Remove(id);
+        GameAudio.Play(GameAudio.Sfx.Paper, 0.8f);
+        if (GameRoot.Instance != null)
+        {
+            if (GameRoot.Instance.Player != null)
+            {
+                Interactor who = GameRoot.Instance.Player.GetComponentInChildren<Interactor>();
+                if (who != null) who.ShowMessage(name + "을(를) 지웠어요");
+            }
+            GameRoot.Instance.SaveNow();
+        }
     }
 
     private void Redraw()

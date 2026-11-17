@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// "완성" 버튼. 실수로 누르지 않게 두 번 눌러야 완성된다. (처음 누르면 안내가 바뀌고, 3초 안에 다시 누른다)
+/// "완성" 버튼. 한 번 누르면 바로 완성된다(이름을 짓는 상자가 뜬다).
 /// 완성하면 병이 닫히고(뚜껑) 더는 고칠 수 없다. 재료는 몇 개든 상관없다.
 /// 패널 화면(UISetup이 만든다) 안에 있는 오브젝트에 붙인다.
 /// </summary>
@@ -56,13 +56,6 @@ public class CompleteBottleButton : MonoBehaviour
     private void OnClicked()
     {
         if (contents == null || contents.IsCompleted) return;
-
-        if (confirmUntil <= 0f)
-        {
-            confirmUntil = Time.time + confirmSeconds;
-            label.text = ConfirmText;
-            return;
-        }
 
         contents.Complete();
         GameAudio.Play(GameAudio.Sfx.Chime);

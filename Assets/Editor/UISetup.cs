@@ -680,10 +680,13 @@ public static class UISetup
         Label(dWindow.transform, "Hint", "끌어서 돌려 보기  |  T: 처음 방향  |  Esc: 닫기", 26, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(40f, 40f), new Vector2(760f, 40f), TextAlignmentOptions.Left);
         Button detailShelf = MakeSmallButton(dWindow.transform, "ShelfButton", "선반에 올리기", new Vector2(1f, 0f), new Vector2(-40f, 30f), new Vector2(380f, 80f), 34);
         detailShelf.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
+        Button detailDelete = MakeSmallButton(dWindow.transform, "DeleteButton", "병 지우기", new Vector2(1f, 0f), new Vector2(-440f, 30f), new Vector2(300f, 80f), 28);
+        detailDelete.GetComponent<Image>().color = new Color(0.93f, 0.66f, 0.62f, 1f);
         detailRoot.SetActive(false);
         BottleDetailPanel detailPanel = ui.AddComponent<BottleDetailPanel>();
         SetRef(detailPanel, "root", detailRoot); SetRef(detailPanel, "closeButton", detailClose); SetRef(detailPanel, "dragRotate", detailDrag);
         SetRef(detailPanel, "nameLabel", detailName); SetRef(detailPanel, "infoLabel", detailInfo);
+        SetRef(detailPanel, "deleteButton", detailDelete); SetRef(detailPanel, "deleteLabel", detailDelete.GetComponentInChildren<TextMeshProUGUI>());
         var bottlePrefabList = new System.Collections.Generic.List<Object>();
         foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Bottles" }))
             bottlePrefabList.Add(AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid)));
