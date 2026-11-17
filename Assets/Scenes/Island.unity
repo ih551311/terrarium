@@ -83964,63 +83964,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Pickup
   material: {fileID: 11400000, guid: 8a551b975bba8cf449e3988ede072285, type: 2}
---- !u!1001 &962508320
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 11.000183
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.9560097
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.1002231
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0.27417997
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0.028743608
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6633905321508200593, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
-      propertyPath: m_Name
-      value: MikuNPC
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
 --- !u!1 &967234334
 GameObject:
   m_ObjectHideFlags: 0
@@ -96198,6 +96141,63 @@ MonoBehaviour:
   fixedMaterial: {fileID: 0}
   plantGroup: 1
   emptyTint: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+--- !u!1001 &1110572447
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 11.000183
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9560097
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.1002231
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.27417997
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.028743608
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5682777664911445467, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6633905321508200593, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
+      propertyPath: m_Name
+      value: MikuNPC
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9aba47f99fd70274bbc98abe3c81a729, type: 3}
 --- !u!1001 &1112634616
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -202940,4 +202940,4 @@ SceneRoots:
   - {fileID: 1765785627}
   - {fileID: 378338417}
   - {fileID: 416965351}
-  - {fileID: 962508320}
+  - {fileID: 1110572447}

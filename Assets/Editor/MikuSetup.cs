@@ -13,6 +13,7 @@ using UnityEngine;
 /// </summary>
 public static class MikuSetup
 {
+    private const float HairGrow = 1.07f; // 머리카락 덮개를 키우는 배율
     private const string FbxPath = "Assets/Models/Miku/MIKU.fbx";
     private const string MatFolder = "Assets/Models/Miku/Materials";
     private const string DecoPrefabPath = "Assets/Models/Deco/deco_miku.prefab";
@@ -60,6 +61,17 @@ public static class MikuSetup
                 default: m = eye; break;                                   // Sphere002, Sphere003: 눈
             }
             r.sharedMaterial = m;
+        }
+
+        // 머리카락 덮개(Cone001)가 얼굴(Box001)보다 조금 작아서 얼굴이 군데군데 삐져나와 "탈모"처럼 보인다. 덮개를 키워서 덮는다.
+        foreach (Renderer r in inst.GetComponentsInChildren<Renderer>())
+        {
+            if (r.name != "Cone001") continue;
+            Bounds hb = r.bounds;
+            Vector3 before = hb.center;
+            r.transform.localScale *= HairGrow;
+            Vector3 after = r.bounds.center;
+            r.transform.position += before - after; // 키우기 전의 가운데를 그대로 둔다
         }
 
         Bounds b = BoundsOf(inst);
