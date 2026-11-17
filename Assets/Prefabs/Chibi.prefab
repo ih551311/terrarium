@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2746128418553594530}
   - component: {fileID: 3506656842431345028}
-  - component: {fileID: 8476442160940857400}
   m_Layer: 0
   m_Name: Chibi
   m_TagString: Untagged
@@ -53,26 +52,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.4
-  m_Height: 1.6
+  m_Radius: 0.45
+  m_Height: 1.95
   m_Direction: 1
-  m_Center: {x: 0, y: 0.8, z: 0}
---- !u!114 &8476442160940857400
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3261806691346098874}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 33d7030292094964980a6e242825336b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NpcTalk
-  npcName: "\uCE58\uBE44"
-  lines:
-  - "\uC548\uB155!"
-  lookDistance: 7
+  m_Center: {x: 0, y: 0.975, z: 0}
 --- !u!1001 &6181187361863603013
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -87,27 +70,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5652979561317597671, guid: 5ce0ef4cb6eedbd45adeb89d4a33f6d1, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.8860763
+      value: 1.0799055
       objectReference: {fileID: 0}
     - target: {fileID: 5652979561317597671, guid: 5ce0ef4cb6eedbd45adeb89d4a33f6d1, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.8860763
+      value: 1.0799055
       objectReference: {fileID: 0}
     - target: {fileID: 5652979561317597671, guid: 5ce0ef4cb6eedbd45adeb89d4a33f6d1, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.8860763
+      value: 1.0799055
       objectReference: {fileID: 0}
     - target: {fileID: 5652979561317597671, guid: 5ce0ef4cb6eedbd45adeb89d4a33f6d1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.048173904
+      value: 0.058711946
       objectReference: {fileID: 0}
     - target: {fileID: 5652979561317597671, guid: 5ce0ef4cb6eedbd45adeb89d4a33f6d1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.09544104
+      value: 0.11631882
       objectReference: {fileID: 0}
     - target: {fileID: 5652979561317597671, guid: 5ce0ef4cb6eedbd45adeb89d4a33f6d1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.1978251
+      value: 0.24109942
       objectReference: {fileID: 0}
     - target: {fileID: 5652979561317597671, guid: 5ce0ef4cb6eedbd45adeb89d4a33f6d1, type: 3}
       propertyPath: m_LocalRotation.w

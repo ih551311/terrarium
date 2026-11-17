@@ -274,5 +274,5 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **사막 섬 피라미드**: 작은 피라미드를 겹쳐 키우면 면이 맞닿은 곳에 어두운 쐐기가 보여서, 섬 풍경에는 단이 열두 개인 계단식 피라미드(deco_pyramid_steps, 키 16m)를 쓴다. 꾸밈 재료 피라미드(deco_pyramid)는 그대로다.
 
 ## 치비 NPC와 꾸밈 재료 (구현됨)
-- **치비**(`ChibiNPC`, 집 앞 시작 자리에서 왼쪽 2.8m, 앞으로 4m. 오른쪽은 미쿠): 인사하는 자세의 SD 캐릭터. 바라보고 E를 누르면 "안녕!"(`NpcTalk`). 모델 `Assets/Models/Chibi/Chibi.fbx`는 뼈대가 있는 모델(SkinnedMeshRenderer 15개)이라 `ChibiSetup`이 자세 그대로 일반 메쉬로 굳힌 `Chibi_Baked.prefab`(메쉬는 `Baked/`)을 만들어 쓴다. 굳힐 때 부품 크기는 `lossyScale`로 따로 줘야 한다(팔찌, 별, 리본이 틀어진 적이 있다). 모델은 +z를 본다. 메뉴 치비 만들기(`ChibiSetup.Build`)로 다시 만든다.
+- **치비**(`ChibiNPC`, 집 문 바로 앞 왼쪽 x -1.3, z 11.6. 키 1.95m): 인사하는 자세의 SD 캐릭터. 말은 걸 수 없고(`NpcTalk` 없음) 충돌 캡슐만 있다. 우체통(왼쪽)과 가로등(오른쪽) 사이라서 겹치지 않게 이 자리로 정했다. 모델 `Assets/Models/Chibi/Chibi.fbx`는 뼈대가 있는 모델(SkinnedMeshRenderer 15개)이라 `ChibiSetup`이 자세 그대로 일반 메쉬로 굳힌 `Chibi_Baked.prefab`(메쉬는 `Baked/`)을 만들어 쓴다. 메쉬는 같은 파일 안에서 내용만 바꿔야 한다(지우고 새로 만들면 프리팹의 메쉬 연결이 끊겨 치비가 안 보인다). 굳힐 때 부품 크기는 `lossyScale`로 따로 줘야 한다(팔찌, 별, 리본이 틀어진 적이 있다). 모델은 +z를 본다. 메뉴 치비 만들기(`ChibiSetup.Build`)로 다시 만든다.
 - **치비 꾸밈 재료**(`chibi`, 우체통 14코인, 되팔기 7코인): 키 9cm 모델 `Assets/Models/Deco/deco_chibi.prefab`. 순서는 미쿠와 같다(치비 만들기 → 재료 데이터 → 아이콘 → 재료 목록 → UI 만들기).

@@ -9,12 +9,13 @@ using UnityEngine;
 /// (병 속에 놓는 재료는 일반 메쉬여야 크기를 잴 수 있고 가볍다)
 ///  1) Assets/Models/Chibi/Chibi_Baked.prefab: 굳힌 모델 (키 그대로)
 ///  2) 꾸밈 재료용 작은 모델 Assets/Models/Deco/deco_chibi.prefab (키 9cm)
-///  3) NPC용 Assets/Prefabs/Chibi.prefab (키 1.6m, NpcTalk, 충돌 캡슐)
-///  4) 원래 섬(Island)의 집 앞, 시작 자리의 왼쪽 앞에 NPC를 세운다 (이름 ChibiNPC. 오른쪽은 미쿠)
+///  3) 집 앞에 세워 둘 Assets/Prefabs/Chibi.prefab (키 1.95m, 말은 못 걸고 충돌 캡슐만)
+///  4) 원래 섬(Island)의 집 문 바로 앞 왼쪽에 세운다 (더 왼쪽에는 우체통, 오른쪽에는 가로등이 있다) (이름 ChibiNPC. 시작 자리 앞 오른쪽은 미쿠)
 /// 메뉴: 유리병 정원 > 치비 만들기. 여러 번 눌러도 같은 결과가 나온다. (재료 데이터와 아이콘은 재료 데이터 만들기, 재료 아이콘 만들기로)
 /// </summary>
 public static class ChibiSetup
 {
+    private const float StandHeight = 1.95f; // 서 있는 치비의 키(미터)
     private const string FbxPath = "Assets/Models/Chibi/Chibi.fbx";
     private const string BakedFolder = "Assets/Models/Chibi/Baked";
     private const string BakedPrefabPath = "Assets/Models/Chibi/Chibi_Baked.prefab";
@@ -43,8 +44,10 @@ public static class ChibiSetup
             Mesh mesh = new Mesh { name = smr.name };
             smr.BakeMesh(mesh, false); // 렌더러 안쪽 좌표의 메쉬. 크기는 아래에서 오브젝트 크기(lossyScale)로 준다
             string meshPath = BakedFolder + "/" + smr.name.Replace('.', '_') + ".asset";
-            AssetDatabase.DeleteAsset(meshPath);
-            AssetDatabase.CreateAsset(mesh, meshPath);
+            // 이미 있으면 같은 파일 안에서 내용만 바꾼다 (지우고 새로 만들면 프리팹의 메쉬 연결이 끊긴다)
+            Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+            if (existing != null) { existing.Clear(); EditorUtility.CopySerialized(mesh, existing); EditorUtility.SetDirty(existing); }
+            else AssetDatabase.CreateAsset(mesh, meshPath);
 
             GameObject part = new GameObject(smr.name);
             part.transform.SetParent(root.transform, false);
@@ -55,6 +58,8 @@ public static class ChibiSetup
         }
         Object.DestroyImmediate(inst);
         PrefabUtility.SaveAsPrefabAsset(root, BakedPrefabPath);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.ImportAsset(BakedPrefabPath, ImportAssetOptions.ForceUpdate);
         Object.DestroyImmediate(root);
     }
 
@@ -88,18 +93,11 @@ public static class ChibiSetup
         Object.DestroyImmediate(deco);
 
         Directory.CreateDirectory("Assets/Prefabs");
-        GameObject npc = Wrap("Chibi", 1.6f);
-        CapsuleCollider cap = npc.AddComponent<CapsuleCollider>();
-        cap.center = new Vector3(0f, 0.8f, 0f);
-        cap.radius = 0.4f;
-        cap.height = 1.6f;
-        NpcTalk talk = npc.AddComponent<NpcTalk>();
-        SerializedObject so = new SerializedObject(talk);
-        so.FindProperty("npcName").stringValue = "치비";
-        SerializedProperty lines = so.FindProperty("lines");
-        lines.arraySize = 1;
-        lines.GetArrayElementAtIndex(0).stringValue = "안녕!";
-        so.ApplyModifiedPropertiesWithoutUndo();
+        GameObject npc = Wrap("Chibi", StandHeight);
+        CapsuleCollider cap = npc.AddComponent<CapsuleCollider>(); // 말을 걸 수는 없고, 지나가다 부딪히기만 한다
+        cap.center = new Vector3(0f, StandHeight * 0.5f, 0f);
+        cap.radius = 0.45f;
+        cap.height = StandHeight;
         PrefabUtility.SaveAsPrefabAsset(npc, NpcPrefabPath);
         Object.DestroyImmediate(npc);
 
@@ -109,7 +107,7 @@ public static class ChibiSetup
         foreach (SpawnPoint sp in Object.FindObjectsByType<SpawnPoint>(FindObjectsSortMode.None)) if (sp.Id == "FromHut") hut = sp;
         if (hut == null) return "집 앞 도착 지점(FromHut)을 찾지 못했어요.";
         Terrain terrain = Terrain.activeTerrain;
-        Vector3 pos = hut.transform.position + new Vector3(-2.8f, 0f, -4f);
+        Vector3 pos = hut.transform.position + new Vector3(-1.3f, 0f, 2.6f);
         pos.y = terrain != null ? terrain.SampleHeight(pos) + terrain.transform.position.y : hut.transform.position.y;
         GameObject placed = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(NpcPrefabPath));
         placed.name = "ChibiNPC";
