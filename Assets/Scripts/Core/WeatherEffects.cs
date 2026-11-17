@@ -79,8 +79,7 @@ public class WeatherEffects : MonoBehaviour
                 bool instant = applied == null || sceneChanged;
                 manager.SetWeather(state, instant ? 0f : 6f);
                 if (sceneChanged && applied != null) ClearParticles(); // 앞 섬의 눈이나 비가 남아 떨어지지 않게
-                else if (applied == null) announceAt = Time.time + 3f;
-                else Announce();
+                // 날씨 알림 글자는 띄우지 않는다 (재료가 나오는 날씨는 로딩 화면의 재료 쪽지가 알려 준다)
             }
             applied = today;
         }

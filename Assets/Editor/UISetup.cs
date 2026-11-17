@@ -92,16 +92,16 @@ public static class UISetup
         GameObject miniView = Rect(mini.transform, "View");
         Anchor(miniView, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(300f, 300f));
         RawImage miniImage = miniView.AddComponent<RawImage>(); miniImage.texture = mapTexture; miniImage.raycastTarget = false;
+        // 지도 표시 그림: 집, 내 위치(주황 핀, 뾰족한 쪽이 바라보는 방향), 배 (MapMarkerMaker가 그린다)
+        Sprite hutSprite = MapMarkerMaker.Load(MapMarkerMaker.HutPath);
+        Sprite playerSprite = MapMarkerMaker.Load(MapMarkerMaker.PlayerPath);
+        Sprite boatSprite = MapMarkerMaker.Load(MapMarkerMaker.BoatPath);
         GameObject miniHut = Rect(miniView.transform, "HutMarker");
-        Anchor(miniHut, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(26f, 26f));
-        Image miniHutImg = miniHut.AddComponent<Image>(); miniHutImg.color = new Color(0.55f, 0.33f, 0.2f, 1f); miniHutImg.raycastTarget = false;
-        Label(miniHut.transform, "Text", "집", 20, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(26f, 26f), TextAlignmentOptions.Center).color = Color.white;
+        Anchor(miniHut, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(34f, 34f));
+        Image miniHutImg = miniHut.AddComponent<Image>(); miniHutImg.sprite = hutSprite; miniHutImg.color = Color.white; miniHutImg.raycastTarget = false;
         GameObject miniPlayer = Rect(miniView.transform, "PlayerMarker");
-        Anchor(miniPlayer, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(18f, 18f));
-        Image miniPlayerImg = miniPlayer.AddComponent<Image>(); miniPlayerImg.color = new Color(0.9f, 0.22f, 0.22f, 1f); miniPlayerImg.raycastTarget = false;
-        GameObject miniNose = Rect(miniPlayer.transform, "Nose");
-        Anchor(miniNose, new Vector2(0.5f, 1f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(7f, 13f));
-        Image miniNoseImg = miniNose.AddComponent<Image>(); miniNoseImg.color = Color.white; miniNoseImg.raycastTarget = false;
+        Anchor(miniPlayer, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(32f, 32f));
+        Image miniPlayerImg = miniPlayer.AddComponent<Image>(); miniPlayerImg.sprite = playerSprite; miniPlayerImg.color = Color.white; miniPlayerImg.raycastTarget = false;
         Label(mini.transform, "North", "북", 26, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(60f, 34f), TextAlignmentOptions.Center).color = Color.white;
 
         MiniMap miniMap = hudRoot.AddComponent<MiniMap>();
@@ -109,6 +109,7 @@ public static class UISetup
         SetRef(miniMap, "area", miniView.GetComponent<RectTransform>());
         SetRef(miniMap, "playerMarker", miniPlayer.GetComponent<RectTransform>());
         SetRef(miniMap, "hutMarker", miniHut.GetComponent<RectTransform>());
+        SetRef(miniMap, "dockSprite", boatSprite);
         SerializedObject miniSo = new SerializedObject(miniMap);
         miniSo.FindProperty("mapCenter").vector2Value = MapBake.Center;
         miniSo.FindProperty("mapHalfExtent").floatValue = MapBake.HalfExtent;
@@ -354,26 +355,21 @@ public static class UISetup
         mapImage.raycastTarget = true; // 클릭하면 그 자리로 이동한다 (MapClick)
         MapClick mapClick = mapImageGo.AddComponent<MapClick>();
 
-        // 집 표시: 갈색 네모와 "집" 글자
+        // 집 표시: 빨간 지붕의 작은 집 그림
         GameObject hutMarker = Rect(mapImageGo.transform, "HutMarker");
-        Anchor(hutMarker, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(46f, 46f));
-        Image hutImg = hutMarker.AddComponent<Image>(); hutImg.color = new Color(0.55f, 0.33f, 0.2f, 1f); hutImg.raycastTarget = false;
-        TextMeshProUGUI hutText = Label(hutMarker.transform, "Text", "집", 34, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(46f, 46f), TextAlignmentOptions.Center);
-        hutText.color = Color.white;
+        Anchor(hutMarker, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(56f, 56f));
+        Image hutImg = hutMarker.AddComponent<Image>(); hutImg.sprite = hutSprite; hutImg.color = Color.white; hutImg.raycastTarget = false;
 
-        // 내 위치: 빨간 네모와 바라보는 방향을 알려 주는 작은 흰 막대 (위쪽이 북쪽)
+        // 내 위치: 주황 핀. 뾰족한 쪽이 바라보는 방향이다 (위쪽이 북쪽)
         GameObject playerMarker = Rect(mapImageGo.transform, "PlayerMarker");
-        Anchor(playerMarker, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(30f, 30f));
-        Image playerImg = playerMarker.AddComponent<Image>(); playerImg.color = new Color(0.9f, 0.22f, 0.22f, 1f); playerImg.raycastTarget = false;
-        GameObject nose = Rect(playerMarker.transform, "Nose");
-        Anchor(nose, new Vector2(0.5f, 1f), new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(12f, 22f));
-        Image noseImg = nose.AddComponent<Image>(); noseImg.color = Color.white; noseImg.raycastTarget = false;
+        Anchor(playerMarker, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(52f, 52f));
+        Image playerImg = playerMarker.AddComponent<Image>(); playerImg.sprite = playerSprite; playerImg.color = Color.white; playerImg.raycastTarget = false;
 
         // 오른쪽: 집으로 돌아가기 버튼과 설명
         Button homeButton = MakeButton(mWindow.transform, "HomeButton", "집으로 돌아가기", new Vector2(1f, 1f), new Vector2(-60f, -230f), new Vector2(560f, 130f));
         homeButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         homeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 54;
-        Label(mWindow.transform, "Legend", "지도를 누르면 그 자리로 가요\n\n빨간 표시: 지금 내 위치\n(흰 막대: 바라보는 방향)\n갈색 \"집\": 오두막 앞\n위쪽이 북쪽\n\nM, Esc: 닫기\nN: 작은 지도 켜고 끄기",
+        Label(mWindow.transform, "Legend", "지도를 누르면 그 자리로 가요\n\n주황 핀: 지금 내 위치\n(뾰족한 쪽이 바라보는 방향)\n작은 집: 오두막 앞\n돛단배: 선착장\n위쪽이 북쪽\n\nM, Esc: 닫기\nN: 작은 지도 켜고 끄기",
             38, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-60f, -400f), new Vector2(560f, 400f), TextAlignmentOptions.TopLeft);
         TextMeshProUGUI mapMessage = Label(mWindow.transform, "Message", string.Empty, 40, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-60f, 60f), new Vector2(560f, 140f), TextAlignmentOptions.BottomLeft);
         mapMessage.color = new Color(0.72f, 0.3f, 0.2f, 1f);
@@ -642,6 +638,7 @@ public static class UISetup
         SetRef(mp, "mapRect", mapImageGo.GetComponent<RectTransform>());
         SetRef(mp, "playerMarker", playerMarker.GetComponent<RectTransform>());
         SetRef(mp, "hutMarker", hutMarker.GetComponent<RectTransform>());
+        SetRef(mp, "dockSprite", boatSprite);
         SetRef(mp, "messageText", mapMessage);
         SetRef(mapClick, "panel", mp);
         SerializedObject mapSo = new SerializedObject(mp);

@@ -92,12 +92,32 @@ public class GameRoot : MonoBehaviour
         Instance = null;
     }
 
-    /// <summary>다른 씬으로 가서 spawnId 이름의 도착 지점에 선다.</summary>
+    /// <summary>다른 씬으로 가서 spawnId 이름의 도착 지점에 선다. 가는 동안 재료 쪽지가 있는 로딩 화면이 뜬다(LoadingScreen).</summary>
     public void GoTo(string sceneName, string spawnId)
     {
+        if (travelling) return; // 이미 가는 중
         pendingSpawnId = spawnId;
         SaveNow(); // 집을 드나들 때도 저장한다
-        SceneManager.LoadScene(sceneName);
+        StartCoroutine(Travel(sceneName));
+    }
+
+    private bool travelling;
+
+    /// <summary>지금 다른 씬으로 가는 중인가 (로딩 화면이 떠 있다)</summary>
+    public bool IsTravelling => travelling;
+
+    private System.Collections.IEnumerator Travel(string sceneName)
+    {
+        travelling = true;
+        UIFocus.Open(); // 가는 동안 걷기와 줍기를 멈춘다
+        yield return LoadingScreen.Show(sceneName);
+        float shownAt = Time.realtimeSinceStartup;
+        AsyncOperation op = SceneManager.LoadSceneAsync(sceneName);
+        while (!op.isDone) yield return null;
+        while (Time.realtimeSinceStartup - shownAt < LoadingScreen.MinSeconds) yield return null;
+        UIFocus.Close();
+        yield return LoadingScreen.Hide();
+        travelling = false;
     }
 
     /// <summary>

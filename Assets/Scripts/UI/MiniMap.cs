@@ -16,6 +16,8 @@ public class MiniMap : MonoBehaviour
     [SerializeField] private RectTransform area;
     [SerializeField] private RectTransform playerMarker;
     [SerializeField] private RectTransform hutMarker;
+    [Tooltip("선착장 표시 그림 (돛단배). 비어 있으면 파란 네모에 \"배\" 글자")]
+    [SerializeField] private Sprite dockSprite;
 
     [Header("지도가 덮는 땅 (큰 지도와 같게)")]
     [SerializeField] private Vector2 mapCenter = new Vector2(0f, 30f);
@@ -96,6 +98,7 @@ public class MiniMap : MonoBehaviour
             if (label != null) label.text = "배";
             Image bg = copy.GetComponent<Image>();
             if (bg != null) bg.color = new Color(0.25f, 0.5f, 0.75f, 1f);
+            if (bg != null && dockSprite != null) { bg.sprite = dockSprite; bg.color = Color.white; if (label != null) label.gameObject.SetActive(false); }
         }
         string scene = SceneManager.GetActiveScene().name;
         if (appliedScene == scene) return;

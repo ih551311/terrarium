@@ -20,6 +20,8 @@ public class MapPanel : MonoBehaviour
     [Tooltip("내 위치. 바라보는 방향으로 돈다.")]
     [SerializeField] private RectTransform playerMarker;
     [SerializeField] private RectTransform hutMarker;
+    [Tooltip("선착장 표시 그림 (돛단배). 비어 있으면 파란 네모에 \"배\" 글자")]
+    [SerializeField] private Sprite dockSprite;
 
     [Header("지도가 덮는 땅")]
     [Tooltip("지도 가운데의 세계 좌표 (x, z)")]
@@ -61,6 +63,7 @@ public class MapPanel : MonoBehaviour
         if (label != null) label.text = "배";
         Image bg = copy.GetComponent<Image>();
         if (bg != null) bg.color = new Color(0.25f, 0.5f, 0.75f, 1f);
+        if (bg != null && dockSprite != null) { bg.sprite = dockSprite; bg.color = Color.white; if (label != null) label.gameObject.SetActive(false); }
         copy.SetActive(false);
     }
 
