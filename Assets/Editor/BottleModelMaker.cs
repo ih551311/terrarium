@@ -22,8 +22,9 @@ public static class BottleModelMaker
     {
         Cylinder();
         Lantern();
+        Hourglass();
         AssetDatabase.Refresh();
-        return "병 모델 2종(원기둥 병, 눈꽃 병)을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
+        return "병 모델 3종(원기둥 병, 눈꽃 병, 모래시계 병)을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
     }
 
     // ───────── 유리 껍데기 ─────────
@@ -110,6 +111,35 @@ public static class BottleModelMaker
         Cone(0.0420f, 0.0030f, 0.226f, 0.262f, 10, Red);
         Dome(0.0030f, 0.262f, 0.0045f, Gold);
         b.Write("jar_lantern_cork");
+    }
+
+    // ───────── 모래시계 병 (사막 섬 전용: 잘록한 허리의 호리병) ─────────
+
+    private static void Hourglass()
+    {
+        // 아래 큰 방울(재료를 놓는 곳), 잘록한 허리, 위의 작은 방울, 좁은 목. 안쪽은 바깥보다 4mm 얇다.
+        var outer = new List<Vector2>
+        {
+            new Vector2(0f, 0f), new Vector2(0.046f, 0f), new Vector2(0.060f, 0.014f), new Vector2(0.064f, 0.045f), new Vector2(0.058f, 0.082f),
+            new Vector2(0.040f, 0.110f), new Vector2(0.026f, 0.124f), new Vector2(0.026f, 0.136f), new Vector2(0.040f, 0.152f), new Vector2(0.049f, 0.175f),
+            new Vector2(0.046f, 0.196f), new Vector2(0.034f, 0.212f), new Vector2(0.030f, 0.222f), new Vector2(0.030f, 0.240f)
+        };
+        var inner = new List<Vector2>
+        {
+            new Vector2(0f, 0.006f), new Vector2(0.042f, 0.006f), new Vector2(0.056f, 0.016f), new Vector2(0.060f, 0.045f), new Vector2(0.054f, 0.082f),
+            new Vector2(0.036f, 0.110f), new Vector2(0.022f, 0.124f), new Vector2(0.022f, 0.136f), new Vector2(0.036f, 0.152f), new Vector2(0.045f, 0.175f),
+            new Vector2(0.042f, 0.196f), new Vector2(0.030f, 0.212f), new Vector2(0.026f, 0.222f), new Vector2(0.026f, 0.240f)
+        };
+        b = new Builder();
+        Shell(outer, inner, 22);
+        b.Write("jar_hourglass");
+
+        // 마개: 코르크 몸통, 주황 덮개, 금빛 꼭지
+        b = new Builder();
+        Cylinder(0.0235f, 0.224f, 0.246f, 14, Brown);
+        Cylinder(0.0350f, 0.246f, 0.256f, 14, 24);
+        Dome(0.0330f, 0.256f, 0.010f, Gold);
+        b.Write("jar_hourglass_cork");
     }
 
     // ───────── 마개 도우미 ─────────

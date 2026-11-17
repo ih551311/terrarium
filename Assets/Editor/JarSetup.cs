@@ -87,6 +87,8 @@ public static class JarSetup
         // 눈 섬 전용 병 (선착장을 고쳐야 만들 수 있다). 모델은 BottleModelMaker가 만든다
         new Jar("cylinder",  "원기둥 병", "jar_cylinder",  "bottle4", 0.036f, false),
         new Jar("lantern",   "눈꽃 병",  "jar_lantern",   "bottle5", 0.032f, false, 0.95f),
+        // 사막 섬 전용 병 (사막 섬으로 가는 배를 열어야 만들 수 있다)
+        new Jar("hourglass", "모래시계 병", "jar_hourglass", "bottle6", 0.034f, false),
     };
 
     /// <summary>높이(또는 가로 위치)마다 가장 안쪽 반지름. 정점이 없는 곳은 위아래를 이어서(보간) 구한다.</summary>

@@ -13,13 +13,13 @@ public static class SoilLook
     private const int Size = 256;
     private const float TileMeters = 0.07f; // 그림 한 장이 덮는 길이 (7cm). 작을수록 알갱이가 곱다
 
-    private static Texture2D soilAlbedo, soilNormal, sandAlbedo, sandNormal, snowAlbedo, snowNormal;
+    private static Texture2D soilAlbedo, soilNormal, sandAlbedo, sandNormal, snowAlbedo, snowNormal, redAlbedo, redNormal;
     private static readonly Dictionary<Mesh, Mesh> styled = new Dictionary<Mesh, Mesh>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
-        soilAlbedo = soilNormal = sandAlbedo = sandNormal = snowAlbedo = snowNormal = null;
+        soilAlbedo = soilNormal = sandAlbedo = sandNormal = snowAlbedo = snowNormal = redAlbedo = redNormal = null;
         styled.Clear();
     }
 
@@ -32,8 +32,9 @@ public static class SoilLook
         Material m = renderer.material; // 이 병 전용 복사본
         bool soil = ground == null;
         bool snow = !soil && ground.id == "snow";
-        Texture2D albedo = soil ? soilAlbedo : (snow ? snowAlbedo : sandAlbedo);
-        Texture2D normal = soil ? soilNormal : (snow ? snowNormal : sandNormal);
+        bool red = !soil && ground.id == "red_sand";
+        Texture2D albedo = soil ? soilAlbedo : (snow ? snowAlbedo : (red ? redAlbedo : sandAlbedo));
+        Texture2D normal = soil ? soilNormal : (snow ? snowNormal : (red ? redNormal : sandNormal));
 
         m.mainTexture = albedo;
         if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", albedo);
@@ -44,7 +45,7 @@ public static class SoilLook
         if (m.HasProperty("_SpecularHighlights")) m.SetFloat("_SpecularHighlights", 0f);
         // 그림에 색이 다 들어 있으니 재질 색은 흰색. 다른 바닥재는 그 재료 색을 살짝 입힌다 (모래는 그림이 이미 모래색이라 흰색)
         Color tint = Color.white;
-        if (!soil && ground.id != "sand" && !snow) tint = Color.Lerp(Color.white, ground.placeholderColor, 0.8f);
+        if (!soil && ground.id != "sand" && !snow && !red) tint = Color.Lerp(Color.white, ground.placeholderColor, 0.8f);
         m.color = tint;
     }
 
@@ -128,6 +129,7 @@ public static class SoilLook
         BuildSoil();
         BuildSand();
         BuildSnow();
+        BuildRedSand();
     }
 
     /// <summary>흙: 얼룩 + 알갱이 + 자갈. 높이 그림도 같이 만들어 울퉁불퉁한 법선 그림을 얻는다.</summary>
@@ -261,6 +263,37 @@ public static class SoilLook
         }
         snowAlbedo = MakeTexture("Snow_Albedo", color, false);
         snowNormal = MakeNormal("Snow_Normal", height, 1.2f);
+    }
+
+    /// <summary>붉은 모래: 주황빛 붉은 바탕에 바람이 만든 가는 물결과 거친 알갱이</summary>
+    private static void BuildRedSand()
+    {
+        var color = new Color32[Size * Size];
+        var height = new float[Size * Size];
+        var rnd = new System.Random(404);
+
+        for (int y = 0; y < Size; y++)
+        for (int x = 0; x < Size; x++)
+        {
+            float u = x / (float)Size, v = y / (float)Size;
+            float wave = Fbm(u, v, 5, 3, 11);    // 모래 언덕의 큰 물결
+            float ripple = 0.5f + 0.5f * Mathf.Sin((u * 6f + v * 14f + wave * 3f) * Mathf.PI * 2f); // 바람 물결 무늬
+            float grain = Fbm(u, v, 64, 2, 37);
+            float shade = 0.86f + 0.16f * wave;
+            shade *= 0.94f + 0.12f * ripple * 0.5f;
+            shade *= 0.94f + 0.12f * grain;
+            height[y * Size + x] = wave * 0.35f + ripple * 0.35f + grain * 0.3f;
+            color[y * Size + x] = ToColor32(0.72f * shade, 0.33f * shade, 0.19f * shade);
+        }
+        for (int i = 0; i < Size * Size / 9; i++) // 밝고 어두운 알갱이
+        {
+            int x = rnd.Next(Size), y = rnd.Next(Size);
+            float f = rnd.NextDouble() < 0.5 ? 1.16f : 0.78f;
+            Color32 c = color[y * Size + x];
+            color[y * Size + x] = ToColor32(c.r / 255f * f, c.g / 255f * f, c.b / 255f * f);
+        }
+        redAlbedo = MakeTexture("RedSand_Albedo", color, false);
+        redNormal = MakeNormal("RedSand_Normal", height, 1.8f);
     }
 
     private static Color32 ToColor32(float r, float g, float b)

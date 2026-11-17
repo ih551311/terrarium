@@ -238,6 +238,11 @@ public static class MaterialSetup
         snow.zone = Snow; snow.acquire = Hand; snow.condition = MaterialCondition.Always; snow.sellPrice = 1;
         EditorUtility.SetDirty(snow);
 
+        // 바닥재 붉은 모래: 사막 섬에서 맨손으로 줍는다 (모래, 눈과 같은 방식)
+        MaterialData redSand = BottleSetup.EnsureRedSandAsset();
+        redSand.zone = Desert; redSand.acquire = Hand; redSand.condition = MaterialCondition.Always; redSand.sellPrice = 2;
+        EditorUtility.SetDirty(redSand);
+
         AssetDatabase.SaveAssets();
         return "재료 데이터 " + (Entries.Length + 2) + "종 (새로 " + created + "개), 모델 못 찾음 " + missingModel + "개";
     }

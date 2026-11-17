@@ -13,6 +13,7 @@ public static class BottleSetup
     private const string IslandPath = "Assets/Scenes/Island.unity";
     private const string SandPath = "Assets/Data/Materials/sand.asset";
     private const string SnowPath = "Assets/Data/Materials/snow.asset";
+    private const string RedSandPath = "Assets/Data/Materials/red_sand.asset";
 
     [MenuItem("유리병 정원/병 설정")]
     public static string Build()
@@ -61,6 +62,21 @@ public static class BottleSetup
         snow.placeholderColor = new Color(0.95f, 0.97f, 1f);
         AssetDatabase.CreateAsset(snow, SnowPath);
         return snow;
+    }
+
+    /// <summary>바닥재 붉은 모래 재료(데이터). 없으면 만든다. 사막 섬에서 주워서 병 바닥에 깐다.</summary>
+    public static MaterialData EnsureRedSandAsset()
+    {
+        MaterialData red = AssetDatabase.LoadAssetAtPath<MaterialData>(RedSandPath);
+        if (red != null) return red;
+
+        red = ScriptableObject.CreateInstance<MaterialData>();
+        red.id = "red_sand";
+        red.displayName = "붉은 모래";
+        red.kind = MaterialKind.Ground;
+        red.placeholderColor = new Color(0.82f, 0.45f, 0.26f);
+        AssetDatabase.CreateAsset(red, RedSandPath);
+        return red;
     }
 
     private static void AddTestSand(MaterialData sand)

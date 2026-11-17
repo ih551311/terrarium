@@ -198,11 +198,12 @@ public static class UISetup
 
         // 바닥재 고르기 (병 그림 오른쪽, 작게)
         GameObject groundBox = Rect(edit.transform, "GroundSelector");
-        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -110f), new Vector2(200f, 290f));
+        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -110f), new Vector2(200f, 370f));
         Label(groundBox.transform, "Title", "바닥재", 34, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(200f, 50f), TextAlignmentOptions.Center);
         Button soilButton = MakeSmallButton(groundBox.transform, "SoilButton", "흙", new Vector2(0.5f, 1f), new Vector2(0f, -60f), new Vector2(200f, 70f), 30);
         Button sandButton = MakeSmallButton(groundBox.transform, "SandButton", "모래 x0", new Vector2(0.5f, 1f), new Vector2(0f, -140f), new Vector2(200f, 70f), 30);
         Button snowButton = MakeSmallButton(groundBox.transform, "SnowButton", "눈 x0", new Vector2(0.5f, 1f), new Vector2(0f, -220f), new Vector2(200f, 70f), 30);
+        Button redSandButton = MakeSmallButton(groundBox.transform, "RedSandButton", "붉은 모래 x0", new Vector2(0.5f, 1f), new Vector2(0f, -300f), new Vector2(200f, 70f), 26);
         GroundSelector groundSelector = groundBox.AddComponent<GroundSelector>();
         SetRef(groundSelector, "bag", bag); SetRef(groundSelector, "decorator", decorator);
         SetRef(groundSelector, "sand", BottleSetup.EnsureSandAsset());
@@ -213,6 +214,9 @@ public static class UISetup
         SetRef(groundSelector, "snow", BottleSetup.EnsureSnowAsset());
         SetRef(groundSelector, "snowButton", snowButton); SetRef(groundSelector, "snowBackground", snowButton.GetComponent<Image>());
         SetRef(groundSelector, "snowLabel", snowButton.GetComponentInChildren<TextMeshProUGUI>());
+        SetRef(groundSelector, "redSand", BottleSetup.EnsureRedSandAsset());
+        SetRef(groundSelector, "redSandButton", redSandButton); SetRef(groundSelector, "redSandBackground", redSandButton.GetComponent<Image>());
+        SetRef(groundSelector, "redSandLabel", redSandButton.GetComponentInChildren<TextMeshProUGUI>());
 
         // 병 만들기 화면: 꾸미는 중인 병이 없을 때 먼저 나온다. 흙의 양을 고르고 병 카드를 누르면 병이 만들어진다.
         // 병 종류와 흙의 양은 이때 정해지고 그 뒤로는 바꿀 수 없다. (창 전체를 덮어서, 닫기 버튼 말고는 아래 화면이 보이지 않는다)
@@ -232,7 +236,7 @@ public static class UISetup
             soilButtons[i] = b; soilBackgrounds[i] = b.GetComponent<Image>();
         }
 
-        const int ChoiceCount = 6; // 둥근, 긴, 넓은, 누운 병과 눈 섬 전용 병 둘 (스노우볼, 눈꽃 병)
+        const int ChoiceCount = 7; // 둥근, 긴, 넓은, 누운 병, 원기둥 병, 눈 섬 전용 눈꽃 병, 사막 섬 전용 모래시계 병
         Button[] choiceButtons = new Button[ChoiceCount];
         TMP_Text[] choiceLabels = new TMP_Text[ChoiceCount];
         Image[] choiceBackgrounds = new Image[ChoiceCount];
@@ -306,7 +310,7 @@ public static class UISetup
         SetArray(invView, "icons", invIcons);
         SetArray(invView, "labels", invLabels);
         SetArray(invView, "backgrounds", invBgs);
-        SetArray(invView, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3), BottleIconMaker.Load(4), BottleIconMaker.Load(5) });
+        SetArray(invView, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3), BottleIconMaker.Load(4), BottleIconMaker.Load(5), BottleIconMaker.Load(6) });
         SetRef(invView, "previousButton", invPrev);
         SetRef(invView, "nextButton", invNext);
         SetRef(invView, "backButton", invBack);
@@ -631,7 +635,7 @@ public static class UISetup
         SetArray(ip, "bottleTexts", bottleTexts);
         SetArray(ip, "bottleButtons", bottleButtons);
         SetRef(ip, "bottlePrev", bottlePrev); SetRef(ip, "bottleNext", bottleNext);
-        SetArray(ip, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3), BottleIconMaker.Load(4), BottleIconMaker.Load(5) });
+        SetArray(ip, "typeIcons", new Sprite[] { BottleIconMaker.Load(0), BottleIconMaker.Load(1), BottleIconMaker.Load(2), BottleIconMaker.Load(3), BottleIconMaker.Load(4), BottleIconMaker.Load(5), BottleIconMaker.Load(6) });
 
         MapPanel mp = ui.AddComponent<MapPanel>();
         SetRef(mp, "root", mapRoot); SetRef(mp, "closeButton", mapCloseButton); SetRef(mp, "homeButton", homeButton);

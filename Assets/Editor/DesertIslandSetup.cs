@@ -680,7 +680,7 @@ public static class DesertIslandSetup
         int total = 0;
         var want = new Dictionary<string, int>
         {
-            { "cactus_flower", 10 }, { "aloe_leaf", 10 }, { "dry_branch", 10 }, { "pottery_shard", 8 }, { "scarab", 8 }
+            { "cactus_flower", 10 }, { "aloe_leaf", 10 }, { "dry_branch", 10 }, { "pottery_shard", 8 }, { "scarab", 8 }, { "red_sand", 14 }
         };
         foreach (KeyValuePair<string, int> pair in want)
         {
@@ -691,9 +691,10 @@ public static class DesertIslandSetup
             {
                 Vector2 q = RandomLand();
                 float d = Vector2.Distance(q, Camp), dr = Vector2.Distance(q, Ruins);
-                // 도자기 조각은 피라미드 둘레에, 풍뎅이는 야영지에서 먼 곳에, 나머지는 어디서나
+                // 도자기 조각은 피라미드 둘레에, 풍뎅이는 야영지에서 먼 곳에, 붉은 모래는 붉은 모래 지대(RedSand 층이 짙은 곳)에, 나머지는 어디서나
                 if (pair.Key == "pottery_shard" && (dr < 18f || dr > 55f)) continue;
                 if (pair.Key == "scarab" && d < 30f) continue;
+                if (pair.Key == "red_sand" && Mathf.PerlinNoise(q.x * 0.028f + 90f, q.y * 0.028f + 90f) < 0.62f) continue;
                 if (pair.Key != "pottery_shard" && !Allowed(q.x, q.y, 10f, 2f)) continue;
                 if (pair.Key == "pottery_shard" && HeightAt(q.x, q.y) < 1.2f) continue;
                 if (Physics.CheckSphere(new Vector3(q.x, GroundY(q.x, q.y) + 1.4f, q.y), 0.9f)) continue;
@@ -716,9 +717,23 @@ public static class DesertIslandSetup
         so.FindProperty("material").objectReferenceValue = data;
         so.ApplyModifiedPropertiesWithoutUndo();
 
-        GameObject model = (GameObject)PrefabUtility.InstantiatePrefab(data.placedPrefab);
-        model.transform.SetParent(go.transform, false);
-        model.transform.localScale = Vector3.one * data.pickupScale * 1.5f; // 모래 위에서도 눈에 띄게 조금 크게
+        GameObject model;
+        if (data.placedPrefab != null)
+        {
+            model = (GameObject)PrefabUtility.InstantiatePrefab(data.placedPrefab);
+            model.transform.SetParent(go.transform, false);
+            model.transform.localScale = Vector3.one * data.pickupScale * 1.5f; // 모래 위에서도 눈에 띄게 조금 크게
+        }
+        else
+        {
+            // 모델이 없는 재료(바닥재 붉은 모래): 붉은 모래가 소복이 쌓인 더미
+            model = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            model.transform.SetParent(go.transform, false);
+            model.transform.localScale = new Vector3(0.9f, 0.4f, 0.9f);
+            model.transform.localPosition = new Vector3(0f, 0.12f, 0f);
+            Object.DestroyImmediate(model.GetComponent<Collider>());
+            model.GetComponent<Renderer>().sharedMaterial = BottleSetup.GetOrCreateMaterial("RedSandPile", new Color(0.72f, 0.36f, 0.20f));
+        }
         model.name = "Model";
 
         Renderer[] renderers = model.GetComponentsInChildren<Renderer>();

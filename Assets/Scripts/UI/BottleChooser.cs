@@ -35,8 +35,8 @@ public class BottleChooser : MonoBehaviour
     [Header("병 가격")]
     [Tooltip("켜면 병을 만들 때 코인을 낸다. (시작할 때 받은 공짜 병은 먼저 쓴다)")]
     [SerializeField] private bool requirePurchase = true;
-    [Tooltip("병 카드 순서(둥근, 긴, 넓은, 누운, 원기둥, 눈꽃 병)대로의 가격(코인). 임시 값.")]
-    [SerializeField] private int[] prices = { 6, 6, 10, 14, 10, 22 };
+    [Tooltip("병 카드 순서(둥근, 긴, 넓은, 누운, 원기둥, 눈꽃, 모래시계 병)대로의 가격(코인). 임시 값.")]
+    [SerializeField] private int[] prices = { 6, 6, 10, 14, 10, 22, 24 };
 
     /// <summary>
     /// 더 이상 만들 수 없는 병(단종). 긴 병(번호 1)은 만들기 화면에서 뺐다. 이미 만든 긴 병은 그대로 남아 있고 보고 전시할 수 있다
@@ -47,10 +47,12 @@ public class BottleChooser : MonoBehaviour
         return index == 1;
     }
 
-    /// <summary>눈꽃 병(번호 5)만 선착장을 고친 뒤에 만들 수 있고, 나머지는 늘 만들 수 있다.</summary>
+    /// <summary>눈꽃 병(번호 5)은 눈 섬 배를, 모래시계 병(번호 6)은 사막 섬 배를 열어야 만들 수 있고, 나머지는 늘 만들 수 있다.</summary>
     public static bool IsUnlocked(int index)
     {
-        return index != 5 || GameState.DockOpen; // 눈꽃 병(5번)만 눈 섬 전용
+        if (index == 5) return GameState.DockOpen;       // 눈꽃 병: 눈 섬 전용
+        if (index == 6) return GameState.DesertDockOpen; // 모래시계 병: 사막 섬 전용
+        return true;
     }
 
     public bool RequirePurchase => requirePurchase;
@@ -119,7 +121,7 @@ public class BottleChooser : MonoBehaviour
             BottleContents bottle = station.Get(i);
             string cost = GameState.FreeBottles > 0 ? " (공짜 병 " + GameState.FreeBottles + "개)" : requirePurchase ? " (" + PriceOf(i) + "코인)" : string.Empty;
             bool unlocked = IsUnlocked(i);
-            labels[i].text = unlocked ? bottle.DisplayName + "\n만들기" + cost : bottle.DisplayName + "\n선착장을 고치면\n열려요";
+            labels[i].text = unlocked ? bottle.DisplayName + "\n만들기" + cost : bottle.DisplayName + "\n" + (i == 6 ? "사막 섬으로 가는\n배를 열면 열려요" : "눈 섬으로 가는\n배를 열면 열려요");
             buttons[i].interactable = unlocked;
             backgrounds[i].color = unlocked ? normalColor : disabledColor;
         }

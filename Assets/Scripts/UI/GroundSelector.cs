@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 병 꾸미기 패널의 바닥재 고르기: 흙(항상 쓸 수 있다), 모래와 눈(가방의 모래나 눈 1개를 쓴다).
+/// 병 꾸미기 패널의 바닥재 고르기: 흙(항상 쓸 수 있다), 모래, 눈, 붉은 모래(가방의 것 1개를 쓴다).
 /// 모래나 눈에서 다른 바닥재로 바꾸면 쓰던 것이 가방으로 돌아온다. 가방이 가득 차 있으면 되돌릴 수 없다.
 /// 패널 화면(UISetup이 만든다) 안에 있는 오브젝트에 붙인다.
 /// </summary>
@@ -23,6 +23,11 @@ public class GroundSelector : MonoBehaviour
     [SerializeField] private Button snowButton;
     [SerializeField] private Image snowBackground;
     [SerializeField] private TMP_Text snowLabel;
+    [Tooltip("바닥재로 쓰는 붉은 모래 재료 (사막 섬에서 줍는다)")]
+    [SerializeField] private MaterialData redSand;
+    [SerializeField] private Button redSandButton;
+    [SerializeField] private Image redSandBackground;
+    [SerializeField] private TMP_Text redSandLabel;
 
     [SerializeField] private Color normalColor = new Color(0.82f, 0.88f, 0.82f, 1f);
     [SerializeField] private Color selectedColor = new Color(0.98f, 0.82f, 0.45f, 1f);
@@ -55,6 +60,7 @@ public class GroundSelector : MonoBehaviour
         soilButton.onClick.AddListener(() => Choose(null));
         sandButton.onClick.AddListener(() => Choose(sand));
         if (snowButton != null) snowButton.onClick.AddListener(() => Choose(snow));
+        if (redSandButton != null) redSandButton.onClick.AddListener(() => Choose(redSand));
     }
 
     /// <summary>다룰 병을 받는다. 닫을 때는 null.</summary>
@@ -99,7 +105,10 @@ public class GroundSelector : MonoBehaviour
         bool snowSelected = contents.Ground == snow && snow != null;
         int snowCount = snow != null ? bag.CountOf(snow) : 0;
 
-        soilBackground.color = (sandSelected || snowSelected) ? normalColor : selectedColor;
+        bool redSelected = contents.Ground == redSand && redSand != null;
+        int redCount = redSand != null ? bag.CountOf(redSand) : 0;
+
+        soilBackground.color = (sandSelected || snowSelected || redSelected) ? normalColor : selectedColor;
         sandBackground.color = sandSelected ? selectedColor : (sandCount > 0 ? normalColor : disabledColor);
         sandButton.interactable = sandSelected || sandCount > 0;
         sandLabel.text = "모래 x" + sandCount;
@@ -108,6 +117,12 @@ public class GroundSelector : MonoBehaviour
             snowBackground.color = snowSelected ? selectedColor : (snowCount > 0 ? normalColor : disabledColor);
             snowButton.interactable = snowSelected || snowCount > 0;
             snowLabel.text = "눈 x" + snowCount;
+        }
+        if (redSandButton != null)
+        {
+            redSandBackground.color = redSelected ? selectedColor : (redCount > 0 ? normalColor : disabledColor);
+            redSandButton.interactable = redSelected || redCount > 0;
+            redSandLabel.text = "붉은 모래 x" + redCount;
         }
     }
 }
