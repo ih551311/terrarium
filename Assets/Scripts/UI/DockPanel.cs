@@ -33,6 +33,7 @@ public class DockPanel : MonoBehaviour
     private Button[] buttons;
     private TMP_Text[] blurbs;
     private bool isOpen;
+    private int openedFrame = -1; // 여는 데 쓴 E 키가 같은 프레임에 창을 바로 닫지 않게
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
@@ -87,6 +88,7 @@ public class DockPanel : MonoBehaviour
     {
         if (isOpen) return;
         isOpen = true;
+        openedFrame = Time.frameCount;
         root.SetActive(true);
         status.text = "코인: " + GameState.Coins;
         Refresh();
@@ -104,7 +106,7 @@ public class DockPanel : MonoBehaviour
 
     private void Update()
     {
-        if (!isOpen) return;
+        if (!isOpen || Time.frameCount == openedFrame) return;
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame || keyboard.eKey.wasPressedThisFrame)) Close();
     }

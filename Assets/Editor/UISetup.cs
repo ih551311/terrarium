@@ -370,7 +370,7 @@ public static class UISetup
         homeButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         homeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 54;
         Label(mWindow.transform, "Legend", "지도를 누르면 그 자리로 가요\n\n주황 핀: 지금 내 위치\n(뾰족한 쪽이 바라보는 방향)\n작은 집: 오두막 앞\n돛단배: 선착장\n위쪽이 북쪽\n\nM, Esc: 닫기\nN: 작은 지도 켜고 끄기",
-            38, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-60f, -400f), new Vector2(560f, 400f), TextAlignmentOptions.TopLeft);
+            38, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-60f, -390f), new Vector2(560f, 470f), TextAlignmentOptions.TopLeft);
         TextMeshProUGUI mapMessage = Label(mWindow.transform, "Message", string.Empty, 40, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-60f, 60f), new Vector2(560f, 140f), TextAlignmentOptions.BottomLeft);
         mapMessage.color = new Color(0.72f, 0.3f, 0.2f, 1f);
 

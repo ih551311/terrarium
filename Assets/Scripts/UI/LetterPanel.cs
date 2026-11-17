@@ -64,16 +64,19 @@ public class LetterPanel : MonoBehaviour
 
     private void Update()
     {
-        if (!IsOpen) return;
+        if (!IsOpen || Time.frameCount == openedFrame) return; // 여는 데 쓴 E 키로 바로 닫히지 않게
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && (keyboard.eKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame))
             Close();
     }
 
+    private int openedFrame = -1;
+
     public void Show()
     {
         if (IsOpen) return;
         IsOpen = true;
+        openedFrame = Time.frameCount;
         root.SetActive(true);
         UIFocus.Open();
         GameAudio.Play(GameAudio.Sfx.Paper, 0.8f);
