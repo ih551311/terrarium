@@ -542,7 +542,7 @@ public static class PlantModelMaker
     public static string BuildDesertModels()
     {
         CactusPiece(); DateFruit(); Sandstone(); DesertRose(); Fossil(); CactusFlower(); AloeLeaf(); DryBranch(); PotteryShard(); Scarab();
-        Camel(); PalmTree(); DesertTent(); MiniPyramid();
+        Camel(); PalmTree(); DesertTent(); MiniPyramid(); StepPyramid();
         AssetDatabase.Refresh();
         return "사막 재료 모델 14종을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
     }
@@ -794,6 +794,32 @@ public static class PlantModelMaker
         b.Tri(k[1], k[2], apex, c1, inside);
         b.Tri(k[2], k[3], apex, c2, inside);
         b.Tri(k[3], k[0], apex, c3, inside);
+    }
+
+    /// <summary>사막 섬 풍경용 계단식 피라미드: 열두 단이 쌓여 있고 앞쪽 아래에 어두운 입구가 있다. (섬에는 키 16m로 키워서 놓는다)</summary>
+    private static void StepPyramid()
+    {
+        b = new Builder();
+        const int tiers = 12;
+        const float s0 = 0.020f, th = 0.0023f;
+        for (int i = 0; i < tiers; i++)
+        {
+            float s = s0 * (1f - i / (float)tiers * 0.92f);
+            float y0 = i * th, y1 = y0 + th;
+            Vector3 inside = new Vector3(0f, y0 + th * 0.5f, 0f);
+            Vector3 a0 = new Vector3(-s, y0, -s), b0 = new Vector3(s, y0, -s), c0 = new Vector3(s, y0, s), d0 = new Vector3(-s, y0, s);
+            Vector3 a1 = new Vector3(-s, y1, -s), b1 = new Vector3(s, y1, -s), c1 = new Vector3(s, y1, s), d1 = new Vector3(-s, y1, s);
+            bool alt = i % 2 == 0;
+            b.Quad(a0, b0, b1, a1, alt ? Sand : Cream, inside);   // 앞(-z)
+            b.Quad(b0, c0, c1, b1, alt ? Tan : Sand, inside);     // 오른쪽
+            b.Quad(c0, d0, d1, c1, alt ? DarkTan : Tan, inside);  // 뒤
+            b.Quad(d0, a0, a1, d1, alt ? Cream : Sand, inside);   // 왼쪽
+            b.Quad(a1, b1, c1, d1, Pale, inside);                 // 윗면 (다음 단에 가려지고 둘레만 보인다)
+        }
+        // 입구: 맨 아래 앞면에 어둡게 파인 문
+        Vector3 ins = new Vector3(0f, 0.004f, 0f);
+        b.Quad(new Vector3(-0.0032f, 0f, -s0 - 0.0003f), new Vector3(0.0032f, 0f, -s0 - 0.0003f), new Vector3(0.0032f, 0.0021f, -s0 - 0.0003f), new Vector3(-0.0032f, 0.0021f, -s0 - 0.0003f), Dark, ins);
+        b.Write("deco_pyramid_steps");
     }
 
     private static void MiniPyramid()

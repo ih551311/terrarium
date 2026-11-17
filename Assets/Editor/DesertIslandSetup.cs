@@ -587,7 +587,7 @@ public static class DesertIslandSetup
     {
         GameObject group = new GameObject("Ruins");
         group.transform.SetParent(parent, false);
-        GameObject pyr = Deco("deco_pyramid", group.transform, new Vector3(Ruins.x, GroundY(Ruins.x, Ruins.y), Ruins.y), 20f, 18f);
+        GameObject pyr = Deco("deco_pyramid_steps", group.transform, new Vector3(Ruins.x, GroundY(Ruins.x, Ruins.y), Ruins.y), 20f, 16f);
         if (pyr != null) { pyr.name = "Pyramid"; AddMeshCollider(pyr); }
         // 피라미드 앞의 큰 바위 몇 개
         for (int i = 0; i < 5; i++)
