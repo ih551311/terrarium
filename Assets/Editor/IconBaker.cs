@@ -53,6 +53,14 @@ public static class IconBaker
             MaterialData data = AssetDatabase.LoadAssetAtPath<MaterialData>(path);
             if (data == null) continue;
 
+            // 반딧불이는 모델이 작은 구슬이라 찍으면 밋밋한 동그라미가 된다. 빛이 번지는 모습을 코드로 그린다.
+            if (data.id == "firefly")
+            {
+                File.WriteAllBytes(Folder + "/" + data.id + ".png", GlowIcon().EncodeToPNG());
+                made++;
+                continue;
+            }
+
             GameObject model = MakeModel(data);
             model.transform.position = new Vector3(100f, 0f, 0f);
             model.transform.rotation = Quaternion.Euler(0f, -32f, 0f);
@@ -109,6 +117,27 @@ public static class IconBaker
 
         EditorSceneManager.OpenScene("Assets/Scenes/Island.unity");
         return "재료 아이콘 " + made + "장을 만들고 재료에 연결했어요: " + Folder;
+    }
+
+    /// <summary>은은하게 번지는 빛 구슬 아이콘 (가운데 밝은 동그라미, 둘레로 연한 노랑 초록빛이 퍼진다)</summary>
+    private static Texture2D GlowIcon()
+    {
+        var tex = new Texture2D(Size, Size, TextureFormat.ARGB32, false);
+        Color core = new Color(1f, 0.99f, 0.84f), glow = new Color(0.82f, 0.98f, 0.38f);
+        for (int y = 0; y < Size; y++)
+        {
+            for (int x = 0; x < Size; x++)
+            {
+                float r = new Vector2(x + 0.5f - Size / 2f, y + 0.5f - Size / 2f).magnitude / (Size / 2f);
+                float orb = Mathf.Clamp01((0.20f - r) / 0.025f);                  // 작은 동그라미
+                float halo = Mathf.Pow(Mathf.Clamp01(1f - r), 2.4f) * 0.85f;      // 둘레의 은은한 빛
+                float a = Mathf.Clamp01(orb + halo * (1f - orb));
+                Color c = Color.Lerp(glow, core, orb);
+                tex.SetPixel(x, y, new Color(c.r, c.g, c.b, a));
+            }
+        }
+        tex.Apply();
+        return tex;
     }
 
     private static GameObject MakeModel(MaterialData data)

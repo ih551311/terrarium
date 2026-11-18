@@ -46,7 +46,8 @@ public class GameRoot : MonoBehaviour
     // 게임을 처음 켰을 때는 집 앞(FromHut 도착 지점)에서 시작한다. (다른 씬에서 넘어온 것이 아닐 때만)
     private void Start()
     {
-        if (string.IsNullOrEmpty(pendingSpawnId) && player != null) GoHome();
+        // 집 앞에서 시작하고, 집(문)을 마주 본다. (집에서 나올 때는 문을 등지고 서는 것이 자연스러워서 도착 지점은 바깥을 향해 있다)
+        if (string.IsNullOrEmpty(pendingSpawnId) && player != null && GoHome()) player.Rotate(0f, 180f, 0f);
     }
 
     private const float AutoSaveSeconds = 120f; // 이 시간마다 저절로 저장한다 (실제 시간)
