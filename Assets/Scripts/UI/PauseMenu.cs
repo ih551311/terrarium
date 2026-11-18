@@ -16,8 +16,8 @@ public class PauseMenu : MonoBehaviour
 
     private GameObject root;
     private TMP_Text status;
-    private Button musicButton, quitButton;
-    private bool quitAsked;
+    private Button musicButton, quitButton, menuButton;
+    private bool quitAsked, menuAsked;
     private bool isOpen;
     private float savedTimeScale = 1f;
 
@@ -61,22 +61,23 @@ public class PauseMenu : MonoBehaviour
         rootRect.offsetMin = rootRect.offsetMax = Vector2.zero;
 
         UIKit.Backdrop(root.transform);
-        RectTransform panel = UIKit.Panel(root.transform, "Panel", new Vector2(640f, 640f));
+        RectTransform panel = UIKit.Panel(root.transform, "Panel", new Vector2(640f, 740f));
 
-        UIKit.Label(panel, "잠시 쉬어가요", 48f, new Vector2(0f, 250f), new Vector2(560f, 70f));
-        UIKit.MakeButton(panel, "이어서 하기", new Vector2(0f, 160f), new Vector2(460f, 72f), Close);
-        UIKit.MakeButton(panel, "지금 저장하기", new Vector2(0f, 70f), new Vector2(460f, 72f), SaveClicked);
+        UIKit.Label(panel, "잠시 쉬어가요", 48f, new Vector2(0f, 300f), new Vector2(560f, 70f));
+        UIKit.MakeButton(panel, "이어서 하기", new Vector2(0f, 210f), new Vector2(460f, 72f), Close);
+        UIKit.MakeButton(panel, "지금 저장하기", new Vector2(0f, 120f), new Vector2(460f, 72f), SaveClicked);
 
-        UIKit.Label(panel, "소리 크기", 28f, new Vector2(0f, -10f), new Vector2(460f, 40f));
-        UIKit.MakeSlider(panel, new Vector2(0f, -55f), new Vector2(420f, 40f), AudioListener.volume, v =>
+        UIKit.Label(panel, "소리 크기", 28f, new Vector2(0f, 40f), new Vector2(460f, 40f));
+        UIKit.MakeSlider(panel, new Vector2(0f, -5f), new Vector2(420f, 40f), AudioListener.volume, v =>
         {
             AudioListener.volume = v;
             PlayerPrefs.SetFloat(VolumeKey, v);
         });
 
-        musicButton = UIKit.MakeButton(panel, "", new Vector2(0f, -135f), new Vector2(460f, 72f), ToggleMusic);
-        quitButton = UIKit.MakeButton(panel, "게임 끝내기", new Vector2(0f, -225f), new Vector2(460f, 72f), QuitClicked);
-        status = UIKit.Label(panel, "", 26f, new Vector2(0f, -290f), new Vector2(560f, 40f));
+        musicButton = UIKit.MakeButton(panel, "", new Vector2(0f, -85f), new Vector2(460f, 72f), ToggleMusic);
+        menuButton = UIKit.MakeButton(panel, "메인 화면으로", new Vector2(0f, -175f), new Vector2(460f, 72f), MenuClicked);
+        quitButton = UIKit.MakeButton(panel, "게임 끝내기", new Vector2(0f, -265f), new Vector2(460f, 72f), QuitClicked);
+        status = UIKit.Label(panel, "", 26f, new Vector2(0f, -335f), new Vector2(560f, 40f));
     }
 
     private void Update()
@@ -92,6 +93,7 @@ public class PauseMenu : MonoBehaviour
     {
         isOpen = true;
         quitAsked = false;
+        menuAsked = false;
         root.SetActive(true);
         RefreshTexts();
         status.text = "";
@@ -114,6 +116,22 @@ public class PauseMenu : MonoBehaviour
     {
         UIKit.SetButtonText(musicButton, GameAudio.MusicOn ? "음악 끄기" : "음악 켜기");
         UIKit.SetButtonText(quitButton, quitAsked ? "정말 끝낼까요? 한 번 더 누르세요" : "게임 끝내기");
+        UIKit.SetButtonText(menuButton, menuAsked ? "돌아갈까요? 한 번 더 누르세요" : "메인 화면으로");
+    }
+
+    private void MenuClicked()
+    {
+        if (!menuAsked)
+        {
+            menuAsked = true;
+            quitAsked = false;
+            RefreshTexts();
+            status.text = "돌아가기 전에 저장해요";
+            return;
+        }
+        GameRoot root = GameRoot.Instance;
+        Close(); // 시간과 커서를 되돌려 놓는다
+        if (root != null) root.ReturnToMenu();
     }
 
     private void SaveClicked()

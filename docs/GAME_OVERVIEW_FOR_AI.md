@@ -324,3 +324,4 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 배경 병 그림(유리, 흙, 뚜껑)과 반딧불이는 파일 없이 코드로 그린다. 병 속 재료 그림은 열 때마다 MaterialDatabase에서 다섯 개를 무작위로 고른다.
 - 게임 제목 글자는 `MainMenu.GameTitle` 한 곳에 있다(지금은 임시 제목 "유리병 정원"). 글꼴에 가운뎃점(·)이 없어서 UI 글자에 쓰지 않는다.
 - 아직 없는 것: 게임 안에서 메인 화면으로 돌아가는 버튼(GameRoot가 씬을 넘어 남아 있어서 돌아가려면 GameRoot를 지우고 상태를 되돌리는 처리가 필요하다).
+- 게임 안 Esc 메뉴에 "메인 화면으로" 버튼이 있다(두 번 눌러야 한다). GameRoot.ReturnToMenu가 저장하고, 뿌리 오브젝트를 지운 뒤 MainMenu 씬으로 간다. SaveSystem.Save가 방금 저장한 내용을 기억해서 다시 시작해도 가방이 맞게 채워진다.

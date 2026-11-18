@@ -56,6 +56,7 @@ public static class SaveSystem
 
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
             File.WriteAllText(FilePath, JsonUtility.ToJson(data, true));
+            loaded = data; // 메인 화면에서 다시 시작해도 방금 저장한 가방으로 채워진다
             return true;
         }
         catch (Exception e)

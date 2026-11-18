@@ -103,6 +103,18 @@ public class GameRoot : MonoBehaviour
 
     private bool travelling;
 
+    /// <summary>저장하고 메인 화면으로 돌아간다. 이 뿌리 오브젝트(플레이어, UI)는 지우고, 다시 시작하면 새로 만들어진다.</summary>
+    public void ReturnToMenu()
+    {
+        if (travelling) return;
+        SaveNow();
+        Time.timeScale = 1f;
+        Instance = null;
+        gameObject.SetActive(false); // 지워지기 전 한 프레임 동안 소리 듣는 귀가 둘이 되지 않게 먼저 끈다
+        Destroy(gameObject);
+        SceneManager.LoadScene("MainMenu");
+    }
+
     /// <summary>지금 다른 씬으로 가는 중인가 (로딩 화면이 떠 있다)</summary>
     public bool IsTravelling => travelling;
 
