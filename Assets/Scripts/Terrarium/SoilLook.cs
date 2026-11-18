@@ -21,6 +21,7 @@ public static class SoilLook
     {
         soilAlbedo = soilNormal = sandAlbedo = sandNormal = snowAlbedo = snowNormal = redAlbedo = redNormal = null;
         styled.Clear();
+        flattened.Clear();
     }
 
     /// <summary>흙 렌더러에 흙(ground가 null) 또는 모래 등의 바닥재 모습을 입힌다.</summary>
@@ -118,6 +119,33 @@ public static class SoilLook
         copy.SetTriangles(triangles, 0);
         copy.RecalculateBounds();
         copy.RecalculateTangents();        styled[source] = copy;
+        return copy;
+    }
+
+    private static readonly Dictionary<Mesh, Mesh> flattened = new Dictionary<Mesh, Mesh>();
+
+    /// <summary>
+    /// 흙 윗면을 판판하게 편 복사본. 원래 흙 모양은 윗면이 울퉁불퉁하고 가장자리가 솟아 있어서(약 1cm),
+    /// 놓은 재료의 아래쪽이 흙에 묻히거나 앞쪽 흙 둔덕에 가려 보였다. 재료를 놓는 높이(surfaceY)와 같은 높이로 편다.
+    /// 흙의 결(울퉁불퉁함)은 법선 그림이 맡는다. surfaceY는 흙 모양의 좌표 기준 높이.
+    /// </summary>
+    public static Mesh Flat(Mesh styled, float surfaceY)
+    {
+        if (styled == null) return null;
+        if (flattened.TryGetValue(styled, out Mesh cached) && cached != null) return cached;
+
+        Mesh copy = Object.Instantiate(styled);
+        copy.name = styled.name + "_flat";
+        Vector3[] v = copy.vertices;
+        Vector3[] n = copy.normals;
+        for (int i = 0; i < v.Length; i++)
+        {
+            if (n[i].y > 0.5f) v[i].y = surfaceY;       // 윗면
+            else if (v[i].y > surfaceY) v[i].y = surfaceY; // 옆면의 맨 윗줄
+        }
+        copy.vertices = v;
+        copy.RecalculateBounds();
+        flattened[styled] = copy;
         return copy;
     }
 

@@ -191,7 +191,12 @@ public class BottleContents : MonoBehaviour
         if (soilLevels == null || soilLevels.Length == 0) return;
 
         SoilLevel s = soilLevels[Mathf.Min(SoilLevelIndex, soilLevels.Length - 1)];
-        if (soilFilter != null && s.mesh != null) soilFilter.sharedMesh = SoilLook.Styled(s.mesh); // 흙 그림을 입힐 수 있게 UV를 단 복사본
+        if (soilFilter != null && s.mesh != null)
+        {
+            // 흙 그림을 입힐 수 있게 UV를 단 복사본이고, 윗면은 재료를 놓는 높이로 판판하게 편 것 (흙에 묻히거나 가려 보이지 않게)
+            float soilSpaceY = soilFilter.transform.InverseTransformPoint(transform.TransformPoint(0f, s.surfaceY, 0f)).y;
+            soilFilter.sharedMesh = SoilLook.Flat(SoilLook.Styled(s.mesh), soilSpaceY);
+        }
         surfaceLocalY = s.surfaceY;
         zoomLookPoint = s.zoomLookPoint;
     }
@@ -570,25 +575,45 @@ public class BottleContents : MonoBehaviour
             if (!(r is SpriteRenderer)) renderers.Add(r);
         if (renderers.Count > 0)
         {
-            Bounds bounds = renderers[0].bounds;
-            foreach (Renderer r in renderers) bounds.Encapsulate(r.bounds);
+            // 병이 기울어 있어도(꾸미는 화면에서는 병이 앞으로 기울어 있다) 같은 결과가 나오도록, 크기는 세계 좌표가 아니라
+            // 재료 자신의 좌표에서 잰다. (세계 좌표의 상자는 기운 모델을 더 크게 재서 모델이 엉뚱하게 떠오르거나 박혔다)
 
             // 모델(프리팹)에는 Collider가 없어서, 병 안에서 마우스로 고를 수 있게 모델을 감싸는 상자를 붙인다.
             if (material.placedPrefab != null && visual.GetComponentInChildren<Collider>() == null)
             {
+                Bounds own = LocalBounds(visual.transform, renderers);
                 BoxCollider box = visual.AddComponent<BoxCollider>();
                 box.isTrigger = true;
-                box.center = visual.transform.InverseTransformPoint(bounds.center);
+                box.center = own.center;
                 Vector3 scale = visual.transform.lossyScale; // 모델을 키워 둔 재료(반딧불이)는 그만큼 나눈다
-                Vector3 world = Vector3.Max(bounds.size, Vector3.one * 0.03f); // 너무 작아서 못 누르는 일이 없게
-                box.size = new Vector3(world.x / Mathf.Max(scale.x, 0.0001f), world.y / Mathf.Max(scale.y, 0.0001f), world.z / Mathf.Max(scale.z, 0.0001f));
+                Vector3 min = new Vector3(0.03f / Mathf.Max(scale.x, 0.0001f), 0.03f / Mathf.Max(scale.y, 0.0001f), 0.03f / Mathf.Max(scale.z, 0.0001f)); // 너무 작아서 못 누르는 일이 없게
+                box.size = Vector3.Max(own.size, min);
             }
 
-            // 바닥이 바닥재 표면에 닿도록 올린다.
-            float lift = parent.position.y - bounds.min.y;
-            visual.transform.position += Vector3.up * lift;
+            // 바닥이 바닥재 표면에 닿도록 올린다. (놓은 자리의 위쪽 방향으로)
+            Bounds inParent = LocalBounds(parent, renderers);
+            visual.transform.localPosition += Vector3.up * (-inParent.min.y);
         }
         return visual;
+    }
+
+    /// <summary>렌더러들을 감싸는 상자를 space의 좌표로 잰다. space가 병과 함께 기울어 있어도 같은 값이 나온다.</summary>
+    private static Bounds LocalBounds(Transform space, List<Renderer> renderers)
+    {
+        bool first = true;
+        Bounds result = new Bounds();
+        foreach (Renderer r in renderers)
+        {
+            Bounds lb = r.localBounds;
+            for (int c = 0; c < 8; c++)
+            {
+                Vector3 corner = lb.center + Vector3.Scale(lb.extents, new Vector3((c & 1) == 0 ? -1f : 1f, (c & 2) == 0 ? -1f : 1f, (c & 4) == 0 ? -1f : 1f));
+                Vector3 p = space.InverseTransformPoint(r.transform.TransformPoint(corner));
+                if (first) { result = new Bounds(p, Vector3.zero); first = false; }
+                else result.Encapsulate(p);
+            }
+        }
+        return result;
     }
 
     private static void SetLayerRecursive(GameObject go, int layer)

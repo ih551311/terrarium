@@ -26301,15 +26301,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2706154300673627467, guid: 5ba4d7461ab3ee346958cf2e57a7f903, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 30.744238
+      value: 33.61741
       objectReference: {fileID: 0}
     - target: {fileID: 2706154300673627467, guid: 5ba4d7461ab3ee346958cf2e57a7f903, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.8469605
+      value: 7.821489
       objectReference: {fileID: 0}
     - target: {fileID: 2706154300673627467, guid: 5ba4d7461ab3ee346958cf2e57a7f903, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -11.677361
+      value: -11.283785
       objectReference: {fileID: 0}
     - target: {fileID: 2706154300673627467, guid: 5ba4d7461ab3ee346958cf2e57a7f903, type: 3}
       propertyPath: m_LocalRotation.w
@@ -35215,11 +35215,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8355214553415258700, guid: b7c32a54fa38a844299b1ab4a15f8fae, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 8.425668
+      value: 8.370611
       objectReference: {fileID: 0}
     - target: {fileID: 8355214553415258700, guid: b7c32a54fa38a844299b1ab4a15f8fae, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 19.714714
+      value: 18.914715
       objectReference: {fileID: 0}
     - target: {fileID: 8355214553415258700, guid: b7c32a54fa38a844299b1ab4a15f8fae, type: 3}
       propertyPath: m_LocalRotation.w
@@ -45185,7 +45185,6 @@ MonoBehaviour:
   needsPurchase: 0
   cost: 150
   dockId: 0
-  islandName: "\uB208 \uC12C"
   hub: 0
   closedGroup: {fileID: 0}
   openGroup: {fileID: 1866469231}

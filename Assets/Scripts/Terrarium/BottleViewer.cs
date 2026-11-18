@@ -46,8 +46,9 @@ public class BottleViewer : MonoBehaviour
     public void ResetOrientation()
     {
         Prepare();
-        // 양수 각도: 병 위쪽이 카메라 쪽으로 온다
-        orientation = Quaternion.AngleAxis(tiltDegrees, cameraRight);
+        // 카메라 오른쪽 축으로 양수만큼 돌리면 병 위쪽이 카메라에서 멀어진다(흙 윗면이 등을 돌려서 옆면만 보이고, 흙 위의 재료 아랫부분이 앞쪽 흙에 가린다).
+        // 입구가 카메라 쪽으로 오게 하려면 음수로 돌린다.
+        orientation = Quaternion.AngleAxis(-tiltDegrees, cameraRight);
         Apply();
     }
 

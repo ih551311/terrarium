@@ -105,6 +105,7 @@ public static class SnowIslandSetup
         Physics.SyncTransforms();
         int pickups = PlacePickups(rt);
         PickupSize.FixOpenScene(); // 작은 재료가 눈 위에서 안 보이지 않게
+        OverlapFixer.FixOpenScene(false); // 나무 속 눈사람, 울타리 속 눈 더미처럼 겹친 것을 빈 자리로 옮긴다
 
         // 지도: 지도 그림을 만들고, 이 씬의 지도 정보(SceneMapInfo)를 둔다
         Texture2D mapImage = BakeMap(rt, landing2, pierLen);
