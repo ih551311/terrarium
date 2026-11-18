@@ -21,7 +21,7 @@ public class NightGlow : MonoBehaviour
         { "star_ornament",    new Glow(1.00f, 0.90f, 0.40f, 0.9f) },
         { "crescent_moon",    new Glow(1.00f, 0.93f, 0.55f, 0.9f) },
         { "evening_primrose", new Glow(1.00f, 0.90f, 0.40f, 0.5f) },
-        { "firefly",          new Glow(0.80f, 1.00f, 0.25f, 1.6f) },
+        { "firefly",          new Glow(0.80f, 1.00f, 0.25f, 0.7f) },
         { "campfire",         new Glow(1.00f, 0.50f, 0.18f, 1.0f) },
         { "fairy_door",       new Glow(1.00f, 0.82f, 0.50f, 0.6f) },
         { "snow_flower",      new Glow(0.70f, 0.90f, 1.00f, 0.4f) },
@@ -56,12 +56,12 @@ public class NightGlow : MonoBehaviour
             visual.transform.localScale *= 2.2f;
             GameObject haloObject = new GameObject("FireflyHalo");
             haloObject.transform.SetParent(visual.transform, false);
-            haloObject.transform.localPosition = new Vector3(0f, 0.008f, 0.009f);
-            haloObject.transform.localScale = Vector3.one * 0.045f;
+            haloObject.transform.localPosition = new Vector3(0f, 0.005f, 0f); // 구슬 한가운데에서 퍼져 나온다
+            haloObject.transform.localScale = Vector3.one * 0.04f;
             haloObject.layer = visual.layer;
             ng.halo = haloObject.AddComponent<SpriteRenderer>();
             ng.halo.sprite = FireflyBug.GlowSprite;
-            ng.halo.color = new Color(0.85f, 1f, 0.35f, 0.4f);
+            ng.halo.color = new Color(0.85f, 1f, 0.4f, 0.4f);
             ng.halo.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
@@ -116,11 +116,11 @@ public class NightGlow : MonoBehaviour
         float t = Time.time + phase;
         // 촛불처럼 살짝 일렁이고, 반딧불이는 천천히 깜빡인다
         float pulse = isFirefly ? 0.55f + 0.45f * Mathf.Sin(t * 1.6f) : 0.88f + 0.12f * Mathf.Sin(t * 5.3f) * Mathf.Sin(t * 1.7f);
-        float level = isFirefly ? Mathf.Max(night, 0.45f) : night; // 반딧불이는 낮에도 꽁무니가 희미하게 빛난다
+        float level = isFirefly ? Mathf.Max(night, 0.2f) : night; // 반딧불이는 낮에도 꽁무니가 희미하게 빛난다
         Color emission = glow.color * (glow.strength * level * pulse);
         if (halo != null)
         {
-            Color hc = halo.color; hc.a = Mathf.Lerp(0.55f, 1f, night) * (0.6f + 0.4f * pulse);
+            Color hc = halo.color; hc.a = Mathf.Lerp(0.45f, 0.7f, night) * (0.6f + 0.4f * pulse);
             halo.color = hc;
             Camera viewer = bottleOwner != null && bottleOwner.ViewCamera != null && bottleOwner.ViewCamera.enabled ? bottleOwner.ViewCamera : Camera.main;
             if (viewer != null) halo.transform.rotation = viewer.transform.rotation; // 늘 보는 쪽을 향한다

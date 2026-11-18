@@ -1005,7 +1005,7 @@ public static class PlantModelMaker
     {
         b = new Builder();
         // 벌레 모양은 징그러워서, 작고 말랑한 빛 구슬로 만든다. 밤에는 NightGlow가 빛무리를 더해 반딧불이처럼 반짝인다.
-        Blob(new Vector3(0f, 0.0085f, 0f), new Vector3(0.0075f, 0.0075f, 0.0075f), 5, 10, Pale);
+        Blob(new Vector3(0f, 0.0050f, 0f), new Vector3(0.0045f, 0.0045f, 0.0045f), 5, 10, Pale);
         b.Write("deco_firefly");
     }
 }
