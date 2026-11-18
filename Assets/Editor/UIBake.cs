@@ -146,21 +146,29 @@ public static class UIBake
     {
         GameObject go = NewHolder("RequestPanel", "RequestCanvas", 350, out RectTransform root, out Component comp, typeof(RequestPanel));
         UIKit.Backdrop(root);
-        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(980f, 860f));
+        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(980f, 905f));
 
-        TMP_Text from = UIKit.Label(panel, "편지 - 보낸 사람", 40f, new Vector2(0f, 380f), new Vector2(880f, 60f));
-        TMP_Text body = UIKit.Label(panel, "편지 내용이 여기에 나와요.", 32f, new Vector2(0f, 270f), new Vector2(860f, 160f), TextAlignmentOptions.TopLeft);
-        TMP_Text condition = UIKit.Label(panel, "조건: ", 30f, new Vector2(0f, 150f), new Vector2(860f, 50f), TextAlignmentOptions.Center, new Color(0.45f, 0.30f, 0.12f));
+        // 위쪽 글자는 위에서, 아래 버튼은 아래에서 잰 자리에 둔다. 판의 높이는 RequestPanel이 병 줄 수에 맞춰 바꾼다.
+        TMP_Text from = UIKit.Label(panel, "여행자 언니의 편지", 42f, new Vector2(0f, -60f), new Vector2(880f, 60f));
+        TMP_Text body = UIKit.Label(panel, "편지 내용이 여기에 나와요.", 34f, new Vector2(0f, -178f), new Vector2(840f, 160f), TextAlignmentOptions.TopLeft);
+        TMP_Text condition = UIKit.Label(panel, "조건  ", 30f, new Vector2(0f, -285f), new Vector2(860f, 50f), TextAlignmentOptions.Center, new Color(0.45f, 0.30f, 0.12f));
+        TopAnchor(from); TopAnchor(body); TopAnchor(condition);
 
         var rows = new Button[RequestPanel.MaxRows];
         for (int i = 0; i < rows.Length; i++)
-            rows[i] = Btn(panel, "병 보내기", new Vector2(0f, 70f - i * 82f), new Vector2(820f, 70f), 28f);
+        {
+            rows[i] = Btn(panel, "병 보내기", new Vector2(0f, -355f - i * 80f), new Vector2(820f, 70f), 28f);
+            TopAnchor(rows[i]);
+        }
 
-        TMP_Text note = UIKit.Label(panel, "", 26f, new Vector2(0f, -318f), new Vector2(880f, 70f), TextAlignmentOptions.Center);
-        Button mailbox = Btn(panel, "우체통 열기", new Vector2(-220f, -392f), new Vector2(380f, 64f), 28f);
-        Button close = Btn(panel, "닫기", new Vector2(220f, -392f), new Vector2(380f, 64f), 28f);
+        TMP_Text note = UIKit.Label(panel, "", 26f, new Vector2(0f, -345f), new Vector2(880f, 70f), TextAlignmentOptions.Center);
+        TopAnchor(note);
+        Button mailbox = Btn(panel, "우체통 열기", new Vector2(-220f, 48f), new Vector2(380f, 64f), 28f);
+        Button close = Btn(panel, "닫기", new Vector2(220f, 48f), new Vector2(380f, 64f), 28f);
+        BottomAnchor(mailbox); BottomAnchor(close);
 
         Put(comp, "root", root.gameObject);
+        Put(comp, "panelRect", panel);
         Put(comp, "fromLabel", from);
         Put(comp, "bodyLabel", body);
         Put(comp, "conditionLabel", condition);
@@ -171,6 +179,15 @@ public static class UIBake
         return go;
     }
 
+    /// <summary>글자나 버튼을 부모의 위쪽 또는 아래쪽 가운데 기준으로 잰다</summary>
+    private static void TopAnchor(Component c) { Reanchor((RectTransform)c.transform, 1f); }
+    private static void BottomAnchor(Component c) { Reanchor((RectTransform)c.transform, 0f); }
+
+    private static void Reanchor(RectTransform r, float anchorY)
+    {
+        // 자리 값은 호출하는 쪽이 이미 그 기준(위에서 또는 아래에서 잰 거리)으로 적었으므로 기준만 옮긴다
+        r.anchorMin = r.anchorMax = new Vector2(r.anchorMin.x, anchorY);
+    }
     // ───────── 선착장 창 ─────────
 
     private static GameObject BuildDock()

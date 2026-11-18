@@ -17,6 +17,8 @@ public class RequestPanel : MonoBehaviour
     private static RequestPanel instance;
 
     [SerializeField] private GameObject root;
+    [Tooltip("종이 판. 보여 주는 병 줄 수에 따라 높이가 변한다")]
+    [SerializeField] private RectTransform panelRect;
     [SerializeField] private TMP_Text fromLabel, bodyLabel, conditionLabel, noteLabel;
     [SerializeField] private Button[] rowButtons;
     [SerializeField] private Button mailboxButton, closeButton;
@@ -113,9 +115,9 @@ public class RequestPanel : MonoBehaviour
         foreach (Button b in rows) b.gameObject.SetActive(false);
         if (done) return;
 
-        fromLabel.text = "편지 - " + request.from;
+        fromLabel.text = request.from + "의 편지";
         bodyLabel.text = request.body;
-        conditionLabel.text = "조건: " + request.condition;
+        conditionLabel.text = "조건  " + request.condition;
 
         // 조건에 맞는 병부터 보여 준다
         var matching = new List<string>();
@@ -138,12 +140,22 @@ public class RequestPanel : MonoBehaviour
 
         if (matching.Count == 0)
             noteLabel.text = BottleStore.ArchivedIds().Count == 0
-                ? "아직 완성한 병이 없어요."
-                : "조건에 맞는 병이 없어요. (가진 병 " + others + "개)";
+                ? "아직 완성한 병이 없어요"
+                : "조건에 맞는 병이 없어요. 가진 병 " + others + "개";
         else if (matching.Count > MaxRows)
-            noteLabel.text = "조건에 맞는 병이 " + matching.Count + "개 있어요. (앞의 " + MaxRows + "개만 보여요)";
+            noteLabel.text = "조건에 맞는 병이 " + matching.Count + "개 있어요. 앞의 " + MaxRows + "개만 보여요";
         else
-            noteLabel.text = "보낸 병은 돌아오지 않지만, 답례가 우체통에 도착해요.";
+            noteLabel.text = "보낸 병은 돌아오지 않아요. 답례는 우체통으로 와요";
+
+        FitPanel(Mathf.Min(matching.Count, rows.Count));
+    }
+
+    /// <summary>보여 주는 병 줄 수에 맞춰 종이 판의 높이와 아래 글자 자리를 맞춘다 (병이 없을 때 휑하게 비지 않게)</summary>
+    private void FitPanel(int shownRows)
+    {
+        float noteY = -(345f + shownRows * 80f);
+        noteLabel.rectTransform.anchoredPosition = new Vector2(0f, noteY);
+        panelRect.sizeDelta = new Vector2(panelRect.sizeDelta.x, -noteY + 160f);
     }
 
     private static string NameOf(string id)
@@ -171,9 +183,10 @@ public class RequestPanel : MonoBehaviour
 
         done = true;
         foreach (Button b in rows) b.gameObject.SetActive(false);
-        fromLabel.text = "답장 - " + request.from;
+        fromLabel.text = request.from + "의 답장";
         bodyLabel.text = request.thanks;
-        conditionLabel.text = "답례: 코인 " + request.coins + (reward != null ? ", " + reward.displayName + " 1개" : "") + " (우체통에 도착했어요)";
+        conditionLabel.text = "답례  코인 " + request.coins + (reward != null ? ", " + reward.displayName + " 1개" : "") + ", 우체통으로 와요";
         noteLabel.text = "";
+        FitPanel(0);
     }
 }
