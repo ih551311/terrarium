@@ -37,7 +37,7 @@ public static class ToolModelMaker
         b = new Builder(); AxeHead(); meshes["AxeHead"] = Save("tool_axe_head");
         b = new Builder(); PickHead(); meshes["PickHead"] = Save("tool_pickaxe_head");
         b = new Builder(); HoeHead(); meshes["HoeHead"] = Save("tool_hoe_head");
-        b = new Builder(); Hand(); meshes["Hand"] = Save("tool_hand");
+        b = new Builder(); Hand(); meshes["Hand"] = Save("tool_hand", true);
         AssetDatabase.SaveAssets();
 
         // 묶음: Hand + Axe(Handle, Head) + Pickaxe(Handle, Head) + Hoe(Handle, Head)
@@ -68,7 +68,7 @@ public static class ToolModelMaker
     }
 
     /// <summary>빌더의 삼각형을 메쉬 에셋으로 저장한다 (있으면 같은 파일 안에서 내용만 바꾼다). 면마다 따로 점을 둬서 각진 그림자가 생긴다.</summary>
-    private static Mesh Save(string name)
+    private static Mesh Save(string name, bool smooth = false)
     {
         var m = new Mesh { name = name };
         var uv = new List<Vector2>(b.pos.Count);
@@ -76,8 +76,26 @@ public static class ToolModelMaker
         for (int t = 0; t < b.colors.Count; t++)
             for (int k = 0; k < 3; k++) uv.Add(new Vector2((b.colors[t] + 0.5f) / PaletteCount, 0.5f));
         for (int i = 0; i < idx.Length; i++) idx[i] = i;
-        m.SetVertices(b.pos);
-        m.SetUVs(0, uv);
+        if (smooth)
+        {
+            // 같은 자리, 같은 색의 점을 하나로 합쳐서 면 사이가 매끄럽게 이어지게 한다 (각진 그림자 없이 부드러운 음영)
+            var map = new Dictionary<(int, int, int, int), int>();
+            var verts = new List<Vector3>(); var uvs = new List<Vector2>();
+            for (int i = 0; i < b.pos.Count; i++)
+            {
+                Vector3 p = b.pos[i];
+                var key = (Mathf.RoundToInt(p.x * 50000f), Mathf.RoundToInt(p.y * 50000f), Mathf.RoundToInt(p.z * 50000f), b.colors[i / 3]);
+                if (!map.TryGetValue(key, out int at)) { at = verts.Count; map[key] = at; verts.Add(p); uvs.Add(uv[i]); }
+                idx[i] = at;
+            }
+            m.SetVertices(verts);
+            m.SetUVs(0, uvs);
+        }
+        else
+        {
+            m.SetVertices(b.pos);
+            m.SetUVs(0, uv);
+        }
         m.SetTriangles(idx, 0);
         m.RecalculateNormals();
         m.RecalculateBounds();
@@ -240,54 +258,112 @@ public static class ToolModelMaker
         b.xf = Matrix4x4.identity;
     }
 
+    // ───────── 부드러운 손: 이어진 관(Sweep)으로 만든다 ─────────
+
+    /// <summary>점들을 부드러운 곡선으로 늘린다 (Catmull-Rom). 굵기도 같이 이어 준다.</summary>
+    private static void Smooth(Vector3[] ctrl, float[] rad, int sub, out Vector3[] pts, out float[] radii)
+    {
+        var p = new List<Vector3>(); var r = new List<float>();
+        for (int i = 0; i < ctrl.Length - 1; i++)
+        {
+            Vector3 p0 = ctrl[Mathf.Max(i - 1, 0)], p1 = ctrl[i], p2 = ctrl[i + 1], p3 = ctrl[Mathf.Min(i + 2, ctrl.Length - 1)];
+            for (int s = 0; s < sub; s++)
+            {
+                float t = s / (float)sub, t2 = t * t, t3 = t2 * t;
+                p.Add(0.5f * (2f * p1 + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t2 + (-p0 + 3f * p1 - 3f * p2 + p3) * t3));
+                r.Add(Mathf.Lerp(rad[i], rad[i + 1], t));
+            }
+        }
+        p.Add(ctrl[ctrl.Length - 1]); r.Add(rad[rad.Length - 1]);
+        pts = p.ToArray(); radii = r.ToArray();
+    }
+
+    /// <summary>점들을 따라 굵기가 변하는 매끈한 관. 고리를 서로 나눠 써서 이음매가 없다. roundEnd면 끝을 반구로 둥글게 닫는다.</summary>
+    private static void Sweep(Vector3[] pts, float[] radii, int sides, int color, bool roundEnd)
+    {
+        var P = new List<Vector3>(pts); var Rr = new List<float>(radii);
+        if (roundEnd)
+        {
+            Vector3 tl = (pts[pts.Length - 1] - pts[pts.Length - 2]).normalized;
+            float rl = radii[radii.Length - 1];
+            foreach (float a in new[] { 35f, 62f, 82f })
+            {
+                P.Add(pts[pts.Length - 1] + tl * rl * Mathf.Sin(a * Mathf.Deg2Rad));
+                Rr.Add(rl * Mathf.Cos(a * Mathf.Deg2Rad));
+            }
+        }
+        int n = P.Count;
+        var rings = new Vector3[n][];
+        Vector3 t0 = (P[1] - P[0]).normalized;
+        Vector3 u = Vector3.Cross(t0, Mathf.Abs(t0.y) > 0.9f ? Vector3.right : Vector3.up).normalized;
+        for (int i = 0; i < n; i++)
+        {
+            Vector3 t = (P[Mathf.Min(i + 1, n - 1)] - P[Mathf.Max(i - 1, 0)]).normalized;
+            u = (u - Vector3.Dot(u, t) * t).normalized;
+            Vector3 v = Vector3.Cross(t, u);
+            rings[i] = new Vector3[sides];
+            for (int k = 0; k < sides; k++)
+            {
+                float a = Mathf.PI * 2f * k / sides;
+                rings[i][k] = P[i] + Rr[i] * (Mathf.Cos(a) * u + Mathf.Sin(a) * v);
+            }
+        }
+        for (int i = 0; i < n - 1; i++)
+        {
+            Vector3 mid = (P[i] + P[i + 1]) * 0.5f;
+            for (int k = 0; k < sides; k++)
+                b.Quad(rings[i][k], rings[i][(k + 1) % sides], rings[i + 1][(k + 1) % sides], rings[i + 1][k], color, mid);
+        }
+        for (int k = 0; k < sides; k++) // 시작과 끝을 막는다
+        {
+            b.Tri(P[0], rings[0][(k + 1) % sides], rings[0][k], color, P[1]);
+            b.Tri(P[n - 1], rings[n - 1][k], rings[n - 1][(k + 1) % sides], color, P[n - 2]);
+        }
+    }
+
+    private static void Finger(Vector3[] ctrl, float[] rad, int color)
+    {
+        Smooth(ctrl, rad, 4, out Vector3[] pts, out float[] radii);
+        Sweep(pts, radii, 10, color, true);
+    }
+
     private static void Hand()
     {
         const float R = 0.021f; // 자루 반지름 (쥐는 곳)
-        // 손가락 네 개 (위에서부터 검지, 중지, 약지, 새끼). 손등 쪽 뿌리 마디(15도)에서 자루 앞(90도)과 왼쪽(180도)을 감고,
-        // 카메라 쪽(225도 안팎)으로 돌아와 끝난다. 끝마디는 엄지 아래에 깔린다.
-        float[] ys = { 0.050f, 0.024f, -0.002f, -0.027f };
-        float[] rr = { 0.0105f, 0.0112f, 0.0106f, 0.0094f };
-        float[] tip = { 232f, 238f, 230f, 214f };
+        // 손가락 네 개 (위에서부터 검지, 중지, 약지, 새끼). 서로 맞닿게 붙여서 깔끔한 한 덩이로 보이고,
+        // 손등 쪽 뿌리(14도)에서 자루 앞(90도)과 왼쪽(180도)을 감아 카메라 쪽(220도 안팎)에서 끝난다.
+        float[] ys = { 0.050f, 0.025f, 0.000f, -0.024f };
+        float[] rr = { 0.0120f, 0.0126f, 0.0120f, 0.0105f };
+        float[] tip = { 228f, 234f, 226f, 212f };
         for (int f = 0; f < 4; f++)
         {
-            float rad = R + rr[f] + 0.0015f;
-            Vector3[] pts =
+            float rad = R + rr[f] + 0.0008f;
+            Vector3[] ctrl =
             {
-                Arc(14f, rad + 0.006f, ys[f]),
-                Arc(70f, rad, ys[f]),
-                Arc(130f, rad, ys[f]),
-                Arc(185f, rad - 0.0005f, ys[f] - 0.001f),
+                Arc(10f, rad + 0.007f, ys[f] + 0.002f),
+                Arc(60f, rad + 0.001f, ys[f]),
+                Arc(120f, rad, ys[f]),
+                Arc(180f, rad - 0.0005f, ys[f] - 0.001f),
                 Arc(tip[f], rad - 0.001f, ys[f] - 0.003f)
             };
-            float[] th = { 1.12f, 1.0f, 0.96f, 0.92f, 0.86f };
-            for (int i = 0; i < pts.Length - 1; i++)
-            {
-                Tube(pts[i], pts[i + 1], rr[f] * th[i], rr[f] * th[i + 1], 6, Skin);
-                Blob(pts[i + 1], Vector3.one * rr[f] * th[i + 1] * 1.04f, 2, 6, i == 1 ? SkinShade : Skin); // 마디
-            }
-            Blob(pts[0], Vector3.one * rr[f] * 1.2f, 3, 6, Skin); // 뿌리 마디(주먹 쥔 손등 위의 볼록한 곳)
+            Finger(ctrl, new[] { rr[f] * 1.05f, rr[f], rr[f] * 0.97f, rr[f] * 0.92f, rr[f] * 0.88f }, Skin);
         }
 
-        // 손등: 오른쪽(조금 카메라 쪽)에 세로로 긴 둥근 판. 손바닥 두툼한 곳: 카메라 쪽 아래
-        TurnedBlob(Arc(-8f, R + 0.016f, 0.010f), -8f, new Vector3(0.017f, 0.056f, 0.030f), 3, 7, Skin);
-        TurnedBlob(Arc(-58f, R + 0.013f, -0.024f), -58f, new Vector3(0.016f, 0.036f, 0.021f), 3, 6, Skin);
+        // 손등과 손바닥 두툼한 곳: 부드러운 큰 타원체
+        TurnedBlob(Arc(-8f, R + 0.016f, 0.010f), -8f, new Vector3(0.018f, 0.058f, 0.031f), 6, 12, Skin);
+        TurnedBlob(Arc(-58f, R + 0.013f, -0.024f), -58f, new Vector3(0.017f, 0.038f, 0.022f), 5, 10, Skin);
 
-        // 엄지: 손바닥 아래에서 카메라 쪽 면을 비스듬히 올라가 손가락 끝을 덮는다 (손가락보다 바깥쪽)
+        // 엄지: 카메라 쪽 면을 비스듬히 올라가 손가락 끝을 덮는다
         Vector3 t0 = Arc(-48f, R + 0.020f, -0.034f), t1 = Arc(-92f, R + 0.024f, -0.006f), t2 = Arc(-130f, R + 0.023f, 0.022f);
-        Tube(t0, t1, 0.0142f, 0.0130f, 6, Skin);
-        Blob(t1, Vector3.one * 0.0132f, 2, 6, SkinShade);
-        Tube(t1, t2, 0.0130f, 0.0116f, 6, Skin);
-        Blob(t2, Vector3.one * 0.0118f, 3, 6, Skin);
-        Vector3 nailDir = (t2 - t1).normalized;
-        Blob(t2 + nailDir * 0.004f + Arc(-130f, 0.008f, 0f), new Vector3(0.0058f, 0.0042f, 0.0058f), 2, 5, Cream); // 손톱
+        Finger(new[] { t0, t1, t2 }, new[] { 0.0150f, 0.0138f, 0.0122f }, Skin);
 
         // 손목, 소맷부리, 소매: 손등 아래에서 오른쪽 아래 뒤(화면 밖)로
         Vector3 w0 = Arc(-20f, R + 0.012f, -0.046f);
         Vector3 d = new Vector3(0.36f, -1f, -0.52f).normalized;
-        Tube(w0 + d * -0.01f, w0 + d * 0.065f, 0.027f, 0.029f, 8, Skin);
-        Tube(w0 + d * 0.060f, w0 + d * 0.092f, 0.036f, 0.037f, 8, Cream);      // 소맷부리
-        Tube(w0 + d * 0.090f, w0 + d * 0.42f, 0.039f, 0.047f, 8, Green);       // 스웨터 소매
-        for (int i = 0; i < 3; i++)                                            // 소매 골지
-            Tube(w0 + d * (0.13f + i * 0.09f), w0 + d * (0.135f + i * 0.09f), 0.041f + i * 0.0018f, 0.041f + i * 0.0018f, 8, SleeveRib);
+        Sweep(new[] { w0 - d * 0.01f, w0 + d * 0.066f }, new[] { 0.027f, 0.029f }, 14, Skin, false);
+        Sweep(new[] { w0 + d * 0.060f, w0 + d * 0.092f }, new[] { 0.036f, 0.037f }, 14, Cream, false);     // 소맷부리
+        Sweep(new[] { w0 + d * 0.090f, w0 + d * 0.42f }, new[] { 0.039f, 0.047f }, 14, Green, false);      // 스웨터 소매
+        for (int i = 0; i < 3; i++)                                                                       // 소매 골지
+            Sweep(new[] { w0 + d * (0.13f + i * 0.09f), w0 + d * (0.135f + i * 0.09f) }, new[] { 0.041f + i * 0.0018f, 0.041f + i * 0.0018f }, 14, SleeveRib, false);
     }
 }
