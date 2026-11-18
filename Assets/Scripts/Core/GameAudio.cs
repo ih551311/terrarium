@@ -157,7 +157,7 @@ public class GameAudio : MonoBehaviour
         Fade(waves, outdoors ? Mathf.Lerp(0.05f, 0.26f, shore) : 0.015f);
         Fade(wind, outdoors ? 0.17f + 0.12f * rain : 0.03f);
         Fade(rainLoop, 0f); // 빗소리와 폭풍 소리는 날씨 에셋(AudioModule)이 낸다
-        Fade(crickets, outdoors ? 0.14f * night * (1f - rain) : 0f);
+        Fade(crickets, outdoors ? 0.07f * night * (1f - rain) : 0f);
         Fade(roomTone, outdoors ? 0f : 0.10f);
 
         // 낮의 새 소리 (바깥, 맑은 날)
@@ -401,24 +401,44 @@ public class GameAudio : MonoBehaviour
         return d;
     }
 
-    /// <summary>밤의 풀벌레: 높은 사인이 빠르게 깜박인다</summary>
+    /// <summary>
+    /// 밤의 풀벌레: 예전에는 높은 사인음이 쉬지 않고 "삐삐삐" 하고 켜졌다 꺼져서 기계음처럼 거슬렸다.
+    /// 지금은 귀뚜라미 두 마리가 번갈아 "찌르르" 하고 짧게 울고(세 번 끊어 우는 한 묶음), 한참 쉬었다가 다시 운다.
+    /// 소리는 부드럽게 시작하고 끝나며, 높이가 조금씩 흔들리고 숨 같은 잡음이 약간 섞여서 사인음처럼 들리지 않는다.
+    /// </summary>
     private static float[] CricketData()
     {
-        int n = Rate * 4 + LoopFade;
+        int n = Rate * 10 + LoopFade;
         var d = new float[n];
-        for (int i = 0; i < n; i++)
+        var rnd = new System.Random(61);
+        float[] pitch = { 3650f, 4150f };
+        float[] nextAt = { 0.4f, 2.6f }; // 두 마리가 서로 다른 때에 운다
+        for (int k = 0; k < 2; k++)
         {
-            float t = i / (float)Rate;
-            float pulse = Mathf.Clamp01(Mathf.Sin(2f * Mathf.PI * 6.5f * t) * 3f);          // 초당 6.5번 "찌찌"
-            float chirp = Mathf.Sin(2f * Mathf.PI * 4300f * t) * pulse;
-            float pulse2 = Mathf.Clamp01(Mathf.Sin(2f * Mathf.PI * 5.2f * t + 2f) * 3f);
-            float chirp2 = Mathf.Sin(2f * Mathf.PI * 3600f * t) * pulse2;
-            float slow = 0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * t / 4f);                   // 4초마다 쉬었다가
-            d[i] = (chirp * 0.5f + chirp2 * 0.35f) * (0.3f + 0.7f * slow) * 0.5f;
+            float t0 = nextAt[k];
+            while (t0 < 10f)
+            {
+                int pulses = 3;
+                for (int p = 0; p < pulses; p++)
+                {
+                    float start = t0 + p * 0.085f;
+                    int i0 = (int)(start * Rate), len = (int)(0.05f * Rate);
+                    float f = pitch[k] * (1f + 0.012f * (float)(rnd.NextDouble() - 0.5));
+                    float phase = 0f;
+                    for (int i = 0; i < len && i0 + i < n; i++)
+                    {
+                        float u = i / (float)len;
+                        float env = Mathf.Sin(Mathf.PI * u); env *= env;        // 부드럽게 커졌다 작아진다
+                        phase += 2f * Mathf.PI * (f * (1f + 0.02f * u)) / Rate;
+                        float hiss = (float)(rnd.NextDouble() * 2.0 - 1.0) * 0.18f;
+                        d[i0 + i] += (Mathf.Sin(phase) + 0.25f * Mathf.Sin(phase * 2.02f) + hiss) * env * 0.22f;
+                    }
+                }
+                t0 += 0.9f + (float)rnd.NextDouble() * 1.8f; // 한 묶음 우는 사이 한참 쉰다
+            }
         }
         return d;
     }
-
     /// <summary>집 안의 조용한 방 소리: 아주 낮은 웅웅 소리와 가끔 장작 타는 톡톡</summary>
     private static float[] RoomData()
     {
