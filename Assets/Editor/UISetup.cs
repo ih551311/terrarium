@@ -34,6 +34,7 @@ public static class UISetup
         try
         {
             string result = BuildInside(root);
+            UIRound.Apply(root); // 네모난 바탕을 둥근 모서리로
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             return result;
         }

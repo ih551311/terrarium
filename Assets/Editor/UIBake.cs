@@ -55,6 +55,7 @@ public static class UIBake
 
     private static void SavePrefab(GameObject root, string name)
     {
+        UIRound.Apply(root); // 네모난 바탕을 둥근 모서리로
         PrefabUtility.SaveAsPrefabAsset(root, PrefabFolder + "/" + name + ".prefab");
         Object.DestroyImmediate(root);
     }
@@ -340,6 +341,7 @@ public static class UIBake
 
         helpPanel.SetActive(false);
         settingsPanel.SetActive(false);
+        UIRound.Apply(canvas.gameObject);
 
         Put(menu, "startButton", start);
         Put(menu, "helpButton", help);
