@@ -313,3 +313,14 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **모델**: 도끼, 곡괭이, 괭이와 그것을 쥔 오른손을 다른 물체와 같은 팔레트 로우폴리로 만든다(`ToolModelMaker`, 메뉴 도구와 손 모델 만들기). 메쉬는 `Assets/Models/Tools/*.asset`(같은 파일 안에서 내용만 바꿈), 묶음은 `Assets/Resources/ToolRig.prefab`(Hand, Axe/Pickaxe/Hoe 각각 Handle과 Head). 자루가 +Y, 손이 쥔 자리가 원점, 날은 앞(+Z). 손은 손가락 네 개가 자루를 감아 카메라 쪽으로 돌아오고 엄지가 그 위를 덮으며, 손등은 오른쪽, 손목에서 흰 소맷부리와 연두 스웨터 소매가 오른쪽 아래로 빠진다. 도구 머리는 흰색이라 강화 단계 색을 곱한다.
 - **움직임**(`ToolView`): 캘 수 있는 것을 바라보면 그 도구를 들어 올리고(`Interactor`가 `SetAim`), 시선을 돌리면 0.7초 뒤 내려놓는다. 다른 도구로 바뀌면 내렸다가 바꿔 든다. 좌클릭하면 화면 밖 어깨를 축으로 들었다가(0.1초) 내려치고(0.07초) 잠깐 떨린 뒤(0.06초) 되돌아온다(0.24초). 연달아 눌러도 지금 자세에서 이어진다. 들고 있으면 숨쉬듯 오르내리고, 걸으면 흔들리고, 시선을 돌리면 살짝 늦게 따라온다. 자세 값은 `GripPos`, `GripEuler`, `ModelScale`, 휘두르기 각도는 `RaiseShoulderDeg` 등.
 - **맞는 순간**: `Harvestable.Hit`은 소리와 나무 흔들림을 `ToolView.ImpactDelay`(0.17초) 뒤, 도구가 맞는 순간에 낸다.
+
+---
+
+## 메인 화면 (2026-11-18)
+
+- 게임을 켜면 `Assets/Scenes/MainMenu.unity`가 먼저 나온다 (빌드 설정 0번). 화면은 전부 `Assets/Scripts/UI/MainMenu.cs`가 코드로 만든다(UIKit). 씬을 다시 만들려면 메뉴 "유리병 정원 > 메인 화면 만들기"(`Assets/Editor/MainMenuSetup.cs`).
+- 버튼 세 개: **시작하기**(로딩 화면을 거쳐 Island로 간다. 저장이 있으면 GameRoot가 저절로 이어서 불러온다), **도움말**(조작키와 게임 방법), **설정**(소리 크기, 마우스 감도, 배경 음악, 화면 모드).
+- 설정은 PlayerPrefs에 기억한다: `master_volume`(일시정지 메뉴와 같은 값), `look_sensitivity`(배율, FirstPersonController가 곱한다), `music_on`(GameAudio.MusicOn). 화면 모드는 기억하지 않는다.
+- 배경 병 그림(유리, 흙, 뚜껑)과 반딧불이는 파일 없이 코드로 그린다. 병 속 재료 그림은 열 때마다 MaterialDatabase에서 다섯 개를 무작위로 고른다.
+- 게임 제목 글자는 `MainMenu.GameTitle` 한 곳에 있다(지금은 임시 제목 "유리병 정원"). 글꼴에 가운뎃점(·)이 없어서 UI 글자에 쓰지 않는다.
+- 아직 없는 것: 게임 안에서 메인 화면으로 돌아가는 버튼(GameRoot가 씬을 넘어 남아 있어서 돌아가려면 GameRoot를 지우고 상태를 되돌리는 처리가 필요하다).

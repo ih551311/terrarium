@@ -63,7 +63,8 @@ public class FirstPersonController : MonoBehaviour
 
     private void Look(Mouse mouse)
     {
-        Vector2 delta = mouse.delta.ReadValue() * lookSensitivity;
+        // 메인 화면 설정의 마우스 감도(배율, 1이 기본)를 곱한다
+        Vector2 delta = mouse.delta.ReadValue() * lookSensitivity * Mathf.Clamp(PlayerPrefs.GetFloat(MainMenu.LookKey, 1f), 0.2f, 3f);
 
         // 좌우는 몸 전체를, 위아래는 카메라만 돌린다.
         transform.Rotate(Vector3.up, delta.x);

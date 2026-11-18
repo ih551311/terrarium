@@ -20,7 +20,11 @@ public class GameAudio : MonoBehaviour
     private static bool musicOn = true;
 
     /// <summary>배경 음악이 켜져 있는가 (P 키나 일시정지 메뉴로 바꾼다)</summary>
-    public static bool MusicOn { get { return musicOn; } set { musicOn = value; } }
+    public static bool MusicOn
+    {
+        get { return musicOn; }
+        set { musicOn = value; PlayerPrefs.SetInt("music_on", value ? 1 : 0); } // 다음에 켜도 그대로
+    }
 
     /// <summary>효과음을 한 번 낸다. 소리 시스템이 아직 없으면 아무 일도 하지 않는다.</summary>
     public static void Play(Sfx sfx, float volume = 1f)
@@ -42,7 +46,7 @@ public class GameAudio : MonoBehaviour
     private static void ResetStatics()
     {
         instance = null;
-        musicOn = true;
+        musicOn = PlayerPrefs.GetInt("music_on", 1) == 1;
     }
 
     // ───────── 소리 재료 ─────────
