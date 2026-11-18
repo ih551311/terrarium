@@ -179,7 +179,7 @@ public class BottleDecorator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             ? contents.TryFindPlacement(selected, ray, out localPoint)
             : PlacementResult.Outside;
 
-        if (result == PlacementResult.Outside) { ShowMessage("병 안 흙 위를 눌러 주세요"); return; }
+        if (result == PlacementResult.Outside) { ShowMessage(selected.CanFloat ? "병 안쪽을 눌러 주세요" : "병 안 흙 위를 눌러 주세요"); return; }
         if (result == PlacementResult.TooBig) { ShowMessage("이 재료는 이 병에 들어가지 않아요"); return; }
 
         if (!bag.TryRemove(selected)) return; // 가방에 없으면 놓지 않는다

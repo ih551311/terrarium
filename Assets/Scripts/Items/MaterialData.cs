@@ -111,6 +111,15 @@ public class MaterialData : ScriptableObject
 
     public Color placeholderColor = Color.gray;
 
+    // 공중에 놓을 수 있는 재료: 날아다니거나 떠 있어도 이상하지 않은 것들. (식물, 돌, 집 같은 것은 땅에 있어야 한다)
+    private static readonly System.Collections.Generic.HashSet<string> FloatingIds = new System.Collections.Generic.HashSet<string>
+    {
+        "firefly", "wind_feather", "dandelion_puff", "star_ornament", "crescent_moon", "kite", "bird", "hot_air_balloon"
+    };
+
+    /// <summary>병 안에서 흙에 닿지 않고 공중에 놓을 수 있는가 (반딧불이, 깃털, 별, 새, 연 같은 것)</summary>
+    public bool CanFloat => !string.IsNullOrEmpty(id) && FloatingIds.Contains(id);
+
     [Tooltip("기본 도형의 크기(미터). 병 안이 작아서 0.05~0.1 정도가 알맞다.")]
     public Vector3 placeholderSize = new Vector3(0.07f, 0.07f, 0.07f);
 

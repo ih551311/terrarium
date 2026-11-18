@@ -233,6 +233,8 @@ public class BottleContents : MonoBehaviour
     {
         localPosition = Vector3.zero;
 
+        if (material.CanFloat) return TryFindFloatingPlacement(material, worldRay, out localPosition);
+
         Plane surface = new Plane(transform.up, transform.TransformPoint(0f, surfaceLocalY, 0f));
         if (!surface.Raycast(worldRay, out float distance)) return PlacementResult.Outside;
 
@@ -241,6 +243,29 @@ public class BottleContents : MonoBehaviour
         if (Slack(hit) < -pointerTolerance) return PlacementResult.Outside; // 병 안 바닥에서 너무 멀다
 
         return FitInside(GetFootprint(material), 0f, 1f, hit, out localPosition)
+            ? PlacementResult.Ok
+            : PlacementResult.TooBig;
+    }
+
+    /// <summary>
+    /// 공중에 놓는 재료(반딧불이, 깃털, 별 등)의 자리. 병 가운데를 지나고 병 카메라를 마주 보는 면 위에서 클릭한 곳을 찾는다.
+    /// 즉 화면에서 누른 높이 그대로 공중에 놓인다. 흙보다 낮으면 흙 위로 올리고, 병 밖으로 나가면 안쪽으로 밀어 넣는다.
+    /// </summary>
+    private PlacementResult TryFindFloatingPlacement(MaterialData material, Ray worldRay, out Vector3 localPosition)
+    {
+        localPosition = Vector3.zero;
+        Vector3 localCenter = new Vector3(surfaceCenter.x, surfaceLocalY, surfaceCenter.y);
+        if (TryGetInterior(out Vector3 interiorCenter, out Vector3 half)) localCenter = interiorCenter;
+
+        Vector3 facing = viewCamera != null ? -viewCamera.transform.forward : -worldRay.direction;
+        Plane plane = new Plane(facing, transform.TransformPoint(localCenter));
+        if (!plane.Raycast(worldRay, out float distance)) return PlacementResult.Outside;
+
+        Vector3 hit = transform.InverseTransformPoint(worldRay.GetPoint(distance));
+        hit.y = Mathf.Max(hit.y, surfaceLocalY); // 흙 속으로는 들어가지 않는다
+        if (Slack(hit) < -pointerTolerance) return PlacementResult.Outside; // 병 안에서 너무 멀다
+
+        return FitInside(GetFootprint(material), 0f, 1f, hit, out localPosition, true)
             ? PlacementResult.Ok
             : PlacementResult.TooBig;
     }
@@ -283,7 +308,7 @@ public class BottleContents : MonoBehaviour
 
     private bool TryChangePose(PlacedMaterial placed, float yaw, float scaleFactor)
     {
-        if (!FitInside(GetFootprint(placed.Material), yaw, scaleFactor, placed.transform.localPosition, out Vector3 fitted))
+        if (!FitInside(GetFootprint(placed.Material), yaw, scaleFactor, placed.transform.localPosition, out Vector3 fitted, placed.Material.CanFloat))
             return false;
 
         placed.transform.localPosition = fitted;
@@ -328,12 +353,12 @@ public class BottleContents : MonoBehaviour
     /// 원하는 자리에 들어가면 그대로, 아니면 바닥 가운데 쪽으로 밀어서 들어가는 가장 먼 자리를 찾는다.
     /// 가운데에서도 안 들어가면 false.
     /// </summary>
-    private bool FitInside(Vector3[] footprint, float yaw, float scale, Vector3 desired, out Vector3 result)
+    private bool FitInside(Vector3[] footprint, float yaw, float scale, Vector3 desired, out Vector3 result, bool floating = false)
     {
         result = desired;
         if (Fits(footprint, yaw, scale, desired)) return true;
 
-        Vector3 center = new Vector3(surfaceCenter.x, surfaceLocalY, surfaceCenter.y);
+        Vector3 center = new Vector3(surfaceCenter.x, floating ? desired.y : surfaceLocalY, surfaceCenter.y); // 공중에 놓는 것은 높이를 그대로 두고 가운데로 민다
         if (!Fits(footprint, yaw, scale, center)) return false;
 
         float inside = 0f, outside = 1f; // 가운데(0)는 들어가고, 원하는 자리(1)는 안 들어간다
