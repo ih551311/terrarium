@@ -3,9 +3,9 @@ using UnityEngine;
 /// <summary>
 /// 얼어붙은 연못의 낚시 구멍. 바라보고 E로 낚싯줄을 드리우고, 입질이 오면 얼른 E를 눌러 당긴다.
 /// 1) 낚시하기 (E): 찌가 구멍에 뜨고 기다린다 (3~8초). 다시 E를 누르면 그만둔다.
-/// 2) 입질: 찌가 쏙 들어가고 소리와 알림이 난다. 2.4초 안에 E로 당기면 물고기가 가방으로 들어온다. 놓쳐도 불이익은 없다.
+/// 2) 입질: 찌가 쏙 들어가고 소리가 난다 (글자 안내는 없다). 2.4초 안에 E로 당기면 물고기가 가방으로 들어온다. 놓쳐도 불이익은 없다.
 /// 물고기: 빙어(흔함), 얼음 송어, 금붕어, 밤에만 가끔 오로라 물고기(희귀). 병 속에 놓는 꾸밈 재료이고 우체통에 팔 수도 있다.
-/// 구멍과 찌 모양은 SnowIslandSetup이 만든다.
+/// 구멍과 찌 모양은 FishingHoleBuilder(눈 섬 만들기 또는 낚시 구멍 다시 만들기)가 만든다.
 /// </summary>
 public class FishingSpot : MonoBehaviour, IInteractable
 {
@@ -28,9 +28,9 @@ public class FishingSpot : MonoBehaviour, IInteractable
         {
             switch (state)
             {
-                case State.Waiting: return "찌를 지켜보는 중... ([E] 그만두기)";
-                case State.Bite: return "[E] 지금! 당겨요!";
-                case State.Missed: return "물고기가 도망갔어요";
+                case State.Waiting: return null; // 기다리는 동안은 안내 글자를 띄우지 않는다 (찌만 보인다)
+                case State.Bite: return "[E] 당기기";
+                case State.Missed: return null;
                 default: return "[E] 낚시하기";
             }
         }
@@ -54,12 +54,10 @@ public class FishingSpot : MonoBehaviour, IInteractable
                 state = State.Waiting;
                 timer = Random.Range(3f, 8f);
                 if (bobber != null) bobber.gameObject.SetActive(true);
-                who.ShowMessage("낚싯줄을 드리웠어요. 입질이 올 때까지 기다려요");
                 GameAudio.Play(GameAudio.Sfx.Place, 0.7f);
                 break;
             case State.Waiting:
                 Stop();
-                who.ShowMessage("낚싯줄을 거뒀어요");
                 break;
             case State.Bite:
                 Catch(who);
@@ -86,12 +84,10 @@ public class FishingSpot : MonoBehaviour, IInteractable
                 state = State.Bite;
                 timer = 2.4f;
                 GameAudio.Play(GameAudio.Sfx.Chime, 0.7f);
-                if (lastWho != null) lastWho.ShowMessage("입질이에요! 얼음 구멍을 보고 E를 눌러요!");
                 break;
             case State.Bite:
                 state = State.Missed;
                 timer = 1.2f;
-                if (lastWho != null) lastWho.ShowMessage("놓쳤어요... 다음엔 더 빨리!");
                 break;
             case State.Missed:
                 Stop();

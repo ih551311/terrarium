@@ -694,11 +694,7 @@ public static class SnowIslandSetup
     {
         GameObject group = new GameObject("Fishing");
         group.transform.SetParent(parent, false);
-        Material rim = BottleSetup.GetOrCreateMaterial("FishHoleRim", new Color(0.82f, 0.93f, 0.98f));
-        Material water = BottleSetup.GetOrCreateMaterial("FishHoleWater", new Color(0.04f, 0.14f, 0.30f));
-        Material bobberMat = BottleSetup.GetOrCreateMaterial("FishBobber", new Color(0.92f, 0.22f, 0.20f));
-
-        // 연못 위의 낚시 구멍 세 곳 (얼음에 뚫은 구멍)
+        // 연못 위의 낚시 구멍 세 곳 (얼음에 뚫은 구멍). 모양은 FishingHoleBuilder가 만든다.
         Vector2[] holes = { Pond + new Vector2(6f, 3f), Pond + new Vector2(-5f, 6f), Pond + new Vector2(0f, -7.5f) };
         for (int i = 0; i < holes.Length; i++)
         {
@@ -706,17 +702,7 @@ public static class SnowIslandSetup
             GameObject root = new GameObject("FishingHole_" + i);
             root.transform.SetParent(group.transform, false);
             root.transform.position = new Vector3(holes[i].x, gy, holes[i].y);
-
-            Disc(root.transform, "Rim", 1.8f, 0.012f, 0.008f, rim);
-            Disc(root.transform, "Water", 1.15f, 0.014f, 0.016f, water);
-
-            GameObject bobber = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            bobber.name = "Bobber";
-            bobber.transform.SetParent(root.transform, false);
-            bobber.transform.localPosition = new Vector3(0f, 0.08f, 0f);
-            bobber.transform.localScale = Vector3.one * 0.16f;
-            Object.DestroyImmediate(bobber.GetComponent<Collider>());
-            bobber.GetComponent<Renderer>().sharedMaterial = bobberMat;
+            Transform bobber = FishingHoleBuilder.BuildVisuals(root.transform, i);
 
             SphereCollider hit = root.AddComponent<SphereCollider>();
             hit.isTrigger = true; // 걸어 다니는 데 걸리지 않게. 바라보는 광선은 맞는다
@@ -725,7 +711,7 @@ public static class SnowIslandSetup
 
             FishingSpot spot = root.AddComponent<FishingSpot>();
             SerializedObject so = new SerializedObject(spot);
-            so.FindProperty("bobber").objectReferenceValue = bobber.transform;
+            so.FindProperty("bobber").objectReferenceValue = bobber;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
