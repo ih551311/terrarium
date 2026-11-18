@@ -86,20 +86,13 @@ public class Harvestable : MonoBehaviour, IInteractable
         GameState.DayStarted -= Restore;
     }
 
-    /// <summary>E 키는 따로 하는 일이 없다. 캐는 것은 좌클릭이라고 알려 준다.</summary>
-    public void Interact(Interactor who)
-    {
-        who.ShowMessage(depleted ? "오늘은 비어 있어요. 내일 아침에 다시 돌아와요" : "좌클릭으로 캘 수 있어요");
-    }
+    /// <summary>E 키는 따로 하는 일이 없다. 캐는 것은 좌클릭이고, 그것은 바라볼 때 뜨는 안내 글자에 이미 적혀 있다.</summary>
+    public void Interact(Interactor who) { }
 
     /// <summary>도구로 한 번 친다. (Interactor가 좌클릭에 부른다)</summary>
     public void Hit(Interactor who)
     {
-        if (depleted)
-        {
-            who.ShowMessage("오늘은 비어 있어요. 내일 아침에 다시 돌아와요");
-            return;
-        }
+        if (depleted) return; // 비어 있는 것은 바라볼 때 안내 글자가 알려 준다
 
         ToolSettings settings = ToolSettings.Instance;
         if (settings == null) return;
@@ -150,8 +143,8 @@ public class Harvestable : MonoBehaviour, IInteractable
         string text = string.Empty;
         for (int i = 0; i < names.Count; i++)
             text += (text.Length > 0 ? ", " : string.Empty) + names[i] + " +" + counts[i];
-        if (anyRare) text += "  (희귀!)";
         who.ShowMessage(text);
+        if (anyRare) GameAudio.Play(GameAudio.Sfx.Chime, 0.6f); // 희귀한 것은 글자 대신 종소리
 
         GameState.MarkTaken(id);
         SetDepleted(true);

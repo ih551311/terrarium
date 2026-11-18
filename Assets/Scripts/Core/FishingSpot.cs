@@ -105,13 +105,12 @@ public class FishingSpot : MonoBehaviour, IInteractable
         if (fish == null) { Stop(); return; }
         if (!who.Bag.TryAdd(fish))
         {
-            who.ShowMessage("가방이 가득 차서 " + fish.displayName + "을(를) 놓아 주었어요");
+            who.ShowMessage("가방이 가득 차서 " + Kor.Eul(fish.displayName) + " 놓아 줬어요");
             Stop();
             return;
         }
-        string extra = fish.id == rareFish ? "  (희귀!)" : string.Empty;
-        who.ShowMessage(fish.displayName + "을(를) 낚았어요!" + extra);
-        GameAudio.Play(GameAudio.Sfx.Pickup, 0.9f);
+        who.ShowMessage(fish.displayName + " +1"); // 줍기와 같은 모양
+        GameAudio.Play(fish.id == rareFish ? GameAudio.Sfx.Chime : GameAudio.Sfx.Pickup, 0.9f); // 희귀한 것은 글자 대신 종소리
         Stop();
     }
 

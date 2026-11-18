@@ -167,7 +167,7 @@ public class MailboxPanel : MonoBehaviour
 
         GameState.Send(material);
         GameAudio.Play(GameAudio.Sfx.Paper, 0.6f);
-        Say(material.displayName + "을(를) 넣었어요. 내일 아침 " + material.sellPrice + "코인이 와요");
+        Say(Kor.Eul(material.displayName) + " 넣었어요. 내일 아침 " + material.sellPrice + "코인이 와요");
     }
 
     private int OrderPageCount => Mathf.Max(1, (orderables.Length + orderButtons.Length - 1) / orderButtons.Length);
@@ -179,11 +179,11 @@ public class MailboxPanel : MonoBehaviour
         if (GameState.TryOrder(material))
         {
             GameAudio.Play(GameAudio.Sfx.Coin);
-            Say(material.displayName + "을(를) 주문했어요. 내일 아침 도착해요");
+            Say(Kor.Eul(material.displayName) + " 주문했어요. 내일 아침 도착해요");
         }
         else
         {
-            Say("코인이 모자라요 (" + material.buyPrice + "코인 필요)");
+            Say("코인이 모자라요");
         }
     }
 
@@ -192,10 +192,10 @@ public class MailboxPanel : MonoBehaviour
         AcquireMethod tool = ToolOf(toolIndex);
         string name = NameOf(toolIndex);
         int cost = GameState.NextUpgradeCost(tool);
-        if (cost < 0) { Say(name + "는 이미 최대 단계예요"); return; }
+        if (cost < 0) { Say(Kor.Eun(name) + " 이미 최대 단계예요"); return; }
         if (GameState.UpgradePending(tool)) { Say(name + " 강화를 이미 주문했어요"); return; }
         if (GameState.TryOrderUpgrade(tool)) { GameAudio.Play(GameAudio.Sfx.Coin); Say(name + " 강화를 주문했어요. 내일 아침 도착해요"); }
-        else Say("코인이 모자라요 (" + cost + "코인 필요)");
+        else Say("코인이 모자라요");
     }
 
     // 강화 버튼 번호: 0 도끼, 1 곡괭이, 2 괭이
@@ -229,9 +229,9 @@ public class MailboxPanel : MonoBehaviour
         string text = string.Empty;
         if (coins > 0) text += "코인 " + coins + "개 ";
         if (items > 0) text += "물건 " + items + "개 ";
-        if (GameState.LastUpgradeCount > 0) text += "강화된 도구 (도끼 " + GameState.AxeLevel + "단계, 곡괭이 " + GameState.PickaxeLevel + "단계, 괭이 " + GameState.HoeLevel + "단계) ";
+        if (GameState.LastUpgradeCount > 0) text += "강화한 도구 ";
         text += "받았어요";
-        if (left > 0) text += " (가방이 가득 차서 " + left + "개는 우체통에 남았어요)";
+        if (left > 0) text += ". 가방이 가득 차서 " + left + "개는 남았어요";
         Say(text);
     }
 
@@ -239,7 +239,7 @@ public class MailboxPanel : MonoBehaviour
     private static string CollectInfo()
     {
         if (!GameState.HasMail)
-            return "아직 도착한 게 없어요.\n재료를 팔거나 물건을 사면 다음 날 아침에 와요.";
+            return "아직 도착한 게 없어요";
 
         string text = string.Empty;
         if (GameState.ArrivedCoins > 0) text += "코인  " + GameState.ArrivedCoins + "개\n";
@@ -317,25 +317,25 @@ public class MailboxPanel : MonoBehaviour
             upgradeLabels[i].text = UpgradeText(NameOf(i), tool);
         }
 
-        summaryText.text = "보낸 재료 " + GameState.Outbox.Count + "개 : 내일 아침 " + GameState.PendingSellCoins + "코인이 와요";
+        summaryText.text = "보낸 재료 " + GameState.Outbox.Count + "개, 내일 아침 " + GameState.PendingSellCoins + "코인";
         if (orderSummaryText != null)
-            orderSummaryText.text = "주문한 물건 " + GameState.Orders.Count + "개 : 내일 아침 도착해요";
+            orderSummaryText.text = "주문한 물건 " + GameState.Orders.Count + "개, 내일 아침 도착";
 
         collectButton.interactable = GameState.HasMail;
         collectLabel.text = GameState.HasMail
-            ? "도착한 것 받기 (코인 " + GameState.ArrivedCoins + ", 물건 " + GameState.ArrivedItems.Count + "개)"
-            : "아직 도착한 것이 없어요";
+            ? "받기  코인 " + GameState.ArrivedCoins + ", 물건 " + GameState.ArrivedItems.Count + "개"
+            : "아직 없어요";
         if (collectInfoText != null) collectInfoText.text = CollectInfo();
 
         // 메뉴의 큰 버튼 글자 (제목과 한 줄 설명, 지금 상태)
         if (hubLabels != null && hubLabels.Length >= 4)
         {
-            hubLabels[0].text = "판매하기\n<size=32>가방의 재료를 보내요\n(보낸 재료 " + GameState.Outbox.Count + "개)</size>";
-            hubLabels[1].text = "도구 강화\n<size=32>도끼, 곡괭이, 괭이를 좋은 걸로\n(내일 아침 도착)</size>";
-            hubLabels[2].text = "구매하기\n<size=32>코인으로 물건을 주문해요\n(주문한 물건 " + GameState.Orders.Count + "개)</size>";
+            hubLabels[0].text = "판매하기\n<size=32>" + (GameState.Outbox.Count > 0 ? "보낸 재료 " + GameState.Outbox.Count + "개" : "재료를 팔아요") + "</size>";
+            hubLabels[1].text = "도구 강화\n<size=32>도끼, 곡괭이, 괭이</size>";
+            hubLabels[2].text = "구매하기\n<size=32>" + (GameState.Orders.Count > 0 ? "주문한 물건 " + GameState.Orders.Count + "개" : "코인으로 사요") + "</size>";
             hubLabels[3].text = GameState.HasMail
-                ? "받기  (!)\n<size=32>도착했어요: 코인 " + GameState.ArrivedCoins + ", 물건 " + GameState.ArrivedItems.Count + "개</size>"
-                : "받기\n<size=32>아직 도착한 것이 없어요</size>";
+                ? "받기\n<size=32>코인 " + GameState.ArrivedCoins + ", 물건 " + GameState.ArrivedItems.Count + "개</size>"
+                : "받기\n<size=32>아직 없어요</size>";
         }
     }
 }

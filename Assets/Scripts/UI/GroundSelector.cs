@@ -79,7 +79,7 @@ public class GroundSelector : MonoBehaviour
         // 새 바닥재(모래)를 가방에서 꺼낸다.
         if (ground != null && !bag.TryRemove(ground))
         {
-            decorator.ShowMessage("가방에 " + ground.displayName + "이(가) 없어요");
+            decorator.ShowMessage("가방에 " + Kor.Iga(ground.displayName) + " 없어요");
             return;
         }
 

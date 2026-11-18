@@ -252,7 +252,7 @@ public class BottlePanel : MonoBehaviour
         string name = contents.DisplayName;
         contents.ResetToEmpty();
         GameAudio.Play(GameAudio.Sfx.Remove, 0.8f);
-        string notice = name + "을(를) 버렸어요. " + refund;
+        string notice = Kor.Eul(name) + " 버렸어요. " + refund;
         if (toBag > 0) notice += " (재료 " + toBag + "개는 가방으로";
         if (toMail > 0) notice += (toBag > 0 ? ", " : " (재료 ") + toMail + "개는 가방이 가득 차서 우체통으로";
         if (toBag > 0 || toMail > 0) notice += ")";

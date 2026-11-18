@@ -155,7 +155,7 @@ public static class UISetup
         GameObject edit = Rect(bWindow.transform, "EditTools");
         Stretch(edit);
 
-        Label(edit.transform, "Hint", "클릭: 놓기  |  재료 위 휠: 돌리기  |  그 밖의 휠: 확대/축소  |  Q/R: 크기  |  우클릭: 빼기  |  끌기: 병 방향 바꾸기 (T: 원위치)",
+        Label(edit.transform, "Hint", "클릭 놓기      우클릭 빼기      휠 돌리기, 확대      Q R 크기      끌기 병 돌리기",
             24, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 196f), new Vector2(1440f, 40f), TextAlignmentOptions.Center);
 
         // 재료 칸: 가방 칸을 두 줄(16칸씩)로 늘어놓는다
@@ -225,7 +225,7 @@ public static class UISetup
         Stretch(chooseBox);
         Image chooseBg = chooseBox.AddComponent<Image>(); chooseBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
         Label(chooseBox.transform, "Title", "병을 만들어요", 56, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(1000f, 80f), TextAlignmentOptions.Center);
-        Label(chooseBox.transform, "Subtitle", "병 종류와 흙의 양은 만들 때 정하고, 그 뒤로는 바꿀 수 없어요", 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -140f), new Vector2(1300f, 50f), TextAlignmentOptions.Center);
+        Label(chooseBox.transform, "Subtitle", "병 종류와 흙의 양은 정하면 바꿀 수 없어요", 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -140f), new Vector2(1300f, 50f), TextAlignmentOptions.Center);
 
         Label(chooseBox.transform, "SoilLabel", "흙의 양", 32, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-290f, -230f), new Vector2(160f, 56f), TextAlignmentOptions.Center);
         string[] soilNames = { "적게", "보통", "많이" };
@@ -369,7 +369,7 @@ public static class UISetup
         Button homeButton = MakeButton(mWindow.transform, "HomeButton", "집으로 돌아가기", new Vector2(1f, 1f), new Vector2(-60f, -230f), new Vector2(560f, 130f));
         homeButton.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         homeButton.GetComponentInChildren<TextMeshProUGUI>().fontSize = 54;
-        Label(mWindow.transform, "Legend", "지도를 누르면 그 자리로 가요\n\n주황 핀: 지금 내 위치\n(뾰족한 쪽이 바라보는 방향)\n작은 집: 오두막 앞\n돛단배: 선착장\n위쪽이 북쪽\n\nM, Esc: 닫기\nN: 작은 지도 켜고 끄기",
+        Label(mWindow.transform, "Legend", "지도를 눌러 이동\n\n핀  내 위치\n집  오두막\n배  선착장\n위쪽이 북쪽\n\nM 닫기\nN 작은 지도",
             38, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-60f, -390f), new Vector2(560f, 470f), TextAlignmentOptions.TopLeft);
         TextMeshProUGUI mapMessage = Label(mWindow.transform, "Message", string.Empty, 40, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-60f, 60f), new Vector2(560f, 140f), TextAlignmentOptions.BottomLeft);
         mapMessage.color = new Color(0.72f, 0.3f, 0.2f, 1f);
@@ -411,11 +411,11 @@ public static class UISetup
         }
 
         // 1~4쪽 공통: 메뉴로 돌아가기 버튼과 제목
-        string[] pageTitles = { null, "판매하기  (내일 아침 코인으로)", "도구 강화  (내일 아침 도착)", "구매하기  (내일 아침 도착)", "받기" };
+        string[] pageTitles = { null, "판매하기", "도구 강화", "구매하기", "받기" };
         Button[] backButtons = new Button[4];
         for (int p = 1; p <= 4; p++)
         {
-            backButtons[p - 1] = MakeSmallButton(mailPages[p].transform, "BackButton", "< 우체통 메뉴", new Vector2(0f, 1f), new Vector2(10f, -5f), new Vector2(380f, 72f), 34);
+            backButtons[p - 1] = MakeSmallButton(mailPages[p].transform, "BackButton", "뒤로", new Vector2(0f, 1f), new Vector2(10f, -5f), new Vector2(380f, 72f), 34);
             Label(mailPages[p].transform, "PageTitle", pageTitles[p], 46, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(430f, -12f), new Vector2(p == 3 ? 560f : 1000f, 60f), TextAlignmentOptions.TopLeft);
         }
 
@@ -450,7 +450,7 @@ public static class UISetup
             b.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
             upgradeButtons[i] = b; upgradeLabels[i] = t;
         }
-        Label(mailPages[2].transform, "UpgradeHint", "강화하면 치는 횟수가 줄고, 얻는 양과 희귀 재료가 나올 확률이 늘어요", 32, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -580f), new Vector2(1400f, 60f), TextAlignmentOptions.TopLeft);
+        Label(mailPages[2].transform, "UpgradeHint", "강화하면 덜 치고 더 많이 얻어요", 32, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -580f), new Vector2(1400f, 60f), TextAlignmentOptions.TopLeft);
 
         // 3쪽 구매하기: 가격이 있는 재료를 모두 보여 준다 (5열 x 5행 = 25칸)
         GameObject orderGrid = Rect(mailPages[3].transform, "OrderGrid");
@@ -481,8 +481,8 @@ public static class UISetup
             orderIcons[i] = MakeSlotIcon(b.transform, new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(56f, 56f));
             orderButtons[i] = b; orderLabels[i] = t;
         }
-        Button orderPrev = MakeSmallButton(mailPages[3].transform, "OrderPrev", "< 이전", new Vector2(1f, 1f), new Vector2(-300f, -5f), new Vector2(190f, 72f), 34);
-        Button orderNext = MakeSmallButton(mailPages[3].transform, "OrderNext", "다음 >", new Vector2(1f, 1f), new Vector2(-100f, -5f), new Vector2(190f, 72f), 34);
+        Button orderPrev = MakeSmallButton(mailPages[3].transform, "OrderPrev", "이전", new Vector2(1f, 1f), new Vector2(-300f, -5f), new Vector2(190f, 72f), 34);
+        Button orderNext = MakeSmallButton(mailPages[3].transform, "OrderNext", "다음", new Vector2(1f, 1f), new Vector2(-100f, -5f), new Vector2(190f, 72f), 34);
         TextMeshProUGUI orderPageLabel = Label(mailPages[3].transform, "OrderPage", "1/1쪽", 30, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-4f, -22f), new Vector2(92f, 50f), TextAlignmentOptions.Right); // "다음" 버튼 오른쪽 (제목과 겹치지 않게)
         TextMeshProUGUI orderSummary = Label(mailPages[3].transform, "Summary", string.Empty, 32, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -570f), new Vector2(1400f, 80f), TextAlignmentOptions.TopLeft);
 
@@ -501,7 +501,7 @@ public static class UISetup
         Center(iWindow, 1400f, 920f); // 창은 직사각형, 칸은 정사각형 (8열 x 4행 = 32칸)
         Image iBg = iWindow.AddComponent<Image>(); iBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
         Label(iWindow.transform, "Title", "내 물건", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(500f, 90f), TextAlignmentOptions.TopLeft);
-        Label(iWindow.transform, "Hint", "Tab: 닫기", 40, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -45f), new Vector2(400f, 60f), TextAlignmentOptions.TopRight);
+        Label(iWindow.transform, "Hint", "Tab 닫기", 40, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -45f), new Vector2(400f, 60f), TextAlignmentOptions.TopRight);
 
         // 탭: 가방 / 병
         Button bagTab = MakeSmallButton(iWindow.transform, "BagTab", "가방", new Vector2(0.5f, 1f), new Vector2(-110f, -45f), new Vector2(200f, 70f), 36);
@@ -677,7 +677,7 @@ public static class UISetup
         RawImage detailRaw = detailView.AddComponent<RawImage>(); detailRaw.color = Color.white;
         detailRaw.texture = AssetDatabase.LoadAssetAtPath<RenderTexture>(RenderTexturePath);
         DragRotate detailDrag = detailView.AddComponent<DragRotate>();
-        Label(dWindow.transform, "Hint", "끌어서 돌려 보기  |  T: 처음 방향  |  Esc: 닫기", 26, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(40f, 40f), new Vector2(760f, 40f), TextAlignmentOptions.Left);
+        Label(dWindow.transform, "Hint", "끌어서 돌려 보기      T 처음 방향      Esc 닫기", 26, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(40f, 40f), new Vector2(760f, 40f), TextAlignmentOptions.Left);
         Button detailShelf = MakeSmallButton(dWindow.transform, "ShelfButton", "선반에 올리기", new Vector2(1f, 0f), new Vector2(-40f, 30f), new Vector2(380f, 80f), 34);
         detailShelf.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         Button detailDelete = MakeSmallButton(dWindow.transform, "DeleteButton", "병 지우기", new Vector2(1f, 0f), new Vector2(-440f, 30f), new Vector2(300f, 80f), 28);
@@ -704,7 +704,7 @@ public static class UISetup
         TextMeshProUGUI letterBody = Label(paper.transform, "Body", string.Empty, 27, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -115f), new Vector2(980f, 700f), TextAlignmentOptions.TopLeft);
         letterBody.lineSpacing = 4f;
         letterBody.color = new Color(0.25f, 0.2f, 0.15f, 1f);
-        Button letterClose = MakeSmallButton(paper.transform, "CloseButton", "닫기 (E)", new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(300f, 80f), 36);
+        Button letterClose = MakeSmallButton(paper.transform, "CloseButton", "닫기", new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(300f, 80f), 36);
         letterClose.GetComponent<Image>().color = new Color(0.98f, 0.82f, 0.45f, 1f);
         letterRoot.SetActive(false);
         LetterPanel letterPanel = ui.AddComponent<LetterPanel>();

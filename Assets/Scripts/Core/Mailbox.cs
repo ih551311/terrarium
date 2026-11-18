@@ -11,8 +11,8 @@ public class Mailbox : MonoBehaviour, IInteractable
     {
         get
         {
-            if (GameState.HasUnreadRequest) return "[E] 우체통 열기 (편지가 왔어요!)";
-            return GameState.HasMail ? "[E] 우체통 열기 (도착한 것이 있어요!)" : "[E] 우체통 열기";
+            if (GameState.HasUnreadRequest) return "[E] 편지 읽기";
+            return GameState.HasMail ? "[E] 우체통 열기 (도착)" : "[E] 우체통 열기";
         }
     }
 

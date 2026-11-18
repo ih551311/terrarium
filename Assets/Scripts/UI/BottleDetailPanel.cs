@@ -144,7 +144,7 @@ public class BottleDetailPanel : MonoBehaviour
             if (GameRoot.Instance.Player != null)
             {
                 Interactor who = GameRoot.Instance.Player.GetComponentInChildren<Interactor>();
-                if (who != null) who.ShowMessage(name + "을(를) 지웠어요");
+                if (who != null) who.ShowMessage(Kor.Eul(name) + " 지웠어요");
             }
             GameRoot.Instance.SaveNow();
         }

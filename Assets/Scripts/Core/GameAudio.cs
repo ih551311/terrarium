@@ -119,9 +119,7 @@ public class GameAudio : MonoBehaviour
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && keyboard.pKey.wasPressedThisFrame)
         {
-            musicOn = !musicOn;
-            Interactor who = GameRoot.Instance != null && GameRoot.Instance.Player != null ? GameRoot.Instance.Player.GetComponentInChildren<Interactor>() : null;
-            if (who != null) who.ShowMessage(musicOn ? "음악을 켰어요 (P)" : "음악을 껐어요 (P)");
+            MusicOn = !musicOn; // 켜고 끄는 것은 소리로 알 수 있어서 글자는 띄우지 않는다
         }
 
         // 패널이 열려 있을 때 마우스를 누르면 "톡" 소리

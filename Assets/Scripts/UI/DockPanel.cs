@@ -124,12 +124,12 @@ public class DockPanel : MonoBehaviour
         }
         if (!GameState.TrySpend(d.cost))
         {
-            status.text = "코인이 모자라요 (" + d.cost + "코인 필요, 지금 " + GameState.Coins + "코인)";
+            status.text = "코인이 모자라요";
             return;
         }
         GameState.OpenDock(d.dockId);
         GameAudio.Play(GameAudio.Sfx.Coin, 1f);
-        status.text = d.name + "으로 가는 배가 열렸어요! (코인 " + GameState.Coins + ")";
+        status.text = "코인: " + GameState.Coins;
         Refresh();
         if (GameRoot.Instance != null) GameRoot.Instance.SaveNow();
     }
