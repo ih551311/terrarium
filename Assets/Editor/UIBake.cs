@@ -196,20 +196,20 @@ public static class UIBake
         GameObject go = NewHolder("DockPanel", "DockPanelCanvas", 380, out RectTransform root, out Component comp, typeof(DockPanel));
         UIKit.Backdrop(root);
         int count = DockPanel.DestinationCount;
-        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(760f, 200f + count * 150f));
+        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(800f, 250f + count * 150f));
         float top = panel.sizeDelta.y * 0.5f;
 
         UIKit.Label(panel, "어느 섬으로 갈까요?", 46f, new Vector2(0f, top - 60f), new Vector2(680f, 70f));
         var names = new TMP_Text[count]; var blurbs = new TMP_Text[count]; var buttons = new Button[count];
         for (int i = 0; i < count; i++)
         {
-            float y = top - 160f - i * 150f;
-            names[i] = UIKit.Label(panel, DockPanel.NameOf(i), 38f, new Vector2(-170f, y + 22f), new Vector2(340f, 50f), TextAlignmentOptions.Left);
-            blurbs[i] = UIKit.Label(panel, DockPanel.BlurbOf(i), 22f, new Vector2(-170f, y - 28f), new Vector2(340f, 60f), TextAlignmentOptions.TopLeft);
-            buttons[i] = Btn(panel, "가기", new Vector2(220f, y), new Vector2(280f, 84f), 28f);
+            float y = top - 170f - i * 150f;
+            names[i] = UIKit.Label(panel, DockPanel.NameOf(i), 40f, new Vector2(-150f, y + 22f), new Vector2(380f, 50f), TextAlignmentOptions.Left);
+            blurbs[i] = UIKit.Label(panel, DockPanel.BlurbOf(i), 26f, new Vector2(-150f, y - 32f), new Vector2(380f, 70f), TextAlignmentOptions.TopLeft);
+            buttons[i] = Btn(panel, "가기", new Vector2(240f, y), new Vector2(240f, 84f), 30f);
         }
-        TMP_Text status = UIKit.Label(panel, "", 26f, new Vector2(0f, -top + 90f), new Vector2(680f, 40f));
-        Button close = Btn(panel, "닫기", new Vector2(0f, -top + 38f), new Vector2(220f, 56f), 28f);
+        TMP_Text status = UIKit.Label(panel, "", 28f, new Vector2(0f, -top + 120f), new Vector2(680f, 40f));
+        Button close = Btn(panel, "닫기", new Vector2(0f, -top + 52f), new Vector2(240f, 64f), 30f);
 
         Put(comp, "root", root.gameObject);
         Put(comp, "status", status);
