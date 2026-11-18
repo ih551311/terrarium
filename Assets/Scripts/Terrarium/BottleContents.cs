@@ -564,8 +564,11 @@ public class BottleContents : MonoBehaviour
         NightGlow.Attach(visual, material.id); // 밤에 빛나는 재료(초, 별, 반딧불이 등)
         BottleEffect.Attach(visual, material.id); // 병 속 효과 재료(눈 내리기, 반짝이 가루 등)
 
-        Renderer[] renderers = visual.GetComponentsInChildren<Renderer>();
-        if (renderers.Length > 0)
+        // 모양(메쉬)만 잰다. 빛무리 그림(SpriteRenderer)은 번져 보일 뿐이라 크기와 누르는 범위에 넣지 않는다.
+        var renderers = new List<Renderer>();
+        foreach (Renderer r in visual.GetComponentsInChildren<Renderer>())
+            if (!(r is SpriteRenderer)) renderers.Add(r);
+        if (renderers.Count > 0)
         {
             Bounds bounds = renderers[0].bounds;
             foreach (Renderer r in renderers) bounds.Encapsulate(r.bounds);
@@ -576,7 +579,9 @@ public class BottleContents : MonoBehaviour
                 BoxCollider box = visual.AddComponent<BoxCollider>();
                 box.isTrigger = true;
                 box.center = visual.transform.InverseTransformPoint(bounds.center);
-                box.size = bounds.size; // 만들 때는 회전과 크기가 그대로라 월드 크기와 같다
+                Vector3 scale = visual.transform.lossyScale; // 모델을 키워 둔 재료(반딧불이)는 그만큼 나눈다
+                Vector3 world = Vector3.Max(bounds.size, Vector3.one * 0.03f); // 너무 작아서 못 누르는 일이 없게
+                box.size = new Vector3(world.x / Mathf.Max(scale.x, 0.0001f), world.y / Mathf.Max(scale.y, 0.0001f), world.z / Mathf.Max(scale.z, 0.0001f));
             }
 
             // 바닥이 바닥재 표면에 닿도록 올린다.
