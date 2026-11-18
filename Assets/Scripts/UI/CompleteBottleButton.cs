@@ -15,10 +15,8 @@ public class CompleteBottleButton : MonoBehaviour
     [SerializeField] private TMP_Text label;
     [SerializeField] private BottlePanel panel;
     [SerializeField] private BottleDecorator decorator;
-    [SerializeField] private float confirmSeconds = 3f;
 
     private BottleContents contents;
-    private float confirmUntil;
     private bool listenerAdded;
 
     private void Awake()
@@ -46,12 +44,6 @@ public class CompleteBottleButton : MonoBehaviour
         ResetLabel();
     }
 
-    private void Update()
-    {
-        // 3초 안에 다시 누르지 않으면 원래 글자로 돌아간다.
-        if (confirmUntil > 0f && Time.time > confirmUntil) ResetLabel();
-    }
-
     private void OnClicked()
     {
         if (contents == null || contents.IsCompleted) return;
@@ -64,7 +56,6 @@ public class CompleteBottleButton : MonoBehaviour
 
     private void ResetLabel()
     {
-        confirmUntil = 0f;
         if (label != null) label.text = NormalText;
     }
 }

@@ -19,7 +19,6 @@ public class FishingSpot : MonoBehaviour, IInteractable
 
     private State state;
     private float timer;
-    private Interactor lastWho;
     private Vector3 bobberRest;
 
     public string Prompt
@@ -47,7 +46,6 @@ public class FishingSpot : MonoBehaviour, IInteractable
 
     public void Interact(Interactor who)
     {
-        lastWho = who;
         switch (state)
         {
             case State.Idle:

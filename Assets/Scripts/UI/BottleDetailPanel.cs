@@ -39,7 +39,6 @@ public class BottleDetailPanel : MonoBehaviour
     private GameObject copy;
     private Camera copyCamera;
     private string notice;
-    private bool deleteAsked;
 
     private void Awake()
     {
@@ -73,7 +72,6 @@ public class BottleDetailPanel : MonoBehaviour
 
         bottleId = archivedId;
         notice = null;
-        deleteAsked = false;
         if (deleteLabel != null) deleteLabel.text = "병 지우기";
 
         // 병 종류의 프리팹을 복사한다. Instantiate 직전에 번호를 넣어 두면 그 병의 기록으로 병 속이 되살아난다.

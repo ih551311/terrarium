@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -25,7 +25,6 @@ public static class MapBake
     [MenuItem("유리병 정원/섬 지도 만들기")]
     public static string Build()
     {
-        float pxPerMeter = Size / (HalfExtent * 2f);
         var pixels = new Color[Size * Size];
 
         // 1) 지형 색 + 음영. 해가 왼쪽 위(북서)에서 비치는 것처럼, 땅이 북서쪽으로 올라갈수록 어둡고 남동쪽으로 올라갈수록 밝다.

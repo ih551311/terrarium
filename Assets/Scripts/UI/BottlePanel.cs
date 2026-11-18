@@ -197,7 +197,6 @@ public class BottlePanel : MonoBehaviour
 
         station.Select(index);
         contents = station.Get(index);
-        cancelAsked = false;
         RefreshCancelLabel();
         bottleCamera = contents.ViewCamera;
 
@@ -209,8 +208,6 @@ public class BottlePanel : MonoBehaviour
     }
 
     // ───────── 만들다가 취소 (병 버리기) ─────────
-
-    private bool cancelAsked;
 
     private void RefreshCancelLabel()
     {
@@ -254,7 +251,6 @@ public class BottlePanel : MonoBehaviour
 
         string name = contents.DisplayName;
         contents.ResetToEmpty();
-        cancelAsked = false;
         GameAudio.Play(GameAudio.Sfx.Remove, 0.8f);
         string notice = name + "을(를) 버렸어요. " + refund;
         if (toBag > 0) notice += " (재료 " + toBag + "개는 가방으로";

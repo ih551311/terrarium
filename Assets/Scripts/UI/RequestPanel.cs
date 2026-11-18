@@ -22,7 +22,6 @@ public class RequestPanel : MonoBehaviour
     [SerializeField] private Button mailboxButton, closeButton;
     private readonly List<Button> rows = new List<Button>();
     private readonly List<string> rowBottleIds = new List<string>();
-    private string confirmId;       // 한 번 눌러서 확인을 기다리는 병
     private bool done;              // 방금 병을 보내 답장을 보여 주는 중
     private bool isOpen;
 
@@ -84,7 +83,6 @@ public class RequestPanel : MonoBehaviour
         if (isOpen) return;
         isOpen = true;
         done = false;
-        confirmId = null;
         root.SetActive(true);
         UIFocus.Open();
         GameState.MarkRequestSeen();
@@ -161,7 +159,7 @@ public class RequestPanel : MonoBehaviour
 
         // 보낸다: 병이 사라지고, 답례가 우체통에 도착한다
         BottleRequest request = BottleRequests.Get(GameState.RequestId);
-        if (request == null || !BottleRequests.Matches(GameState.RequestId, BottleStore.Get(id))) { confirmId = null; Refresh(); return; }
+        if (request == null || !BottleRequests.Matches(GameState.RequestId, BottleStore.Get(id))) { Refresh(); return; }
 
         MaterialData reward = null;
         if (!string.IsNullOrEmpty(request.rewardItemId) && MaterialDatabase.Instance != null)
@@ -172,7 +170,6 @@ public class RequestPanel : MonoBehaviour
         GameAudio.Play(GameAudio.Sfx.Chime, 0.9f);
 
         done = true;
-        confirmId = null;
         foreach (Button b in rows) b.gameObject.SetActive(false);
         fromLabel.text = "답장 - " + request.from;
         bodyLabel.text = request.thanks;

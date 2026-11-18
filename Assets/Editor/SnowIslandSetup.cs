@@ -721,17 +721,6 @@ public static class SnowIslandSetup
         if (sign != null) AddTrunk(sign, 0.2f, 2f);
     }
 
-    private static void Disc(Transform parent, string name, float diameter, float thickness, float lift, Material mat)
-    {
-        GameObject d = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        d.name = name;
-        d.transform.SetParent(parent, false);
-        d.transform.localPosition = new Vector3(0f, lift, 0f);
-        d.transform.localScale = new Vector3(diameter, thickness, diameter);
-        Object.DestroyImmediate(d.GetComponent<Collider>());
-        d.GetComponent<Renderer>().sharedMaterial = mat;
-    }
-
     // ───────── 오로라 하늘 ─────────
 
     private static void BuildAurora(Transform parent)
