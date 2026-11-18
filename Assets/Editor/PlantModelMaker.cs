@@ -1004,24 +1004,8 @@ public static class PlantModelMaker
     private static void Firefly()
     {
         b = new Builder();
-        // 몸은 앞(-z)을 향한다. 꽁무니(+z)는 밝은 노란빛.
-        Blob(new Vector3(0f, 0.0075f, -0.001f), new Vector3(0.0036f, 0.0034f, 0.0075f), 3, 6, Dark);          // 가슴
-        Blob(new Vector3(0f, 0.0072f, -0.0095f), new Vector3(0.0028f, 0.0027f, 0.0028f), 2, 6, Dark);        // 머리
-        Blob(new Vector3(0f, 0.0070f, 0.0085f), new Vector3(0.0044f, 0.0040f, 0.0062f), 3, 6, Pale);          // 빛나는 꽁무니
-        Blob(new Vector3(0f, 0.0070f, 0.0100f), new Vector3(0.0030f, 0.0028f, 0.0038f), 2, 5, LightGreen);
-        // 날개 한 쌍
-        Petal(new Vector3(0.0018f, 0.0100f, -0.0030f), new Vector3(1f, 0.35f, 1.1f), new Vector3(-1f, 0f, 1f), 0.0125f, 0.0058f, White, 0.0006f);
-        Petal(new Vector3(-0.0018f, 0.0100f, -0.0030f), new Vector3(-1f, 0.35f, 1.1f), new Vector3(1f, 0f, 1f), 0.0125f, 0.0058f, White, 0.0006f);
-        // 다리 세 쌍 (짧은 막대)
-        for (int i = 0; i < 3; i++)
-        {
-            float z = -0.004f + i * 0.0045f;
-            Frustum(b, new Vector3(0.0018f, 0.0058f, z), new Vector3(0.0050f, 0.0010f, z + 0.0015f), 0.0004f, 0.0003f, 3, Dark);
-            Frustum(b, new Vector3(-0.0018f, 0.0058f, z), new Vector3(-0.0050f, 0.0010f, z + 0.0015f), 0.0004f, 0.0003f, 3, Dark);
-        }
-        // 더듬이
-        Frustum(b, new Vector3(0.0010f, 0.0085f, -0.0115f), new Vector3(0.0030f, 0.0100f, -0.0175f), 0.0003f, 0.0002f, 3, Dark);
-        Frustum(b, new Vector3(-0.0010f, 0.0085f, -0.0115f), new Vector3(-0.0030f, 0.0100f, -0.0175f), 0.0003f, 0.0002f, 3, Dark);
+        // 벌레 모양은 징그러워서, 작고 말랑한 빛 구슬로 만든다. 밤에는 NightGlow가 빛무리를 더해 반딧불이처럼 반짝인다.
+        Blob(new Vector3(0f, 0.0085f, 0f), new Vector3(0.0075f, 0.0075f, 0.0075f), 5, 10, Pale);
         b.Write("deco_firefly");
     }
 }
