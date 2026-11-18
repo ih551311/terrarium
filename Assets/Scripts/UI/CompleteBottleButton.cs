@@ -10,7 +10,6 @@ using UnityEngine.UI;
 public class CompleteBottleButton : MonoBehaviour
 {
     private const string NormalText = "완성";
-    private const string ConfirmText = "한 번 더 누르면 완성";
 
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text label;

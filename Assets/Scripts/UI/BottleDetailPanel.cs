@@ -133,15 +133,9 @@ public class BottleDetailPanel : MonoBehaviour
         Redraw();
     }
 
-    /// <summary>병 지우기: 처음 누르면 한 번 더 묻고, 다시 누르면 병을 지운다(선반에 있었으면 선반에서도 사라진다). 되돌릴 수 없다.</summary>
+    /// <summary>병 지우기: 누르면 바로 병을 지운다(선반에 있었으면 선반에서도 사라진다). 되돌릴 수 없다.</summary>
     private void OnDeleteClicked()
     {
-        if (!deleteAsked)
-        {
-            deleteAsked = true;
-            if (deleteLabel != null) deleteLabel.text = "정말 지울까요?\n한 번 더 누르면 지워져요";
-            return;
-        }
         string name = nameLabel != null ? nameLabel.text : "병";
         string id = bottleId;
         Close();

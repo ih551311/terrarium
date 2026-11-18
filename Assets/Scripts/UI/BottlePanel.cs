@@ -215,21 +215,14 @@ public class BottlePanel : MonoBehaviour
     private void RefreshCancelLabel()
     {
         if (cancelLabel == null) return;
-        cancelLabel.text = cancelAsked ? "정말 버릴까요?\n(낸 코인은 돌려받아요)" : "병 버리기";
+        cancelLabel.text = "병 버리기";
         if (cancelButton != null) cancelButton.gameObject.SetActive(contents != null && !contents.IsCompleted);
     }
 
-    /// <summary>"병 버리기"를 눌렀다. 한 번 더 누르면 지금 꾸미는 병을 없애고 낸 코인(또는 공짜 병)과 병 속 재료를 돌려받는다.</summary>
+    /// <summary>"병 버리기"를 눌렀다. 누르면 바로 지금 꾸미는 병을 없애고 낸 코인(또는 공짜 병)과 병 속 재료를 돌려받는다.</summary>
     private void OnCancelClicked()
     {
         if (contents == null || contents.IsCompleted || station == null) return;
-        if (!cancelAsked)
-        {
-            cancelAsked = true;
-            RefreshCancelLabel();
-            return;
-        }
-
         string bottleId = contents.BottleId;
         BottleRecord record = BottleStore.Get(bottleId);
         int index = station.IndexOf(bottleId);

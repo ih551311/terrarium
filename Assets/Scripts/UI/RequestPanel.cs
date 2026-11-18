@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 병 주문 편지 화면. 우체통에서 E를 누르면 와 있는 편지를 보여 주고, 조건에 맞는 완성한 병을 골라 보낼 수 있다.
-/// 병을 한 번 누르면 확인 글자로 바뀌고, 한 번 더 누르면 보낸다. 답례(코인과 재료)는 우체통에 도착한다.
+/// 병을 누르면 바로 보낸다. 답례(코인과 재료)는 우체통에 도착한다.
 /// 게임이 켜질 때 코드로 만들어진다. 편지가 없으면 우체통은 원래대로 상점 화면(MailboxPanel)을 연다.
 /// </summary>
 public class RequestPanel : MonoBehaviour
@@ -151,10 +151,7 @@ public class RequestPanel : MonoBehaviour
             rowBottleIds[i] = has ? matching[i] : null;
             if (!has) continue;
             string id = matching[i];
-            bool asked = confirmId == id;
-            UIKit.SetButtonText(rows[i], asked
-                ? "정말 \"" + NameOf(id) + "\" 병을 보낼까요? (돌아오지 않아요) 한 번 더 누르세요"
-                : "\"" + NameOf(id) + "\" 병 보내기" + (BottleStore.IsDisplayed(id) ? "  (전시 중)" : ""));
+            UIKit.SetButtonText(rows[i], "\"" + NameOf(id) + "\" 병 보내기" + (BottleStore.IsDisplayed(id) ? "  (전시 중)" : ""));
         }
 
         if (matching.Count == 0)
@@ -177,14 +174,6 @@ public class RequestPanel : MonoBehaviour
     {
         string id = rowBottleIds[index];
         if (string.IsNullOrEmpty(id) || done) return;
-
-        if (confirmId != id)
-        {
-            confirmId = id;
-            GameAudio.Play(GameAudio.Sfx.Click, 0.8f);
-            Refresh();
-            return;
-        }
 
         // 보낸다: 병이 사라지고, 답례가 우체통에 도착한다
         BottleRequest request = BottleRequests.Get(GameState.RequestId);
