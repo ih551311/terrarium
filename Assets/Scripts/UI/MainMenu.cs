@@ -119,11 +119,11 @@ public class MainMenu : MonoBehaviour
 
         AddImage(jar, "Soil", MakeSoil());
 
-        // 이번에 보여 줄 재료 다섯 가지 (뒷줄 셋, 앞줄 둘). 열 때마다 다른 재료가 나온다.
-        List<Sprite> icons = PickIcons(5);
-        float[] xs = { 140f, 256f, 372f, 198f, 314f };
-        float[] baseY = { 130f, 134f, 130f, 100f, 98f };
-        float[] sizes = { 210f, 240f, 210f, 185f, 185f };
+        // 이번에 보여 줄 식물 세 가지. 서로 겹치지 않게 한 줄로 고르게 세운다. 열 때마다 다른 식물이 나온다.
+        List<Sprite> icons = PickIcons(3);
+        float[] xs = { 132f, 256f, 380f };
+        float[] baseY = { 112f, 112f, 112f };
+        float[] sizes = { 190f, 190f, 190f };
         for (int i = 0; i < icons.Count; i++)
         {
             RectTransform r = UIKit.Rect(jar, "Plant" + i);
@@ -155,7 +155,8 @@ public class MainMenu : MonoBehaviour
         MaterialDatabase db = MaterialDatabase.Instance;
         if (db != null && db.materials != null)
             foreach (MaterialData m in db.materials)
-                if (m != null && m.icon != null && m.zone != MaterialZone.Shop && m.acquire != AcquireMethod.Shop) pool.Add(m.icon);
+                // 곧게 서는 식물만 (조각이나 열매 같은 것은 눕거나 작아 보인다)
+                if (m != null && m.icon != null && m.kind == MaterialKind.Plant && m.zone != MaterialZone.Shop && m.acquire != AcquireMethod.Shop) pool.Add(m.icon);
         var picked = new List<Sprite>();
         while (picked.Count < count && pool.Count > 0)
         {
