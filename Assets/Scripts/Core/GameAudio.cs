@@ -166,7 +166,7 @@ public class GameAudio : MonoBehaviour
             if (outdoors && t < 0.7f && rain < 0.2f)
             {
                 sfxSource.panStereo = Random.Range(-0.7f, 0.7f);
-                sfxSource.PlayOneShot(birds[Random.Range(0, birds.Length)], Random.Range(0.22f, 0.4f));
+                sfxSource.PlayOneShot(birds[Random.Range(0, birds.Length)], Random.Range(0.12f, 0.24f));
                 sfxSource.panStereo = 0f;
             }
         }
@@ -319,10 +319,11 @@ public class GameAudio : MonoBehaviour
             for (int i = 0; i < len && start + i < n; i++)
             {
                 float u = i / (float)len;
-                float f = Mathf.Lerp(f0, f1, u) * (1f + 0.04f * k);
+                float f = Mathf.Lerp(f0, f1, u) * (1f + 0.04f * k) * (1f + 0.025f * Mathf.Sin(u * 38f)); // 목소리가 살짝 떨리게
                 phase += 2f * Mathf.PI * f / Rate;
-                float env = Mathf.Sin(Mathf.PI * u);
-                d[start + i] = Mathf.Sin(phase) * env * 0.5f;
+                float env = Mathf.Sin(Mathf.PI * u); env *= env;                                        // 부드럽게 시작하고 끝난다
+                float tone = Mathf.Sin(phase) + 0.18f * Mathf.Sin(phase * 2f) + 0.05f * Mathf.Sin(phase * 3f);
+                d[start + i] = tone * env * 0.32f;
             }
         }
         return Make(name, d);

@@ -328,3 +328,5 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 
 - **UI는 전부 실제 캔버스 오브젝트다 (2026-11-18).** 예전에는 UIKit으로 켜질 때 코드로 그렸지만 지금은 에디터에서 보이고 고칠 수 있다. 메인 화면은 MainMenu 씬 안의 `MainMenuCanvas`, 나머지(일시정지 메뉴, 로딩 화면, 편지 답장, 선착장 창)는 `Assets/Resources/UI/*.prefab`이다. 이 스크립트들은 구워 둔 버튼과 글자를 `[SerializeField]`로 받아 쓰고 버튼 연결만 한다. 화면 모양을 코드 기준으로 되돌리거나 다시 만들려면 메뉴 "유리병 정원 > 화면 캔버스 다시 만들기"(프리팹 네 개)와 "메인 화면 만들기"(씬 + 그림 `Assets/UI/MainMenu/*.png`)를 누른다(`Assets/Editor/UIBake.cs`). 손으로 고친 것은 다시 만들면 덮어써진다. 가방, 작업대 같은 나머지 화면은 원래부터 UISetup이 만든 캔버스다.
 - **공중에 놓는 재료 (2026-11-18).** 반딧불이, 바람 깃털, 민들레 홀씨, 별 장식, 초승달, 연, 작은 새, 열기구는 병 안에서 흙에 닿지 않고 공중에 놓을 수 있다 (MaterialData.CanFloat, 목록은 FloatingIds). 식물, 돌, 집 같은 것은 그대로 흙 위에만 놓인다. 놓는 자리는 병 가운데를 지나고 병 카메라를 마주 보는 면에서 클릭한 곳이라 누른 높이 그대로 뜬다 (BottleContents.TryFindFloatingPlacement). 목록에 더하려면 FloatingIds에 id를 넣는다.
+
+- **글자와 화면 손질 (2026-11-18).** 받침에 맞는 조사는 Kor.Eul/Iga/Eun으로 붙인다(을(를) 같은 표기를 쓰지 않는다). 설명하듯 뜨는 알림은 줄이고, 희귀한 것은 종소리로 알린다. 편지 20통은 사람마다 말투를 다르게 썼다(BottleRequests). 네모난 바탕은 UIRound가 둥근 모서리로 바꾼다(UISetup, UIBake가 끝에 부른다). TMP 설정은 한글을 단어 단위로 줄바꿈한다(TMP Settings.asset). 글꼴에 가운뎃점(·)과 화살표가 없어서 UI 글자에 쓰지 않는다.
