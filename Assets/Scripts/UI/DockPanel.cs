@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// 선착장에서 E를 누르면 열리는 "어느 섬으로 갈까요?" 창. 코드로 만든다(UIKit).
+/// 선착장에서 E를 누르면 열리는 "어느 섬으로 갈까요?" 창. 화면은 Assets/Resources/UI/DockPanel.prefab (캔버스)에 있다.
 /// 섬마다 따로 코인을 내고 열고(눈 섬 150코인, 사막 섬 250코인), 열린 섬은 "가기"로 배를 탄다. 열림은 저장된다(GameState.IsDockOpen).
 /// 새 섬을 더하려면 아래 Destinations 표에 한 줄을 더하고 GameState에 열림 상태를 더한다.
 /// </summary>
@@ -28,10 +28,12 @@ public class DockPanel : MonoBehaviour
 
     private static DockPanel instance;
 
-    private GameObject root;
-    private TMP_Text status;
-    private Button[] buttons;
-    private TMP_Text[] blurbs;
+    [SerializeField] private GameObject root;
+    [SerializeField] private TMP_Text status;
+    [SerializeField] private Button[] buttons;
+    [SerializeField] private TMP_Text[] names;
+    [SerializeField] private TMP_Text[] blurbs;
+    [SerializeField] private Button closeButton;
     private bool isOpen;
     private int openedFrame = -1; // 여는 데 쓴 E 키가 같은 프레임에 창을 바로 닫지 않게
 
@@ -46,44 +48,33 @@ public class DockPanel : MonoBehaviour
     {
         if (instance == null)
         {
-            GameObject go = new GameObject("DockPanel");
+            GameObject prefab = Resources.Load<GameObject>("UI/DockPanel");
+            if (prefab == null) { Debug.LogError("UI/DockPanel 프리팹이 없어요. 메뉴 '유리병 정원 > 화면 캔버스 다시 만들기'를 눌러 주세요."); return; }
+            GameObject go = Instantiate(prefab);
+            go.name = "DockPanel";
             DontDestroyOnLoad(go);
-            instance = go.AddComponent<DockPanel>();
-            instance.Build();
+            instance = go.GetComponent<DockPanel>();
         }
         instance.Show();
     }
 
-    private void Build()
+    /// <summary>화면을 굽는 편집기 도구가 쓴다 (UIBake)</summary>
+    public static int DestinationCount => Destinations.Length;
+    public static string NameOf(int i) => Destinations[i].name;
+    public static string BlurbOf(int i) => Destinations[i].blurb;
+
+    private void Awake()
     {
-        Canvas canvas = UIKit.CreateCanvas("DockPanelCanvas", 380);
-        canvas.transform.SetParent(transform, false);
-        root = new GameObject("Root", typeof(RectTransform));
-        root.transform.SetParent(canvas.transform, false);
-        RectTransform rootRect = (RectTransform)root.transform;
-        rootRect.anchorMin = Vector2.zero; rootRect.anchorMax = Vector2.one;
-        rootRect.offsetMin = rootRect.offsetMax = Vector2.zero;
-
-        UIKit.Backdrop(root.transform);
-        RectTransform panel = UIKit.Panel(root.transform, "Panel", new Vector2(760f, 200f + Destinations.Length * 150f));
-        float top = panel.sizeDelta.y * 0.5f;
-
-        UIKit.Label(panel, "어느 섬으로 갈까요?", 46f, new Vector2(0f, top - 60f), new Vector2(680f, 70f));
-        buttons = new Button[Destinations.Length];
-        blurbs = new TMP_Text[Destinations.Length];
         for (int i = 0; i < Destinations.Length; i++)
         {
             int index = i;
-            float y = top - 160f - i * 150f;
-            UIKit.Label(panel, Destinations[i].name, 38f, new Vector2(-170f, y + 22f), new Vector2(340f, 50f), TextAlignmentOptions.Left);
-            blurbs[i] = UIKit.Label(panel, Destinations[i].blurb, 22f, new Vector2(-170f, y - 28f), new Vector2(340f, 60f), TextAlignmentOptions.TopLeft);
-            buttons[i] = UIKit.MakeButton(panel, "", new Vector2(220f, y), new Vector2(280f, 84f), () => Clicked(index), 28f);
+            names[i].text = Destinations[i].name;
+            blurbs[i].text = Destinations[i].blurb;
+            buttons[i].onClick.AddListener(() => Clicked(index));
         }
-        status = UIKit.Label(panel, "", 26f, new Vector2(0f, -top + 90f), new Vector2(680f, 40f));
-        UIKit.MakeButton(panel, "닫기", new Vector2(0f, -top + 38f), new Vector2(220f, 56f), Close, 28f);
+        closeButton.onClick.AddListener(Close);
         root.SetActive(false);
     }
-
     private void Show()
     {
         if (isOpen) return;

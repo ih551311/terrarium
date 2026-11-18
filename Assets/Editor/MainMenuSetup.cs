@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 메인 화면 씬(Assets/Scenes/MainMenu.unity)을 만들고, 빌드 설정의 맨 앞에 넣는다.
-/// 씬에는 카메라(소리 듣는 귀 포함), EventSystem, MainMenu 스크립트만 있다. 화면은 MainMenu가 켜질 때 코드로 만든다.
+/// 씬에는 카메라(소리 듣는 귀 포함), EventSystem, MainMenu 스크립트, 그리고 화면 캔버스(MainMenuCanvas)가 들어 있다. 캔버스는 UIBake가 만든다.
 /// 다시 눌러도 같은 씬을 새로 만든다. 지금 열려 있는 씬은 건드리지 않는다.
 /// </summary>
 public static class MainMenuSetup
@@ -33,7 +33,8 @@ public static class MainMenuSetup
         events.AddComponent<EventSystem>();
         events.AddComponent<InputSystemUIInputModule>();
 
-        new GameObject("MainMenu").AddComponent<MainMenu>();
+        MainMenu menu = new GameObject("MainMenu").AddComponent<MainMenu>();
+        UIBake.BuildMainMenuCanvas(menu); // 화면 전체를 실제 캔버스 오브젝트로 만든다
 
         EditorSceneManager.SaveScene(scene, ScenePath);
 

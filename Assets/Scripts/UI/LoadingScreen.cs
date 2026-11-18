@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 집을 드나들거나 배를 타고 섬을 옮길 때 뜨는 로딩 화면. 코드로 만든다(UIKit).
+/// 집을 드나들거나 배를 타고 섬을 옮길 때 뜨는 로딩 화면. 화면은 Assets/Resources/UI/LoadingScreen.prefab (캔버스)에 있다.
 /// 섬에서 얻는 재료 하나를 골라 그림과 함께 "어디서, 언제, 어떻게 얻는지"를 알려 준다(우체통에서 사는 물건은 빼고). 날씨나 밤 같은 조건이 있는 재료와 희귀 재료가 더 자주 나온다.
 /// 쪽지 내용은 재료 데이터(구역, 얻는 방법, 나오는 때)에서 만들고, 낚시나 눈사람처럼 따로 얻는 재료는 아래 Special 표에 적었다.
 /// GameRoot.GoTo가 부른다: 화면을 덮고(Show) → 씬을 불러오고 → 최소 MinSeconds 동안 보여 준 뒤 걷힌다(Hide).
@@ -18,9 +18,9 @@ public class LoadingScreen : MonoBehaviour
 
     private static LoadingScreen instance;
 
-    private CanvasGroup group;
-    private TMP_Text destination, title, tip;
-    private Image icon;
+    [SerializeField] private CanvasGroup group;
+    [SerializeField] private TMP_Text destination, title, tip;
+    [SerializeField] private Image icon;
     private string destinationText;
 
     // 재료 데이터만으로는 알 수 없는 재료의 쪽지
@@ -144,46 +144,18 @@ public class LoadingScreen : MonoBehaviour
         {
             if (instance == null)
             {
-                GameObject go = new GameObject("LoadingScreen");
+                GameObject prefab = Resources.Load<GameObject>("UI/LoadingScreen");
+                if (prefab == null) throw new System.InvalidOperationException("UI/LoadingScreen 프리팹이 없어요. 메뉴 '유리병 정원 > 화면 캔버스 다시 만들기'를 눌러 주세요.");
+                GameObject go = Instantiate(prefab);
+                go.name = "LoadingScreen";
                 DontDestroyOnLoad(go);
-                instance = go.AddComponent<LoadingScreen>();
-                instance.Build();
+                instance = go.GetComponent<LoadingScreen>();
+                instance.group.alpha = 0f;
+                instance.group.blocksRaycasts = false;
             }
             return instance;
         }
     }
-
-    private void Build()
-    {
-        Canvas canvas = UIKit.CreateCanvas("LoadingCanvas", 900); // 다른 모든 화면 위
-        canvas.transform.SetParent(transform, false);
-        GameObject root = new GameObject("Root", typeof(RectTransform));
-        root.transform.SetParent(canvas.transform, false);
-        RectTransform rr = (RectTransform)root.transform;
-        rr.anchorMin = Vector2.zero; rr.anchorMax = Vector2.one; rr.offsetMin = rr.offsetMax = Vector2.zero;
-        group = root.AddComponent<CanvasGroup>();
-        group.alpha = 0f;
-        group.blocksRaycasts = false;
-
-        Image bg = root.AddComponent<Image>();
-        bg.color = new Color(0.17f, 0.22f, 0.25f, 1f); // 병 그림 배경과 같은 짙은 청회색
-
-        // 가운데 종이 쪽지
-        RectTransform card = UIKit.Panel(root.transform, "Card", new Vector2(1040f, 400f));
-        icon = new GameObject("Icon", typeof(RectTransform)).AddComponent<Image>();
-        icon.transform.SetParent(card, false);
-        RectTransform ir = (RectTransform)icon.transform;
-        ir.anchoredPosition = new Vector2(-310f, 0f); ir.sizeDelta = new Vector2(260f, 260f);
-        icon.preserveAspect = true;
-        icon.raycastTarget = false;
-
-        UIKit.Label(card, "재료 메모", 32f, new Vector2(150f, 125f), new Vector2(620f, 44f), TextAlignmentOptions.Left, new Color(0.55f, 0.40f, 0.28f, 1f));
-        title = UIKit.Label(card, "", 64f, new Vector2(150f, 65f), new Vector2(620f, 80f), TextAlignmentOptions.Left);
-        tip = UIKit.Label(card, "", 40f, new Vector2(150f, -75f), new Vector2(620f, 190f), TextAlignmentOptions.TopLeft);
-
-        destination = UIKit.Label(root.transform, "", 40f, new Vector2(0f, -300f), new Vector2(1000f, 56f), TextAlignmentOptions.Center, new Color(0.93f, 0.90f, 0.82f, 1f));
-    }
-
     /// <summary>화면을 덮는다 (sceneName은 갈 곳). 다 덮일 때까지 기다린다.</summary>
     public static IEnumerator Show(string sceneName)
     {

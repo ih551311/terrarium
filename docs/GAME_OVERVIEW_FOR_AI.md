@@ -325,3 +325,5 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 게임 제목 글자는 `MainMenu.GameTitle` 한 곳에 있다(지금은 임시 제목 "유리병 정원"). 글꼴에 가운뎃점(·)이 없어서 UI 글자에 쓰지 않는다.
 - 아직 없는 것: 게임 안에서 메인 화면으로 돌아가는 버튼(GameRoot가 씬을 넘어 남아 있어서 돌아가려면 GameRoot를 지우고 상태를 되돌리는 처리가 필요하다).
 - 게임 안 Esc 메뉴에 "메인 화면으로" 버튼이 있다(두 번 눌러야 한다). GameRoot.ReturnToMenu가 저장하고, 뿌리 오브젝트를 지운 뒤 MainMenu 씬으로 간다. SaveSystem.Save가 방금 저장한 내용을 기억해서 다시 시작해도 가방이 맞게 채워진다.
+
+- **UI는 전부 실제 캔버스 오브젝트다 (2026-11-18).** 예전에는 UIKit으로 켜질 때 코드로 그렸지만 지금은 에디터에서 보이고 고칠 수 있다. 메인 화면은 MainMenu 씬 안의 `MainMenuCanvas`, 나머지(일시정지 메뉴, 로딩 화면, 편지 답장, 선착장 창)는 `Assets/Resources/UI/*.prefab`이다. 이 스크립트들은 구워 둔 버튼과 글자를 `[SerializeField]`로 받아 쓰고 버튼 연결만 한다. 화면 모양을 코드 기준으로 되돌리거나 다시 만들려면 메뉴 "유리병 정원 > 화면 캔버스 다시 만들기"(프리팹 네 개)와 "메인 화면 만들기"(씬 + 그림 `Assets/UI/MainMenu/*.png`)를 누른다(`Assets/Editor/UIBake.cs`). 손으로 고친 것은 다시 만들면 덮어써진다. 가방, 작업대 같은 나머지 화면은 원래부터 UISetup이 만든 캔버스다.

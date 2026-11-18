@@ -31,7 +31,7 @@ public static class UIKit
     public static Canvas CreateCanvas(string name, int sortingOrder)
     {
         GameObject go = new GameObject(name);
-        UnityEngine.Object.DontDestroyOnLoad(go);
+        if (Application.isPlaying) UnityEngine.Object.DontDestroyOnLoad(go); // 에디터에서 화면을 구울 때는 건너뛴다
         Canvas canvas = go.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = sortingOrder;

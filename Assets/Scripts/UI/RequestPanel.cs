@@ -7,16 +7,19 @@ using UnityEngine.UI;
 /// <summary>
 /// 병 주문 편지 화면. 우체통에서 E를 누르면 와 있는 편지를 보여 주고, 조건에 맞는 완성한 병을 골라 보낼 수 있다.
 /// 병을 누르면 바로 보낸다. 답례(코인과 재료)는 우체통에 도착한다.
-/// 게임이 켜질 때 코드로 만들어진다. 편지가 없으면 우체통은 원래대로 상점 화면(MailboxPanel)을 연다.
+/// 화면은 Assets/Resources/UI/RequestPanel.prefab (캔버스)에 있고 게임이 켜질 때 꺼내 둔다. 편지가 없으면 우체통은 원래대로 상점 화면(MailboxPanel)을 연다.
 /// </summary>
 public class RequestPanel : MonoBehaviour
 {
-    private const int MaxRows = 5;
+    /// <summary>한 번에 보여 주는 병 줄 수 (화면에 구워 둔 버튼 수와 같다)</summary>
+    public const int MaxRows = 5;
 
     private static RequestPanel instance;
 
-    private GameObject root;
-    private TMP_Text fromLabel, bodyLabel, conditionLabel, noteLabel;
+    [SerializeField] private GameObject root;
+    [SerializeField] private TMP_Text fromLabel, bodyLabel, conditionLabel, noteLabel;
+    [SerializeField] private Button[] rowButtons;
+    [SerializeField] private Button mailboxButton, closeButton;
     private readonly List<Button> rows = new List<Button>();
     private readonly List<string> rowBottleIds = new List<string>();
     private string confirmId;       // 한 번 눌러서 확인을 기다리는 병
@@ -29,9 +32,12 @@ public class RequestPanel : MonoBehaviour
     private static void Boot()
     {
         if (instance != null) return;
-        GameObject go = new GameObject("RequestPanel");
+        GameObject prefab = Resources.Load<GameObject>("UI/RequestPanel");
+        if (prefab == null) { Debug.LogError("UI/RequestPanel 프리팹이 없어요. 메뉴 '유리병 정원 > 화면 캔버스 다시 만들기'를 눌러 주세요."); return; }
+        GameObject go = Instantiate(prefab);
+        go.name = "RequestPanel";
         DontDestroyOnLoad(go);
-        instance = go.AddComponent<RequestPanel>();
+        instance = go.GetComponent<RequestPanel>();
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -50,43 +56,21 @@ public class RequestPanel : MonoBehaviour
 
     private void Awake()
     {
-        Build();
+        for (int i = 0; i < rowButtons.Length; i++)
+        {
+            int index = i;
+            rowButtons[i].onClick.AddListener(() => RowClicked(index));
+            rows.Add(rowButtons[i]);
+            rowBottleIds.Add(null);
+        }
+        mailboxButton.onClick.AddListener(OpenMailbox);
+        closeButton.onClick.AddListener(Close);
         root.SetActive(false);
     }
 
     private void OnDestroy()
     {
         if (instance == this) instance = null;
-    }
-
-    private void Build()
-    {
-        Canvas canvas = UIKit.CreateCanvas("RequestCanvas", 350);
-        canvas.transform.SetParent(transform, false);
-        root = new GameObject("Root", typeof(RectTransform));
-        root.transform.SetParent(canvas.transform, false);
-        RectTransform rootRect = (RectTransform)root.transform;
-        rootRect.anchorMin = Vector2.zero; rootRect.anchorMax = Vector2.one;
-        rootRect.offsetMin = rootRect.offsetMax = Vector2.zero;
-
-        UIKit.Backdrop(root.transform);
-        RectTransform panel = UIKit.Panel(root.transform, "Panel", new Vector2(980f, 860f));
-
-        fromLabel = UIKit.Label(panel, "", 40f, new Vector2(0f, 380f), new Vector2(880f, 60f));
-        bodyLabel = UIKit.Label(panel, "", 32f, new Vector2(0f, 270f), new Vector2(860f, 160f), TextAlignmentOptions.TopLeft);
-        conditionLabel = UIKit.Label(panel, "", 30f, new Vector2(0f, 150f), new Vector2(860f, 50f), TextAlignmentOptions.Center, new Color(0.45f, 0.30f, 0.12f));
-
-        for (int i = 0; i < MaxRows; i++)
-        {
-            int index = i;
-            Button row = UIKit.MakeButton(panel, "", new Vector2(0f, 70f - i * 82f), new Vector2(820f, 70f), () => RowClicked(index), 28f);
-            rows.Add(row);
-            rowBottleIds.Add(null);
-        }
-
-        noteLabel = UIKit.Label(panel, "", 26f, new Vector2(0f, -318f), new Vector2(880f, 70f), TextAlignmentOptions.Center);
-        UIKit.MakeButton(panel, "우체통 열기", new Vector2(-220f, -392f), new Vector2(380f, 64f), OpenMailbox, 28f);
-        UIKit.MakeButton(panel, "닫기", new Vector2(220f, -392f), new Vector2(380f, 64f), Close, 28f);
     }
 
     private void Update()

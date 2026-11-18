@@ -1,12 +1,12 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// Esc로 여는 일시정지 메뉴. 이어하기, 지금 저장하기, 소리 크기, 음악 켜기/끄기, 게임 끝내기.
-/// 열려 있는 동안 게임 시간이 멈춘다. 게임이 켜질 때 코드로 만들어지고, 다른 패널이 열려 있으면 열리지 않는다.
-/// (게임을 끄거나 앱이 멈출 때도 저절로 저장된다 - GameRoot)
+/// Esc로 여는 일시정지 메뉴. 소리 크기, 음악 켜기/끄기, 메인 화면으로, 게임 끝내기.
+/// 열려 있는 동안 게임 시간이 멈춘다. 다른 패널이 열려 있으면 열리지 않는다.
+/// 화면은 Assets/Resources/UI/PauseMenu.prefab (캔버스)에 있고, 게임이 켜질 때 하나 꺼내 씬을 넘어 남겨 둔다.
+/// 화면을 다시 만들려면 메뉴 "유리병 정원 > 화면 캔버스 다시 만들기" (UIBake).
 /// </summary>
 public class PauseMenu : MonoBehaviour
 {
@@ -14,9 +14,11 @@ public class PauseMenu : MonoBehaviour
 
     private static PauseMenu instance;
 
-    private GameObject root;
-        private Button musicButton;
-        private bool isOpen;
+    [SerializeField] private GameObject root;
+    [SerializeField] private Slider volumeSlider;
+    [SerializeField] private Button musicButton, menuButton, quitButton;
+
+    private bool isOpen;
     private float savedTimeScale = 1f;
 
     public static bool IsOpen => instance != null && instance.isOpen;
@@ -25,9 +27,12 @@ public class PauseMenu : MonoBehaviour
     private static void Boot()
     {
         if (instance != null) return;
-        GameObject go = new GameObject("PauseMenu");
+        GameObject prefab = Resources.Load<GameObject>("UI/PauseMenu");
+        if (prefab == null) { Debug.LogError("UI/PauseMenu 프리팹이 없어요. 메뉴 '유리병 정원 > 화면 캔버스 다시 만들기'를 눌러 주세요."); return; }
+        GameObject go = Instantiate(prefab);
+        go.name = "PauseMenu";
         DontDestroyOnLoad(go);
-        instance = go.AddComponent<PauseMenu>();
+        instance = go.GetComponent<PauseMenu>();
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -39,41 +44,21 @@ public class PauseMenu : MonoBehaviour
     private void Awake()
     {
         AudioListener.volume = Mathf.Clamp01(PlayerPrefs.GetFloat(VolumeKey, 1f));
-        Build();
+        volumeSlider.SetValueWithoutNotify(AudioListener.volume);
+        volumeSlider.onValueChanged.AddListener(v =>
+        {
+            AudioListener.volume = v;
+            PlayerPrefs.SetFloat(VolumeKey, v);
+        });
+        musicButton.onClick.AddListener(ToggleMusic);
+        menuButton.onClick.AddListener(MenuClicked);
+        quitButton.onClick.AddListener(QuitClicked);
         root.SetActive(false);
     }
 
     private void OnDestroy()
     {
         if (instance == this) instance = null;
-    }
-
-    private void Build()
-    {
-        Canvas canvas = UIKit.CreateCanvas("PauseMenuCanvas", 400);
-        canvas.transform.SetParent(transform, false);
-        root = new GameObject("Root", typeof(RectTransform));
-        root.transform.SetParent(canvas.transform, false);
-        RectTransform rootRect = (RectTransform)root.transform;
-        rootRect.anchorMin = Vector2.zero; rootRect.anchorMax = Vector2.one;
-        rootRect.offsetMin = rootRect.offsetMax = Vector2.zero;
-
-        UIKit.Backdrop(root.transform);
-        UIKit.Backdrop(root.transform);
-        RectTransform panel = UIKit.Panel(root.transform, "Panel", new Vector2(640f, 560f));
-
-        UIKit.Label(panel, "잠시 쉬어가요", 48f, new Vector2(0f, 205f), new Vector2(560f, 70f));
-
-        UIKit.Label(panel, "소리 크기", 28f, new Vector2(0f, 110f), new Vector2(460f, 40f));
-        UIKit.MakeSlider(panel, new Vector2(0f, 65f), new Vector2(420f, 40f), AudioListener.volume, v =>
-        {
-            AudioListener.volume = v;
-            PlayerPrefs.SetFloat(VolumeKey, v);
-        });
-
-        musicButton = UIKit.MakeButton(panel, "", new Vector2(0f, -15f), new Vector2(460f, 72f), ToggleMusic);
-        UIKit.MakeButton(panel, "메인 화면으로", new Vector2(0f, -105f), new Vector2(460f, 72f), MenuClicked);
-        UIKit.MakeButton(panel, "게임 끝내기", new Vector2(0f, -195f), new Vector2(460f, 72f), QuitClicked);
     }
 
     private void Update()
