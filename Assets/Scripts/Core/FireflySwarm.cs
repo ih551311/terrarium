@@ -12,8 +12,6 @@ public class FireflySwarm : MonoBehaviour
     private const int Count = 36;
     private const string MaterialId = "firefly";
 
-    private static Sprite glowSprite;
-
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Boot()
     {
@@ -64,7 +62,17 @@ public class FireflySwarm : MonoBehaviour
         }
     }
 
-    private static Sprite GetGlowSprite()
+    private static Sprite GetGlowSprite() => FireflyBug.GlowSprite;
+}
+
+/// <summary>반딧불이 한 마리와 병 속 반딧불이가 같이 쓰는 빛무리 그림</summary>
+public partial class FireflyBug
+{
+    public static Sprite GlowSprite => BuildGlowSprite();
+
+    private static Sprite glowSprite;
+
+    private static Sprite BuildGlowSprite()
     {
         if (glowSprite != null) return glowSprite;
         const int size = 64;
@@ -86,7 +94,7 @@ public class FireflySwarm : MonoBehaviour
 }
 
 /// <summary>반딧불이 한 마리: 자리(anchor) 둘레를 천천히 떠다닌다. 바라보고 E로 잡는다.</summary>
-public class FireflyBug : MonoBehaviour, IInteractable
+public partial class FireflyBug : MonoBehaviour, IInteractable
 {
     private Vector3 anchor;
     private string id;

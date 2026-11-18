@@ -37,6 +37,8 @@ public class NightGlow : MonoBehaviour
     private Glow glow;
     private float phase;
     private bool isFirefly;
+    private SpriteRenderer halo;      // 반딧불이 꽁무니의 빛무리 (모델이 아주 작아서 빛무리가 있어야 낮에도 보인다)
+    private BottleContents bottleOwner;
 
     /// <summary>이 재료가 밤에 빛나는 재료면 모델에 NightGlow를 붙인다.</summary>
     public static void Attach(GameObject visual, string materialId)
@@ -46,6 +48,22 @@ public class NightGlow : MonoBehaviour
         ng.glow = g;
         ng.isFirefly = materialId == "firefly";
         ng.phase = Random.value * 10f;
+        ng.bottleOwner = visual.GetComponentInParent<BottleContents>();
+
+        if (ng.isFirefly)
+        {
+            // 모델이 손톱만 해서 병 속에서 거의 안 보이므로 조금 키우고, 꽁무니에 빛무리를 둔다 (낮에는 은은하게, 밤에는 환하게)
+            visual.transform.localScale *= 2.2f;
+            GameObject haloObject = new GameObject("FireflyHalo");
+            haloObject.transform.SetParent(visual.transform, false);
+            haloObject.transform.localPosition = new Vector3(0f, 0.008f, 0.009f);
+            haloObject.transform.localScale = Vector3.one * 0.045f;
+            haloObject.layer = visual.layer;
+            ng.halo = haloObject.AddComponent<SpriteRenderer>();
+            ng.halo.sprite = FireflyBug.GlowSprite;
+            ng.halo.color = new Color(0.85f, 1f, 0.35f, 0.4f);
+            ng.halo.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
 
         // 병 하나에 불빛은 하나만 둔다 (불빛이 너무 많아지지 않게)
         BottleContents bottle = visual.GetComponentInParent<BottleContents>();
@@ -75,6 +93,7 @@ public class NightGlow : MonoBehaviour
         var list = new List<Material>();
         foreach (Renderer r in GetComponentsInChildren<Renderer>())
         {
+            if (r is SpriteRenderer) continue;
             foreach (Material m in r.materials)
             {
                 m.EnableKeyword("_EMISSION");
@@ -97,7 +116,15 @@ public class NightGlow : MonoBehaviour
         float t = Time.time + phase;
         // 촛불처럼 살짝 일렁이고, 반딧불이는 천천히 깜빡인다
         float pulse = isFirefly ? 0.55f + 0.45f * Mathf.Sin(t * 1.6f) : 0.88f + 0.12f * Mathf.Sin(t * 5.3f) * Mathf.Sin(t * 1.7f);
-        Color emission = glow.color * (glow.strength * night * pulse);
+        float level = isFirefly ? Mathf.Max(night, 0.45f) : night; // 반딧불이는 낮에도 꽁무니가 희미하게 빛난다
+        Color emission = glow.color * (glow.strength * level * pulse);
+        if (halo != null)
+        {
+            Color hc = halo.color; hc.a = Mathf.Lerp(0.55f, 1f, night) * (0.6f + 0.4f * pulse);
+            halo.color = hc;
+            Camera viewer = bottleOwner != null && bottleOwner.ViewCamera != null && bottleOwner.ViewCamera.enabled ? bottleOwner.ViewCamera : Camera.main;
+            if (viewer != null) halo.transform.rotation = viewer.transform.rotation; // 늘 보는 쪽을 향한다
+        }
         foreach (Material m in materials) if (m != null) m.SetColor("_EmissionColor", emission);
 
         if (glowLight != null)
