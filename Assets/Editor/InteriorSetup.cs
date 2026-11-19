@@ -265,14 +265,9 @@ public static class InteriorSetup
         Material cream = Mat("FurnitureCream", new Color(0.96f, 0.93f, 0.85f));
         Material blanket = Mat("FurnitureBlanket", new Color(0.32f, 0.44f, 0.56f));
         Material pillow = Mat("FurniturePillow", new Color(0.99f, 0.97f, 0.94f));
-        Material rugMat = Mat("FurnitureRug", new Color(0.6f, 0.3f, 0.27f));
-        Material rugMat2 = Mat("FurnitureRug2", new Color(0.36f, 0.45f, 0.40f));
         Material paper = Mat("FurniturePaper", new Color(1f, 0.99f, 0.95f));
 
-        // 러그: 큰 방 한가운데(탁자 밑), 작업대 앞, 현관 앞 깔개
-        Cylinder(root, "Rug", new Vector3(0.9f, 0.012f, -0.4f), new Vector3(3.6f, 0.012f, 3.0f), rugMat, false);
-        Cylinder(root, "RugWorkbench", new Vector3(0f, 0.014f, hz - 2.0f), new Vector3(2.4f, 0.012f, 1.3f), rugMat2, false);
-        Cylinder(root, "Doormat", new Vector3(0f, 0.012f, VestSouthZ + 1.1f), new Vector3(1.5f, 0.012f, 1.0f), rugMat2, false);
+        // 바닥 카펫은 두지 않는다 (맨 나무 바닥)
 
         // 침대 (동쪽 벽, 남쪽 절반). 바라보고 E를 누르면 잔다 (Bed).
         float bedX = hx - 0.85f, bedZ = -1.7f;
@@ -301,15 +296,7 @@ public static class InteriorSetup
 
         BuildShelf(root.transform, wood, darkWood, deskX, deskZ);
 
-        // 탁자와 의자 둘 (방 한가운데)
-        float tx = 1.3f, tz = -0.5f;
-        Cube(root, "TableTop", new Vector3(tx, 0.74f, tz), new Vector3(1.5f, 0.07f, 0.9f), wood);
-        foreach (Vector2 leg in new[] { new Vector2(tx - 0.65f, tz - 0.35f), new Vector2(tx + 0.65f, tz - 0.35f), new Vector2(tx - 0.65f, tz + 0.35f), new Vector2(tx + 0.65f, tz + 0.35f) })
-            Cube(root, "TableLeg", new Vector3(leg.x, 0.36f, leg.y), new Vector3(0.07f, 0.72f, 0.07f), darkWood);
-        Cube(root, "StoolA", new Vector3(tx - 0.4f, 0.22f, tz + 0.75f), new Vector3(0.4f, 0.44f, 0.4f), darkWood);
-        Cube(root, "StoolB", new Vector3(tx + 0.4f, 0.22f, tz - 0.75f), new Vector3(0.4f, 0.44f, 0.4f), darkWood);
-        GameObject tableCandle = Deco(root, "deco_candle", new Vector3(tx, 0.775f, tz), 6f);
-        PointLight(tableCandle.transform, "TableCandleLight", new Vector3(0f, 0.25f, 0f), new Color(1f, 0.82f, 0.55f), 0.9f, 3.5f);
+        // 방 가운데는 비워 둔다: 문에서 작업대(병)로 가는 길에 탁자나 의자를 두지 않는다
 
         // 보관 상자와 통: 북동쪽 모퉁이, 남쪽 벽, 현관 앞방, 양동이는 북서쪽 모퉁이
         Kitpiece(root, "Crate", new Vector3(hx - 1.4f, 0f, hz - 0.7f), 15f);
