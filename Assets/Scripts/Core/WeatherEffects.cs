@@ -49,7 +49,7 @@ public class WeatherEffects : MonoBehaviour
 
     private void Update()
     {
-        Outdoors = Terrain.activeTerrain != null;
+        Outdoors = Terrain.activeTerrain != null && !IndoorZone.Inside; // 집 안은 섬 씬 안의 방이다 (IndoorZone)
 
         // F9: 날씨를 하나씩 바꿔 본다 (맑음, 흐림, 바람, 이슬비, 비, 폭풍우, 안개, 눈, 날짜대로). 개발할 때 쓰는 키다.
         UnityEngine.InputSystem.Keyboard keyboard = UnityEngine.InputSystem.Keyboard.current;

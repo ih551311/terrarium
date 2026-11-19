@@ -50,7 +50,6 @@ public static class JarSetup
         return "병 프리팹 " + n + "개의 배경색을 바꿨어요";
     }
     private const string DataFolder = "Assets/Data/Bottles";
-    private const string InteriorPath = "Assets/Scenes/HutInterior.unity";
     private const string IslandPath = "Assets/Scenes/Island.unity";
     private const string RenderTexturePath = "Assets/Data/Placeholder/BottleView.renderTexture";
     private const string SoilMaterialPath = "Assets/Data/Placeholder/SoilBrown.mat";
@@ -148,11 +147,11 @@ public static class JarSetup
         foreach (Jar jar in Jars) datas.Add(BuildBottleAsset(jar, layer));
         AssetDatabase.SaveAssets();
 
-        // 집 안 씬: 작업대 위에 병들을 놓는다
+        // 섬 씬(집 안 방): 작업대 위에 병들을 놓는다
         EditorSceneManager.SaveOpenScenes();
-        EditorSceneManager.OpenScene(InteriorPath, OpenSceneMode.Single);
+        EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
         GameObject bench = GameObject.Find("Workbench");
-        if (bench == null) return "집 안 씬에서 Workbench를 찾을 수 없어요.";
+        if (bench == null) return "섬 씬에서 Workbench를 찾을 수 없어요. 먼저 집 안 꾸미기를 하세요.";
 
         // 예전 임시 병과 이전에 놓은 병을 지운다
         for (int i = bench.transform.childCount - 1; i >= 0; i--)

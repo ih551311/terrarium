@@ -340,3 +340,10 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 ## 걷기와 행동의 손맛 (2026-11-20)
 - FirstPersonController.LateUpdate: 걸음마다 카메라가 위아래로 출렁이고(걸음 거리에 비례), 옆으로 걸으면 살짝 기울고, 서 있으면 숨쉬듯 오르내리고, 착지하면 용수철처럼 내려앉았다 돌아오고, 달리면 시야(FOV)가 +7도 넓어진다. FirstPersonController.Nod(m)로 다른 곳에서도 시선을 끄덕일 수 있다. (발소리는 원래 FootstepPlayer가 낸다)
 - HitFx(Assets/Scripts/Core/HitFx.cs): 빛무리 그림(FireflyBug.GlowSprite)을 여러 개 뿌리는 효과. Sparkle은 재료를 주울 때(Pickup), Chips는 나무, 돌, 풀을 칠 때(Harvestable.Impact, 마지막 타격은 더 세게). 입자 시스템이나 재질 에셋이 필요 없다.
+
+## 집은 섬 씬 안의 방, 문은 직접 연다 (2026-11-20)
+- **집 안은 더 이상 별도 씬(HutInterior)이 아니다.** 섬(Island) 씬의 집(Cabin = Building_b, 속이 빈 껍데기) 속에 방(`HouseInterior`)을 짓는다. 옛 HutInterior 씬과 빌드 목록 항목은 지웠다 (필요하면 git 기록에서 복구).
+- **열리는 문**: HouseDoorBuilder(메뉴: 집 문 만들기)가 Building_b 메시를 꼭짓점 번호로 이어진 덩어리로 나눠, 문 자리 상자 안에 통째로 들어가는 덩어리(널빤지, 쇠 띠, 손잡이)를 문짝으로 뗀다. 문틀과 벽은 남는다. 문짝은 `HouseDoor`(오른쪽 돌쩌귀를 축으로 안쪽 100도, 0.7초)가 되고, 바라보고 E로 열고 E로 닫는다. 열려 있는 동안 문짝 충돌은 꺼지고 바라보는 상자(DoorTrigger)는 켜 둔다. 문 한가운데 서 있으면 닫히지 않는다. 삐걱 소리는 GameAudio.Creak(Sfx.DoorOpen, DoorClose).
+- **방**: InteriorSetup(메뉴: 집 안 꾸미기)이 10.8m x 8.8m 방을 짓는다 (집 안쪽 12m x 9.6m에 맞춤). 뿌리 위치 = 문턱 높이(집 밑동 + 0.43), 남쪽 안벽은 문 두께 바로 뒤. 작업대(Workbench, 병 포함)는 섬에 있는 것을 방 북쪽에 옮겨 놓는다. 모든 좌표는 뿌리 기준이다.
+- **집 안 판정**: IndoorZone(방 뿌리에 붙음). 플레이어가 상자 안이면 `IndoorZone.Inside`. 비와 눈이 숨고(WeatherEffects.Outdoors), 방 소리가 나고(GameAudio), 발소리가 나무 바닥이 되고(FootstepPlayer), 환경광이 따뜻하게 어두워진다(들어가고 나올 때 부드럽게).
+- 눈 섬과 사막 섬을 만들 때는 이 방(HouseInterior)과 문(HouseDoor)을 지운다. 섬을 처음부터 다시 만들면(IslandSetup) 집 문 만들기, 집 안 꾸미기를 차례로 다시 눌러야 한다.

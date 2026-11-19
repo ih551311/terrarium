@@ -12,7 +12,7 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class GameAudio : MonoBehaviour
 {
-    public enum Sfx { Pickup, Place, Remove, Chime, Coin, Paper, Click }
+    public enum Sfx { Pickup, Place, Remove, Chime, Coin, Paper, Click, DoorOpen, DoorClose }
 
     private const int Rate = 22050;
 
@@ -71,6 +71,8 @@ public class GameAudio : MonoBehaviour
         sfxClips[Sfx.Coin] = Bells("Coin", new[] { 1975.5f, 2637f }, 0.09f, 0.55f);
         sfxClips[Sfx.Paper] = FilteredNoise("Paper", 0.28f, 0.45f, 6f, 3, 0.6f);
         sfxClips[Sfx.Click] = Glide("Click", 1400f, 1100f, 0.035f, 70f, 0.25f);
+        sfxClips[Sfx.DoorOpen] = Creak("DoorOpen", 95f, 150f, 0.7f, false);
+        sfxClips[Sfx.DoorClose] = Creak("DoorClose", 130f, 80f, 0.7f, true);
 
         steps = new[] { Footstep("Step1", 0.16f, 0.10f, 32f, 1), Footstep("Step2", 0.13f, 0.11f, 30f, 2), Footstep("Step3", 0.19f, 0.095f, 34f, 3) };
         sandSteps = new[] { Footstep("Sand1", 0.38f, 0.13f, 24f, 4), Footstep("Sand2", 0.32f, 0.14f, 22f, 5), Footstep("Sand3", 0.42f, 0.12f, 26f, 6) };
@@ -267,6 +269,42 @@ public class GameAudio : MonoBehaviour
         }
         return Make(name, d);
     }
+    /// <summary>
+    /// 나무 문 삐걱 소리: 낮은 톱니 소리의 높이를 천천히 바꾸고 거친 잡음을 섞는다. 닫는 쪽(thud)은 끝에 "쿵" 하고 부딪힌다.
+    /// </summary>
+    private static AudioClip Creak(string name, float f0, float f1, float seconds, bool thud)
+    {
+        int n = (int)(Rate * seconds);
+        var d = new float[n];
+        var rnd = new System.Random(f0 > f1 ? 41 : 43);
+        float phase = 0f, lp = 0f, wobble = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float t = i / (float)Rate, k = i / (float)n;
+            // 천천히 높이가 변하고, 삐걱거리며 흔들린다
+            wobble += ((float)rnd.NextDouble() - 0.5f) * 0.02f;
+            wobble *= 0.995f;
+            float f = Mathf.Lerp(f0, f1, k) * (1f + wobble * 2f + 0.03f * Mathf.Sin(t * 37f));
+            phase += f / Rate;
+            float saw = (phase % 1f) * 2f - 1f;
+            float noise = (float)(rnd.NextDouble() * 2.0 - 1.0);
+            lp += (noise - lp) * 0.08f;
+            float env = Mathf.Sin(Mathf.PI * Mathf.Min(1f, k * 1.05f)); // 부드럽게 시작하고 끝난다
+            float tone = saw * 0.22f + lp * 0.5f;
+            d[i] = tone * env * 0.5f;
+        }
+        if (thud)
+        {
+            int start = (int)(n * 0.9f);
+            for (int i = start; i < n; i++)
+            {
+                float t = (i - start) / (float)Rate;
+                d[i] += Mathf.Sin(2f * Mathf.PI * 70f * t) * Mathf.Exp(-t * 28f) * 0.55f;
+            }
+        }
+        return Make(name, d);
+    }
+
     /// <summary>종소리: 음마다 길게 울리며 겹친다</summary>
     private static AudioClip Bells(string name, float[] notes, float step, float tail)
     {

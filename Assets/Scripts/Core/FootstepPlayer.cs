@@ -101,7 +101,7 @@ public class FootstepPlayer : MonoBehaviour
     private Surface SurfaceAt(Vector3 position)
     {
         Terrain terrain = Terrain.activeTerrain;
-        if (terrain == null) return Surface.Wood; // 집 안
+        if (terrain == null || IndoorZone.Inside) return Surface.Wood; // 집 안
 
         TerrainData data = terrain.terrainData;
         Vector3 local = position - terrain.transform.position;

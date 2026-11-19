@@ -125,7 +125,6 @@ public class LoadingScreen : MonoBehaviour
     {
         switch (sceneName)
         {
-            case "HutInterior": return "집으로 들어가는 중";
             case "SnowIsland": return "배를 타고 눈 섬으로 가는 중";
             case "DesertIsland": return "배를 타고 사막 섬으로 가는 중";
             default: return "섬으로 나가는 중";

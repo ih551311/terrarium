@@ -452,8 +452,7 @@ public static class IslandSetup
     private const string Medieval = "Assets/ThirdParty/MedievalTownExteriors/Prefabs/";
 
     /// <summary>
-    /// 중세 마을 팩의 집(Building_b)을 놓는다. 현관 앞에 문 모양의 충돌 상자를 붙여,
-    /// 바라보고 E를 누르면 집 안으로 들어가게 한다. 문은 남쪽(-z)을 향한다.
+    /// 중세 마을 팩의 집(Building_b)을 놓는다. 문은 남쪽(-z)을 향한다.
     /// </summary>
     private static void BuildHouse(Transform parent, Vector3 pos)
     {
@@ -463,18 +462,8 @@ public static class IslandSetup
         house.transform.SetParent(parent, false);
         house.transform.SetPositionAndRotation(pos, prefab.transform.rotation); // 프리팹 뿌리의 회전(-90도 등)을 그대로 둔다
 
-        // 현관 앞면(z = -0.3)에 붙은 문 상자
-        GameObject door = new GameObject("Door");
-        door.transform.SetPositionAndRotation(pos + new Vector3(0f, 1.1f, -0.5f), Quaternion.identity);
-        door.transform.SetParent(house.transform, true); // 집이 회전되어 있어서 세계 좌표로 놓고 붙인다
-        BoxCollider box = door.AddComponent<BoxCollider>();
-        box.size = new Vector3(1.6f, 2.2f, 0.5f);
-        SceneDoor sceneDoor = door.AddComponent<SceneDoor>();
-        SerializedObject so = new SerializedObject(sceneDoor);
-        so.FindProperty("targetScene").stringValue = "HutInterior";
-        so.FindProperty("spawnId").stringValue = "FromIsland";
-        so.FindProperty("label").stringValue = "집에 들어가기";
-        so.ApplyModifiedPropertiesWithoutUndo();
+        // 열리는 문(HouseDoor)과 집 안 방(HouseInterior)은 섬을 다 만든 뒤에 메뉴로 만든다:
+        // 유리병 정원 > 집 문 만들기, 그다음 유리병 정원 > 집 안 꾸미기. (집 안은 따로 떨어진 씬이 아니라 이 씬 안의 방이다)
     }
 
     /// <summary>집 마당: 통, 상자, 자루, 우물, 가로등, 수레</summary>

@@ -87,7 +87,7 @@ public static class DesertIslandSetup
         EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
         rng = new System.Random(20261201);
 
-        foreach (string n in new[] { "IslandContent", "Spawn_FromHut", "MainDock", "DesertDock", "Spawn_FromSnow", "Spawn_FromDesert", RootName, "SnowContent", "SceneClimate", "SceneMapInfo" })
+        foreach (string n in new[] { "IslandContent", "HouseInterior", "HouseDoor", "Spawn_FromHut", "MainDock", "DesertDock", "Spawn_FromSnow", "Spawn_FromDesert", RootName, "SnowContent", "SceneClimate", "SceneMapInfo" })
         {
             GameObject old = GameObject.Find(n);
             while (old != null) { Object.DestroyImmediate(old); old = GameObject.Find(n); }

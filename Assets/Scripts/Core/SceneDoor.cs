@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class SceneDoor : MonoBehaviour, IInteractable
 {
-    [Tooltip("가려는 씬 이름. 예: HutInterior")]
+    [Tooltip("가려는 씬 이름. 예: SnowIsland")]
     [SerializeField] private string targetScene;
 
     [Tooltip("그 씬에서 설 자리(SpawnPoint)의 id")]

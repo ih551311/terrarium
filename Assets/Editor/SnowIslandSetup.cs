@@ -56,7 +56,7 @@ public static class SnowIslandSetup
         EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
         rng = new System.Random(20261120);
 
-        foreach (string n in new[] { "IslandContent", "Spawn_FromHut", "MainDock", "Spawn_FromSnow", RootName, "SceneClimate" })
+        foreach (string n in new[] { "IslandContent", "HouseInterior", "HouseDoor", "Spawn_FromHut", "MainDock", "Spawn_FromSnow", RootName, "SceneClimate" })
         {
             GameObject old = GameObject.Find(n);
             while (old != null) { Object.DestroyImmediate(old); old = GameObject.Find(n); }
