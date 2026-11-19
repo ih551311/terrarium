@@ -1,16 +1,17 @@
 using UnityEngine;
 
 /// <summary>
-/// 집 안 영역. 플레이어가 이 상자 안에 있으면 "집 안"이다. (예전에는 집 안이 따로 떨어진 씬이라 지형이 없는 것으로 알았다)
+/// 집 안 영역. 플레이어가 이 상자들 안에 있으면 "집 안"이다. (예전에는 집 안이 따로 떨어진 씬이라 지형이 없는 것으로 알았다)
+/// 집 모양은 현관 앞방이 앞으로 튀어나온 T자라서 상자 여러 개로 나타낸다.
 /// 집 안에서는 비와 눈이 숨고(WeatherEffects), 바깥 소리 대신 방 소리가 나고(GameAudio), 발소리가 나무 바닥 소리가 되고(FootstepPlayer),
 /// 환경광이 따뜻하고 어둡게 바뀐다 (낮 하늘빛이 지붕 아래까지 들어오지 않게). 들어가고 나올 때 환경광은 부드럽게 바뀐다.
-/// 상자는 이 오브젝트(집 안 뿌리)의 좌표계로 center, size를 준다. InteriorSetup이 만들어서 붙인다.
+/// 상자는 이 오브젝트(집 안 뿌리)의 좌표계로 centers, sizes를 준다. InteriorSetup이 만들어서 붙인다.
 /// </summary>
 [DefaultExecutionOrder(500)] // SkyController가 환경광을 정한 다음에 덮어쓴다
 public class IndoorZone : MonoBehaviour
 {
-    [SerializeField] private Vector3 center = new Vector3(0f, 1.6f, 0f);
-    [SerializeField] private Vector3 size = new Vector3(10f, 3.4f, 8f);
+    [SerializeField] private Vector3[] centers = { new Vector3(0f, 1.6f, 0f) };
+    [SerializeField] private Vector3[] sizes = { new Vector3(10f, 3.4f, 8f) };
 
     [Header("집 안 환경광 (하늘, 수평선, 바닥 세 색)")]
     [SerializeField] private Color indoorSky = new Color(0.50f, 0.45f, 0.40f);
@@ -43,8 +44,13 @@ public class IndoorZone : MonoBehaviour
     /// <summary>세계 좌표의 한 점이 집 안인가</summary>
     public bool Contains(Vector3 world)
     {
-        Vector3 local = transform.InverseTransformPoint(world) - center;
-        return Mathf.Abs(local.x) <= size.x * 0.5f && Mathf.Abs(local.y) <= size.y * 0.5f && Mathf.Abs(local.z) <= size.z * 0.5f;
+        Vector3 local = transform.InverseTransformPoint(world);
+        for (int i = 0; i < centers.Length && i < sizes.Length; i++)
+        {
+            Vector3 d = local - centers[i];
+            if (Mathf.Abs(d.x) <= sizes[i].x * 0.5f && Mathf.Abs(d.y) <= sizes[i].y * 0.5f && Mathf.Abs(d.z) <= sizes[i].z * 0.5f) return true;
+        }
+        return false;
     }
 
     private void Update()
@@ -67,6 +73,6 @@ public class IndoorZone : MonoBehaviour
     {
         Gizmos.color = new Color(1f, 0.8f, 0.3f, 0.6f);
         Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.DrawWireCube(center, size);
+        for (int i = 0; i < centers.Length && i < sizes.Length; i++) Gizmos.DrawWireCube(centers[i], sizes[i]);
     }
 }
