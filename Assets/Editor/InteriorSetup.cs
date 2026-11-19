@@ -305,8 +305,7 @@ public static class InteriorSetup
         Kitpiece(root, "Barrel", new Vector3(hx - 0.6f, 0f, hz - 1.75f), 40f);
         Kitpiece(root, "Crate", new Vector3(-3.4f, 0f, -hz + 0.6f), 80f);
         Kitpiece(root, "Barrel", new Vector3(3.4f, 0f, -hz + 0.65f), 20f);
-        Kitpiece(root, "Crate", new Vector3(-0.95f, 0f, VestSouthZ + 2.2f), 25f);  // 가운데를 1m 이상 비워 둔다
-        Kitpiece(root, "Barrel", new Vector3(0.9f, 0f, VestSouthZ + 2.2f), 0f);
+        // 현관 앞방(입구)에는 아무것도 두지 않는다
         Kitpiece(root, "Bucket", new Vector3(-hx + 0.6f, 0f, hz - 0.55f), 0f);
 
         // 천장에 매단 랜턴: 작업대 위, 현관 앞방
