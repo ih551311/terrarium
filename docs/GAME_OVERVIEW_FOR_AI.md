@@ -336,3 +336,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - **병 꾸미기 시점 버그**: BottleViewer.ResetOrientation이 카메라 오른쪽 축으로 +tilt를 돌려서 병 위쪽이 카메라에서 멀어졌다(주석은 반대로 적혀 있었음). 흙 윗면이 등을 돌려 옆면만 보이고, 흙 위 재료의 아랫부분이 앞쪽 흙에 가렸다. -tilt로 고쳤다.
 - **재료를 놓는 높이**: BottleContents.CreateVisual의 "바닥이 표면에 닿게 올리기"가 세계 좌표 상자를 썼다. 병이 기울면 기운 모델의 상자가 더 커서 엉뚱하게 떴다. 이제 재료 자신의 좌표(LocalBounds)로 잰다. 클릭 상자도 같은 방식.
 - **흙 윗면 판판하게**: 흙 모양(메시) 윗면이 약 ±5mm 울퉁불퉁하고 가장자리가 1cm쯤 솟아 있었다. SoilLook.Flat이 재료를 놓는 높이(surfaceY)로 편다. 흙의 결은 법선 그림이 맡는다.
+
+## 걷기와 행동의 손맛 (2026-11-20)
+- FirstPersonController.LateUpdate: 걸음마다 카메라가 위아래로 출렁이고(걸음 거리에 비례), 옆으로 걸으면 살짝 기울고, 서 있으면 숨쉬듯 오르내리고, 착지하면 용수철처럼 내려앉았다 돌아오고, 달리면 시야(FOV)가 +7도 넓어진다. FirstPersonController.Nod(m)로 다른 곳에서도 시선을 끄덕일 수 있다. (발소리는 원래 FootstepPlayer가 낸다)
+- HitFx(Assets/Scripts/Core/HitFx.cs): 빛무리 그림(FireflyBug.GlowSprite)을 여러 개 뿌리는 효과. Sparkle은 재료를 주울 때(Pickup), Chips는 나무, 돌, 풀을 칠 때(Harvestable.Impact, 마지막 타격은 더 세게). 입자 시스템이나 재질 에셋이 필요 없다.

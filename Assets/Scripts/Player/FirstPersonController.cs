@@ -30,9 +30,80 @@ public class FirstPersonController : MonoBehaviour
     private float pitch;          // 위아래 시선 각도
     private float verticalVelocity;
 
+    // ── 걷는 느낌(카메라): 걸음마다 위아래로 출렁이고, 옆으로 걸으면 살짝 기울고, 달리면 시야가 넓어지고, 착지하면 푹 내려앉는다
+    private Camera cam;
+    private Vector3 camBasePos;
+    private float baseFov, bobPhase, bobAmount, roll, landDip, landDipVelocity, fovBoost, lastFall;
+    private bool wasGrounded = true;
+
+    /// <summary>카메라를 순간적으로 아래로 끄덕인다 (줍기, 캐기 같은 행동의 손맛). amount는 미터.</summary>
+    public static void Nod(float amount)
+    {
+        if (current != null) current.landDipVelocity -= amount * 13f;
+    }
+    private static FirstPersonController current;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        current = this;
+        if (cameraTransform != null)
+        {
+            camBasePos = cameraTransform.localPosition;
+            cam = cameraTransform.GetComponent<Camera>();
+            if (cam != null) baseFov = cam.fieldOfView;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (current == this) current = null;
+    }
+
+    private void LateUpdate()
+    {
+        if (cameraTransform == null) return;
+        float dt = Time.deltaTime;
+        Keyboard keyboard = Keyboard.current;
+        bool active = !UIFocus.IsOpen && Cursor.lockState == CursorLockMode.Locked;
+
+        Vector3 v = controller.velocity; v.y = 0f;
+        float speed = active ? v.magnitude : 0f;
+        bool grounded = controller.isGrounded;
+        bool running = keyboard != null && keyboard.leftShiftKey.isPressed && speed > 4f;
+
+        // 걸음: 걸을수록 커지고, 서면 천천히 가라앉는다
+        float moving = grounded ? Mathf.Clamp01(speed / walkSpeed) : 0f;
+        bobAmount = Mathf.MoveTowards(bobAmount, moving, dt * 6f);
+        bobPhase += speed * dt * 2.3f * (grounded ? 1f : 0f);
+        float strength = Mathf.Lerp(0.55f, 1.25f, Mathf.InverseLerp(walkSpeed, runSpeed, speed));
+        float bobY = -Mathf.Abs(Mathf.Sin(bobPhase)) * 0.035f * bobAmount * strength;
+        float bobX = Mathf.Cos(bobPhase) * 0.012f * bobAmount * strength;
+        float breathe = Mathf.Sin(Time.time * 1.5f) * 0.0025f * (1f - bobAmount); // 서 있을 때 숨쉬듯
+
+        // 착지: 떨어진 속도만큼 내려앉았다가 돌아온다. 점프하는 순간엔 살짝 낮아졌다 솟는다
+        if (!grounded) lastFall = Mathf.Min(verticalVelocity, lastFall);
+        if (grounded && !wasGrounded) landDipVelocity += Mathf.Clamp(lastFall, -12f, 0f) * 0.08f;
+        if (grounded) lastFall = 0f;
+        wasGrounded = grounded;
+        // 용수철처럼 0으로 돌아온다
+        landDipVelocity += (-landDip * 180f - landDipVelocity * 16f) * dt;
+        landDip += landDipVelocity * dt;
+        landDip = Mathf.Clamp(landDip, -0.18f, 0.06f);
+
+        // 옆으로 걸으면 몸이 기운다
+        float strafe = active && keyboard != null ? (keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f) : 0f;
+        roll = Mathf.Lerp(roll, -strafe * 1.6f * moving + Mathf.Sin(bobPhase) * 0.35f * bobAmount, dt * 8f);
+
+        cameraTransform.localPosition = camBasePos + new Vector3(bobX, bobY + breathe + landDip, 0f);
+        cameraTransform.localRotation = Quaternion.Euler(pitch, 0f, roll);
+
+        // 달리면 시야가 넓어져 속도감이 난다
+        if (cam != null)
+        {
+            fovBoost = Mathf.Lerp(fovBoost, running ? 7f : 0f, dt * 5f);
+            cam.fieldOfView = baseFov + fovBoost;
+        }
     }
 
     private void OnEnable()

@@ -259,6 +259,18 @@ public class Harvestable : MonoBehaviour, IInteractable
         yield return new WaitForSeconds(ToolView.ImpactDelay);
         ToolSound.Play(transform.position, volume);
         Shake();
+
+        // 맞은 자리에서 조각이 튀고, 시선이 쿵 하고 울린다 (마지막 타격은 더 세게)
+        Camera cam = Camera.main;
+        Collider col = GetComponentInChildren<Collider>();
+        if (cam != null && col != null)
+        {
+            Vector3 p = col.ClosestPoint(cam.transform.position + cam.transform.forward * 3f);
+            Color chip = tool == AcquireMethod.Axe ? new Color(0.55f, 0.38f, 0.22f) : tool == AcquireMethod.Hoe ? new Color(0.45f, 0.32f, 0.2f) : new Color(0.62f, 0.62f, 0.66f);
+            bool strong = volume < 0.95f; // 마지막 타격은 volume이 0.8
+            HitFx.Chips(p, chip, strong ? 1.6f : 0.8f);
+            FirstPersonController.Nod(strong ? 0.03f : 0.016f);
+        }
     }
 
     private void Shake()

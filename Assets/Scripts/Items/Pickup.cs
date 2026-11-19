@@ -98,6 +98,11 @@ public class Pickup : MonoBehaviour, IInteractable
         if (who.Bag.TryAdd(material))
         {
             who.ShowMessage(material.displayName + " +1");
+            // 얻은 손맛: 반짝임이 떠오르고, 시선이 살짝 끄덕인다
+            Bounds bounds = new Bounds(transform.position, Vector3.zero);
+            foreach (Renderer r in renderers) if (r != null) bounds.Encapsulate(r.bounds);
+            HitFx.Sparkle(bounds.center, Color.Lerp(material.placeholderColor, new Color(1f, 0.95f, 0.7f), 0.5f));
+            FirstPersonController.Nod(0.018f);
             Collect();
         }
         else
