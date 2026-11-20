@@ -68,6 +68,7 @@ public static class InteriorSetup
 
         BuildFurniture();
         BuildLighting();
+        int cleared = ClearPlantsInside();
 
         // 집 안 영역: 큰 방과 현관 앞방
         IndoorZone zone = houseRoot.AddComponent<IndoorZone>();
@@ -83,7 +84,24 @@ public static class InteriorSetup
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
         AssetDatabase.SaveAssets();
-        return "집 안 꾸미기 완료 (큰 방 " + (HallHalfX * 2f) + "m x " + (HallHalfZ * 2f) + "m + 현관 앞방, 뿌리 " + houseRoot.transform.position + ")";
+        return "집 안 꾸미기 완료 (큰 방 " + (HallHalfX * 2f) + "m x " + (HallHalfZ * 2f) + "m + 현관 앞방, 뿌리 " + houseRoot.transform.position + ", 집 안에 있던 풀 " + cleared + "개 지움)";
+    }
+
+    /// <summary>집 안에 섬 풀과 꽃이 바닥을 뚫고 나와 있지 않게, 집 터 안의 식물 소품(Plants)을 지운다.</summary>
+    private static int ClearPlantsInside()
+    {
+        int removed = 0;
+        foreach (Transform t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (t == null || t.parent == null || t.parent.name != "Plants") continue; // 지운 식물의 자식은 이미 사라졌다
+            Vector3 l = houseRoot.transform.InverseTransformPoint(t.position);
+            bool hall = Mathf.Abs(l.x) < HallHalfX + 0.8f && Mathf.Abs(l.z) < HallHalfZ + 0.8f;
+            bool vest = Mathf.Abs(l.x) < VestHalfX + 0.8f && l.z > VestSouthZ - 0.8f && l.z < -HallHalfZ + 0.1f;
+            if (!hall && !vest) continue;
+            Object.DestroyImmediate(t.gameObject);
+            removed++;
+        }
+        return removed;
     }
 
     private static void SetVectors(SerializedProperty prop, Vector3[] values)

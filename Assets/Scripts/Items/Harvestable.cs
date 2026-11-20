@@ -36,6 +36,7 @@ public class Harvestable : MonoBehaviour, IInteractable
     private bool depleted;
     private string id;
     private Renderer[] renderers;
+    private Collider[] colliders;
     private Material[][] originals; // 원래 재질 (비웠다가 되돌릴 때 쓴다)
     private Coroutine shaking;
     private Vector3 restPosition;
@@ -165,6 +166,15 @@ public class Harvestable : MonoBehaviour, IInteractable
     private void SetDepleted(bool value)
     {
         depleted = value;
+
+        // 괭이로 캐는 풀과 꽃은 캐면 통째로 사라지고 다음 날 아침에 다시 자란다. (색만 바랜 잎이 조각처럼 땅에 남아 보이지 않게)
+        if (tool == AcquireMethod.Hoe)
+        {
+            foreach (Renderer r in renderers) if (r != null) r.enabled = !value;
+            if (colliders == null) colliders = GetComponentsInChildren<Collider>();
+            foreach (Collider c in colliders) if (c != null) c.enabled = !value;
+            return;
+        }
 
         // 나무는 잎을 숨기고 줄기만 남긴다. (잎 오브젝트 이름은 줄기 이름 뒤에 l이 붙는다. 예: Tree01A_LOD0 / Tree01Al_LOD0)
         if (tool == AcquireMethod.Axe && SetLeavesVisible(!value)) return;
