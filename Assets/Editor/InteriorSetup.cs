@@ -205,16 +205,18 @@ public static class InteriorSetup
         WallWithHoles(room, "WallNorth", true, hz + t / 2f, t, hx + t, new[] { -3.3f, 0f, 3.3f }, plaster);       // 창 자리는 구멍을 낸다
         WallWithHoles(room, "WallEast", false, hx + t / 2f, t, hz + t, new[] { -1.7f }, plaster);
         WallWithHoles(room, "WallWest", false, -hx - t / 2f, t, hz + t, new[] { -1.9f }, plaster);
-        float segLen = hx + t - vx;
+        // 집(Cabin) 자체에도 같은 자리에 현관 벽이 있어서, 우리 벽을 2cm 안쪽으로 넣어 면이 겹쳐 줄무늬가 지지 않게 한다
+        const float inset = 0.02f;
+        float segLen = hx + t - (vx - inset);
         foreach (float sign in new[] { -1f, 1f })
-            Cube(room, "WallHallSouth", new Vector3(sign * (vx + segLen / 2f), Height / 2f, -hz - t / 2f), new Vector3(segLen, Height, t), plaster);
+            Cube(room, "WallHallSouth", new Vector3(sign * (vx - inset + segLen / 2f), Height / 2f, -hz - t / 2f), new Vector3(segLen, Height, t), plaster);
 
         // ── 현관 앞방 벽: 동, 서, 남(문). 문 자리는 비운다
         float sideLen = -hz - vs + t;                 // 문 벽 바깥면부터 큰 방 남쪽 벽까지
         float sideZ = (vs - t + -hz) * 0.5f;
         foreach (float sign in new[] { -1f, 1f })
-            Cube(room, "WallVestibule", new Vector3(sign * (vx + t / 2f), Height / 2f, sideZ), new Vector3(t, Height, sideLen), plaster);
-        float doorSegW = vx + t - DoorWidth / 2f;
+            Cube(room, "WallVestibule", new Vector3(sign * (vx - inset + t / 2f), Height / 2f, sideZ), new Vector3(t, Height, sideLen), plaster);
+        float doorSegW = vx + t - inset - DoorWidth / 2f;
         foreach (float sign in new[] { -1f, 1f })
             Cube(room, "WallDoorSide", new Vector3(sign * (DoorWidth / 2f + doorSegW / 2f), Height / 2f, vs - t / 2f), new Vector3(doorSegW, Height, t), plaster);
         Cube(room, "DoorLintel", new Vector3(0f, (Height + DoorHeight) / 2f, vs - t / 2f), new Vector3(DoorWidth, Height - DoorHeight, t), plaster);
@@ -228,8 +230,8 @@ public static class InteriorSetup
         Trim(room, stone, timber, "TrimHallSouthW", new Vector2(-hallSegCenter, -hz), 180f, hallSegHalf, new float[0]);
         Trim(room, stone, timber, "TrimHallSouthE", new Vector2(hallSegCenter, -hz), 180f, hallSegHalf, new float[0]);
         float vestMidZ = (vs + -hz) * 0.5f;
-        Trim(room, stone, timber, "TrimVestWest", new Vector2(-vx, vestMidZ), 270f, VestDepth / 2f, new float[0]);
-        Trim(room, stone, timber, "TrimVestEast", new Vector2(vx, vestMidZ), 90f, VestDepth / 2f, new float[0]);
+        Trim(room, stone, timber, "TrimVestWest", new Vector2(-vx + inset, vestMidZ), 270f, VestDepth / 2f, new float[0]);
+        Trim(room, stone, timber, "TrimVestEast", new Vector2(vx - inset, vestMidZ), 90f, VestDepth / 2f, new float[0]);
         float doorSide = (vx - gap) / 2f;
         Trim(room, stone, timber, "TrimDoorW", new Vector2(-(gap + doorSide), vs), 180f, doorSide, new float[0]);
         Trim(room, stone, timber, "TrimDoorE", new Vector2(gap + doorSide, vs), 180f, doorSide, new float[0]);
@@ -282,6 +284,7 @@ public static class InteriorSetup
         Cube(w, "BarV", new Vector3(0f, 0f, -0.02f), new Vector3(0.06f, 0.8f, 0.08f), timber, false);
         Cube(w, "BarH", new Vector3(0f, 0f, -0.02f), new Vector3(0.9f, 0.06f, 0.08f), timber, false);
         // 바깥 틀
+        outer += 0.02f; // 겉벽의 면과 같은 평면에 놓이지 않게
         Cube(w, "OuterTop", new Vector3(0f, 0.5f, outer), new Vector3(1.2f, 0.1f, 0.1f), timber, false);
         Cube(w, "OuterBottom", new Vector3(0f, -0.5f, outer), new Vector3(1.2f, 0.1f, 0.1f), timber, false);
         Cube(w, "OuterL", new Vector3(-0.55f, 0f, outer), new Vector3(0.1f, 1.0f, 0.1f), timber, false);

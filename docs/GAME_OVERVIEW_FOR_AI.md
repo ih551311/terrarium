@@ -433,3 +433,9 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 
 ## 카메라 near clip
 - FirstPersonController.Awake에서 카메라 near clip 0.08, 몸 반지름 0.38로 맞춘다 (예전 near 0.3 = 반지름 0.3이라 벽, 창에 붙으면 화면이 대각선으로 잘렸다). 모든 씬에 적용된다.
+
+
+## 겹친 면(줄무늬, z-fighting) 점검
+- `Assets/Editor/CoplanarCheck.cs` (메뉴: 유리병 정원/겹친 면 검사): 같은 평면에 같은 방향으로 겹친 면을 한 물체 안과 물체끼리 센다. `CoplanarCheck.Scan(root, others)`.
+- 집(Cabin) 자체에 현관 벽(x ±1.4~1.6)이 있어서 우리 현관 벽(WallVestibule/WallDoorSide/WallHallSouth)과 면이 겹쳐 줄무늬가 졌다 → 우리 벽을 2cm 안쪽으로 넣었다(`inset`). 창 바깥 틀도 겉벽 면과 안 겹치게 2cm 띄웠다. CabinWindows는 집 메쉬 안에서 겹친 면(작은 쪽)을 뺀다.
+- 점검 결과: 집 22쌍 → 13쌍(작은 조각), 우물·뱃머리·문·유적은 넓이 0.02m² 이하의 작은 겹침이라 그대로 둔다. 눈섬 낚시터, 사막 캠프·장식은 0쌍.

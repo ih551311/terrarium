@@ -52,8 +52,10 @@ public static class CabinWindows
         var outT = new List<int>();
         int cut = 0;
 
+        HashSet<int> duplicates = CoplanarCheck.HiddenDuplicates(src, tw);   // 같은 자리에 겹쳐 그려지는 면은 뺀다 (줄무늬 방지)
         for (int i = 0; i < st.Length; i += 3)
         {
+            if (duplicates.Contains(i / 3)) continue;
             var tri = new List<Vtx>(3);
             for (int k = 0; k < 3; k++)
             {
@@ -100,7 +102,7 @@ public static class CabinWindows
 
         cabin.GetComponent<MeshFilter>().sharedMesh = m;
         EditorUtility.SetDirty(cabin);
-        return "집 겉벽에 창 구멍을 냈어요 (잘린 면 조각 " + cut + "개, 삼각형 " + st.Length / 3 + " → " + outT.Count / 3 + ")";
+        return "집 겉벽에 창 구멍을 냈어요 (잘린 면 조각 " + cut + "개, 겹친 면 " + duplicates.Count + "개 뺌, 삼각형 " + st.Length / 3 + " → " + outT.Count / 3 + ")";
     }
 
     /// <summary>다각형에서 상자 바깥 조각들만 next에 담는다 (상자 안쪽은 버린다).</summary>
