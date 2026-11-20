@@ -153,6 +153,7 @@ public class FirstPersonController : MonoBehaviour
         Vector3 move = (transform.right * x + transform.forward * z);
         if (move.sqrMagnitude > 1f) move.Normalize(); // 대각선이 더 빠르지 않게
         move *= keyboard.leftShiftKey.isPressed ? runSpeed : walkSpeed;
+        move = LimitSea(move);
 
         // 땅에 붙어 있게 하는 중력. 땅에 서 있을 때 스페이스를 누르면 점프한다.
         if (controller.isGrounded && verticalVelocity < 0f) verticalVelocity = -2f;
@@ -162,6 +163,47 @@ public class FirstPersonController : MonoBehaviour
         move.y = verticalVelocity;
 
         controller.Move(move * Time.deltaTime);
+    }
+
+    // ── 바다: 땅이 이 높이(미터)보다 깊어지는 쪽으로는 걸어 들어가지 못한다. (바다 밑을 걸어 섬 밖으로 나가 사라지지 않게. 바다 높이는 0)
+    private const float DeepestWalk = -0.9f;
+    private bool standingOnTerrain = true; // 마지막으로 선 곳이 지형인가 (선착장, 얼음, 배 위에서는 제한하지 않는다)
+
+    private Vector3 LimitSea(Vector3 move)
+    {
+        Terrain terrain = Terrain.activeTerrain;
+        if (terrain == null) return move;
+
+        // 서 있는 곳이 지형인지 기억해 둔다 (공중에서는 마지막 값을 그대로 쓴다)
+        if (controller.isGrounded && Physics.Raycast(transform.position + Vector3.up * 0.3f, Vector3.down, out RaycastHit hit, 1.2f, ~0, QueryTriggerInteraction.Ignore))
+            standingOnTerrain = hit.collider is TerrainCollider;
+        if (!standingOnTerrain) return move;
+
+        Vector3 horizontal = new Vector3(move.x, 0f, move.z);
+        if (horizontal.sqrMagnitude < 0.0001f) return move;
+
+        float here = HeightAt(terrain, transform.position);
+        Vector3 step = horizontal * Time.deltaTime * 1.5f; // 한 걸음보다 조금 앞을 본다
+        if (!TooDeep(terrain, transform.position + step, here)) return move;
+
+        // 막히면 벽을 따라 미끄러진다 (한 축만 갈 수 있으면 그쪽으로)
+        Vector3 onlyX = new Vector3(horizontal.x, 0f, 0f), onlyZ = new Vector3(0f, 0f, horizontal.z);
+        Vector3 slide = Vector3.zero;
+        if (!TooDeep(terrain, transform.position + onlyX * Time.deltaTime * 1.5f, here)) slide = onlyX;
+        else if (!TooDeep(terrain, transform.position + onlyZ * Time.deltaTime * 1.5f, here)) slide = onlyZ;
+        return new Vector3(slide.x, move.y, slide.z);
+    }
+
+    private static float HeightAt(Terrain terrain, Vector3 p)
+    {
+        return terrain.SampleHeight(p) + terrain.transform.position.y;
+    }
+
+    /// <summary>그 자리가 너무 깊고, 지금 선 자리보다도 더 깊은가 (이미 깊은 곳에 있으면 얕은 쪽으로는 갈 수 있다)</summary>
+    private static bool TooDeep(Terrain terrain, Vector3 p, float hereHeight)
+    {
+        float h = HeightAt(terrain, p);
+        return h < DeepestWalk && h < hereHeight - 0.001f;
     }
 
     private static void SetCursorLocked(bool locked)
