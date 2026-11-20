@@ -7,9 +7,21 @@ using UnityEngine;
 public static class ToolSound
 {
     private static AudioClip clip;
+    private static AudioClip[] files; // Resources/Sfx/ToolHit1~3 (진짜 녹음). 없으면 코드로 만든 소리
 
     public static void Play(Vector3 position, float pitchScale = 1f)
     {
+        if (files == null)
+        {
+            var list = new System.Collections.Generic.List<AudioClip>();
+            for (int i = 1; i <= 3; i++) { AudioClip f = Resources.Load<AudioClip>("Sfx/ToolHit" + i); if (f != null) list.Add(f); }
+            files = list.ToArray();
+        }
+        if (files.Length > 0)
+        {
+            AudioSource.PlayClipAtPoint(files[Random.Range(0, files.Length)], position, 0.7f);
+            return;
+        }
         if (clip == null) clip = MakeClip();
         AudioSource.PlayClipAtPoint(clip, position, 0.7f);
     }
@@ -38,5 +50,6 @@ public static class ToolSound
     private static void Reset()
     {
         clip = null;
+        files = null;
     }
 }

@@ -75,7 +75,7 @@ public class GameAudio : MonoBehaviour
         sfxClips[Sfx.DoorClose] = Creak("DoorClose", 130f, 80f, 0.7f, true);
 
         // 소리 파일이 Resources/Sfx에 있으면 코드로 만든 소리 대신 쓴다 (EarShot 소리 모음에서 뽑아 둔 것. 없으면 위의 코드 소리)
-        foreach (Sfx key in new[] { Sfx.Chime, Sfx.Coin, Sfx.Click, Sfx.Pickup, Sfx.Place, Sfx.Paper })
+        foreach (Sfx key in new[] { Sfx.Chime, Sfx.Coin, Sfx.Click, Sfx.Pickup, Sfx.Place, Sfx.Paper, Sfx.Remove, Sfx.DoorOpen, Sfx.DoorClose })
         {
             AudioClip file = Resources.Load<AudioClip>("Sfx/" + key);
             if (file != null) sfxClips[key] = file;
@@ -88,6 +88,9 @@ public class GameAudio : MonoBehaviour
         waves = NewSource("Waves", Loop("Waves", WavesData(), Rate), 0f, true);
         wind = NewSource("Wind", Loop("Wind", WindData(), Rate), 0f, true);
         rainLoop = NewSource("Rain", Loop("Rain", RainData(), Rate), 0f, true);
+        // 바람은 진짜 녹음(Resources/Sfx/WindLoop)이 있으면 그것으로 바꾼다. (빗소리는 날씨 에셋이 따로 낸다)
+        AudioClip windFile = Resources.Load<AudioClip>("Sfx/WindLoop");
+        if (windFile != null) { wind.clip = windFile; wind.Play(); }
         crickets = NewSource("Crickets", Loop("Crickets", CricketData(), Rate), 0f, true);
         roomTone = NewSource("Room", Loop("Room", RoomData(), Rate), 0f, true);
 
