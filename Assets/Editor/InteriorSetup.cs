@@ -320,7 +320,7 @@ public static class InteriorSetup
         // 보관 상자와 통: 북동쪽 모퉁이, 남쪽 벽, 현관 앞방, 양동이는 북서쪽 모퉁이
         Kitpiece(root, "Crate", new Vector3(hx - 1.4f, 0f, hz - 0.7f), 15f);
         Kitpiece(root, "Crate", new Vector3(hx - 1.4f, 0.8f, hz - 0.7f), 40f);
-        Kitpiece(root, "Barrel", new Vector3(hx - 0.65f, 0f, hz - 0.7f), 0f);
+        Kitpiece(root, "Barrel", new Vector3(hx - 0.5f, 0f, hz - 0.7f), 0f); // 상자 더미와 겹치지 않게 벽쪽으로 0.15m
         // 침대 머리맡에는 통을 두지 않는다
         // 책상 앞과 침대 앞에는 상자와 통을 두지 않는다
         // 현관 앞방(입구)에는 아무것도 두지 않는다
@@ -356,9 +356,11 @@ public static class InteriorSetup
         Vector3 shelfCenter = new Vector3(-HallHalfX + 0.42f, 0f, 0.8f);
         GameObject root = furniture.gameObject;
         foreach (float y in ShelfBoardY)
-            Cube(root, "ShelfBoard", shelfCenter + new Vector3(0f, y, 0f), new Vector3(ShelfDepth, 0.04f, ShelfLength), wood);
+            // 판은 기둥 사이에 끼워 둔다: 양 끝이 바깥 기둥 안쪽에서 끝나 기둥 밖으로 삐져나오지 않는다
+            Cube(root, "ShelfBoard", shelfCenter + new Vector3(0f, y, 0f), new Vector3(ShelfDepth, 0.04f, ShelfLength - 0.04f), wood);
         foreach (float z in new[] { -ShelfLength / 2f + 0.03f, 0f, ShelfLength / 2f - 0.03f })
-            Cube(root, "ShelfPost", shelfCenter + new Vector3(0f, 1.27f, z), new Vector3(ShelfDepth, 2.5f, 0.05f), darkWood);
+            // 기둥은 판보다 앞뒤로 1.5cm씩 더 두꺼워서 판 앞면과 같은 면이 되어 깜빡이는 일이 없다
+            Cube(root, "ShelfPost", shelfCenter + new Vector3(0f, 1.27f, z), new Vector3(ShelfDepth + 0.03f, 2.5f, 0.05f), darkWood);
         Cube(root, "ShelfBack", shelfCenter + new Vector3(-0.13f, 1.27f, 0f), new Vector3(0.03f, 2.5f, ShelfLength), darkWood, false);
 
         GameObject shelfRoot = new GameObject("BottleShelf");
