@@ -214,10 +214,11 @@ public class MailboxPanel : MonoBehaviour
         if (GameState.UpgradePending(tool)) return name + " " + (level + 1) + "단계 주문함";
         ToolSettings.Level now = ToolSettings.Instance.Get(tool, level);
         ToolSettings.Level next = ToolSettings.Instance.Get(tool, level + 1);
-        return name + " " + level + "→" + (level + 1) + "단계  (" + cost + "코인)"
-             + "\n치기 " + now.hits + "→" + next.hits + "번"
-             + "\n얻는 양 " + now.amount + "→" + next.amount + "개"
-             + "\n희귀 " + Mathf.RoundToInt(now.rareChance * 100f) + "→" + Mathf.RoundToInt(next.rareChance * 100f) + "%";
+        // 글꼴에 화살표(→)가 없어서 "에서"로 쓴다
+        return name + " " + (level + 1) + "단계로  (" + cost + "코인)"
+             + "\n치기 " + now.hits + "번에서 " + next.hits + "번"
+             + "\n얻는 양 " + now.amount + "개에서 " + next.amount + "개"
+             + "\n희귀 " + Mathf.RoundToInt(now.rareChance * 100f) + "%에서 " + Mathf.RoundToInt(next.rareChance * 100f) + "%";
     }
 
     private void Collect()

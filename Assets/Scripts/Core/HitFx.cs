@@ -17,6 +17,14 @@ public class HitFx : MonoBehaviour
         public Color color;
     }
 
+    private static Material material;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        material = null;
+    }
+
     private Bit[] bits;
     private float gravity, age, drag;
 
@@ -44,8 +52,12 @@ public class HitFx : MonoBehaviour
         fx.drag = drag;
         fx.bits = new Bit[count];
 
-        Shader shader = Shader.Find("Sprites/Default");
-        Material mat = shader != null ? new Material(shader) : null;
+        if (material == null)
+        {
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader != null) material = new Material(shader); // 한 번만 만들어 모든 효과가 같이 쓴다 (효과마다 만들면 계속 쌓인다)
+        }
+        Material mat = material;
         for (int i = 0; i < count; i++)
         {
             GameObject b = new GameObject("bit");

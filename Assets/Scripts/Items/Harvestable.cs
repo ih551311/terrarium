@@ -275,7 +275,8 @@ public class Harvestable : MonoBehaviour, IInteractable
         Collider col = GetComponentInChildren<Collider>();
         if (cam != null && col != null)
         {
-            Vector3 p = col.ClosestPoint(cam.transform.position + cam.transform.forward * 3f);
+            // 메시 콜라이더는 ClosestPoint를 못 쓰므로 콜라이더를 감싸는 상자에서 가까운 점을 쓴다
+            Vector3 p = col.bounds.ClosestPoint(cam.transform.position + cam.transform.forward * 3f);
             Color chip = tool == AcquireMethod.Axe ? new Color(0.55f, 0.38f, 0.22f) : tool == AcquireMethod.Hoe ? new Color(0.45f, 0.32f, 0.2f) : new Color(0.62f, 0.62f, 0.66f);
             bool strong = volume < 0.95f; // 마지막 타격은 volume이 0.8
             HitFx.Chips(p, chip, strong ? 1.6f : 0.8f);
