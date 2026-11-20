@@ -345,7 +345,44 @@ public class BottleContents : MonoBehaviour
         return radius * interiorMargin - away;
     }
 
-    /// <summary>이 자리·각도·크기에서 재료의 모든 꼭짓점이 병 안쪽에 있는가</summary>
+    /// <summary>
+    /// 점 하나를 병 안쪽(유리 속)으로 밀어 넣는다. 입자(눈, 꽃잎, 반짝이)가 병 밖으로 나가지 않게 매 프레임 쓴다.
+    /// shrink는 입자 크기의 절반 같은 여유. 병 길이 밖이면 가장 가까운 안쪽으로, 흙 아래로는 못 내려간다. 반지름이 거의 없는 곳(좁은 목)이면 false.
+    /// </summary>
+    public bool ClampInsideGlass(ref Vector3 p, float shrink)
+    {
+        if (profileRadii == null || profileRadii.Length < 2) return true;
+
+        float lo = profileStart, hi = profileStart + (profileRadii.Length - 1) * profileStep;
+        if (axisAlongX) p.x = Mathf.Clamp(p.x, lo, hi); else p.y = Mathf.Clamp(p.y, lo, hi);
+        if (p.y < surfaceLocalY + 0.004f) p.y = surfaceLocalY + 0.004f; // 흙 속으로는 못 들어간다
+
+        float along = axisAlongX ? p.x : p.y;
+        float index = (along - profileStart) / profileStep;
+        int i0 = Mathf.Clamp(Mathf.FloorToInt(index), 0, profileRadii.Length - 1);
+        int i1 = Mathf.Min(i0 + 1, profileRadii.Length - 1);
+        float radius = Mathf.Lerp(profileRadii[i0], profileRadii[i1], Mathf.Clamp01(index - i0)) * interiorMargin - shrink;
+        if (radius < 0.004f) return false;
+
+        Vector3 d = p - axisOrigin;
+        Vector2 radial = axisAlongX ? new Vector2(d.y, d.z) : new Vector2(d.x, d.z);
+        float away = radial.magnitude;
+        if (away > radius)
+        {
+            radial *= radius / away;
+            if (axisAlongX) p = new Vector3(p.x, axisOrigin.y + radial.x, axisOrigin.z + radial.y);
+            else p = new Vector3(axisOrigin.x + radial.x, p.y, axisOrigin.z + radial.y);
+        }
+        return true;
+    }
+
+    /// <summary>병 안쪽(유리 속)에 있는 점인가. 검사용.</summary>
+    public bool IsInsideGlass(Vector3 p, float tolerance = 0.003f)
+    {
+        return Slack(p) >= -tolerance;
+    }
+
+    /// <summary>이 재료의 모든 꼭짓점이 병 안쪽에 있는가</summary>
     private bool Fits(Vector3[] footprint, float yaw, float scale, Vector3 position)
     {
         Quaternion rotation = Quaternion.Euler(0f, yaw, 0f);

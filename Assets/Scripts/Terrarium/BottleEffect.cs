@@ -67,6 +67,29 @@ public class BottleEffect : MonoBehaviour
         if (bottle != null && !Mathf.Approximately(builtForSurface, bottle.SurfaceLocalY)) Build();
     }
 
+    private ParticleSystem emitterSystem;
+    private ParticleSystem.Particle[] buffer;
+
+    // 입자가 병 밖으로 나가지 않게, 매 프레임 유리 안쪽 반지름 안으로 밀어 넣는다 (병 목이나 허리가 좁은 병에서 삐져나오던 것)
+    private void LateUpdate()
+    {
+        if (bottle == null || emitter == null) return;
+        if (emitterSystem == null) emitterSystem = emitter.GetComponent<ParticleSystem>();
+        if (emitterSystem == null) return;
+        if (buffer == null || buffer.Length < emitterSystem.main.maxParticles) buffer = new ParticleSystem.Particle[emitterSystem.main.maxParticles];
+
+        int n = emitterSystem.GetParticles(buffer);
+        Vector3 origin = emitter.transform.localPosition;
+        for (int i = 0; i < n; i++)
+        {
+            Vector3 p = origin + buffer[i].position;
+            float shrink = buffer[i].GetCurrentSize(emitterSystem) * 0.5f + 0.003f;
+            if (!bottle.ClampInsideGlass(ref p, shrink)) { buffer[i].remainingLifetime = 0f; continue; }
+            buffer[i].position = p - origin;
+        }
+        emitterSystem.SetParticles(buffer, n);
+    }
+
     private void OnDestroy()
     {
         if (emitter != null) Destroy(emitter);
@@ -83,6 +106,7 @@ public class BottleEffect : MonoBehaviour
         float bottom = Mathf.Min(top - 0.02f, bottle.SurfaceLocalY + 0.01f); // 흙 표면 바로 위까지
         float height = Mathf.Max(0.03f, top - bottom);
 
+        emitterSystem = null;
         emitter = new GameObject("BottleEffect_" + name);
         emitter.transform.SetParent(bottle.transform, false);
         emitter.layer = gameObject.layer; // 병 그림 카메라에 보이도록 병과 같은 층
