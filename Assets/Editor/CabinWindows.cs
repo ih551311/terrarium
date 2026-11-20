@@ -130,7 +130,7 @@ public static class CabinWindows
         for (int i = 0; i < poly.Count; i++)
         {
             Vtx a = poly[i], b = poly[(i + 1) % poly.Count];
-            float da = (a.p[axis] - value) * (keepLess ? -1f : 1f), db = (b.p[axis] - value) * (keepLess ? -1f : 1f);
+            float da = (a.p[axis] - value) * (keepLess ? 1f : -1f), db = (b.p[axis] - value) * (keepLess ? 1f : -1f);
             bool ain = da <= 0f, bin = db <= 0f;
             if (ain) res.Add(a);
             if (ain != bin) res.Add(Vtx.Lerp(a, b, da / (da - db)));

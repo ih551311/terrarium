@@ -439,3 +439,6 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - `Assets/Editor/CoplanarCheck.cs` (메뉴: 유리병 정원/겹친 면 검사): 같은 평면에 같은 방향으로 겹친 면을 한 물체 안과 물체끼리 센다. `CoplanarCheck.Scan(root, others)`.
 - 집(Cabin) 자체에 현관 벽(x ±1.4~1.6)이 있어서 우리 현관 벽(WallVestibule/WallDoorSide/WallHallSouth)과 면이 겹쳐 줄무늬가 졌다 → 우리 벽을 2cm 안쪽으로 넣었다(`inset`). 창 바깥 틀도 겉벽 면과 안 겹치게 2cm 띄웠다. CabinWindows는 집 메쉬 안에서 겹친 면(작은 쪽)을 뺀다.
 - 점검 결과: 집 22쌍 → 13쌍(작은 조각), 우물·뱃머리·문·유적은 넓이 0.02m² 이하의 작은 겹침이라 그대로 둔다. 눈섬 낚시터, 사막 캠프·장식은 0쌍.
+
+## 창 구멍 버그 수정
+- CabinWindows.Clip의 부등호 방향이 뒤집혀 있어서 겉벽이 제대로 안 잘렸다 (집 안에서는 면이 한쪽만 보여서 우연히 밖이 보였고, 밖에서는 벽에 막혀 안이 안 보였다). 고친 뒤 창 구멍 안에 남는 면 0개, 밖에서 창으로 집 안이 보인다.
