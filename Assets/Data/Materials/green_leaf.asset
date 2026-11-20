@@ -17,10 +17,10 @@ MonoBehaviour:
   kind: 1
   icon: {fileID: 21300000, guid: d3f021dc98df0974997dcf7add6d994e, type: 3}
   zone: 1
-  acquire: 4
+  acquire: 1
   condition: 0
   isRare: 0
-  plantGroup: 1
+  plantGroup: 0
   sellPrice: 1
   buyPrice: 0
   placedPrefab: {fileID: 919132149155446097, guid: f8214199d7ec4854b9b4722f0895a6fb, type: 3}

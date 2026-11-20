@@ -64,6 +64,7 @@ MonoBehaviour:
     rareChance: 0.15
     upgradeCost: 120
   harvestMaterials:
+  - {fileID: 11400000, guid: de158e48e78ee744583b2b0ab2cd38c4, type: 2}
   - {fileID: 11400000, guid: 415c01bfa3b4c92428b192accc82f46b, type: 2}
   - {fileID: 11400000, guid: 5ea0118fa9bb20543934f90d46390896, type: 2}
   - {fileID: 11400000, guid: 79e8fa40d5776ce4fab335fecf9a6f1b, type: 2}
@@ -72,9 +73,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c6e94a7b183fe6646aa2ab1be6c88bb5, type: 2}
   - {fileID: 11400000, guid: 42d3e02deb255894b91ef6a6c1c4fbb7, type: 2}
   - {fileID: 11400000, guid: 62160adb11591ef44b2336449e1e921a, type: 2}
+  - {fileID: 11400000, guid: 4b8fb58e82869984789fc52dd64f87ff, type: 2}
   - {fileID: 11400000, guid: ad6506ad611735c48bc3cfe1e882d4c3, type: 2}
   - {fileID: 11400000, guid: c2e24d647a122f9408edac8c841b6241, type: 2}
   - {fileID: 11400000, guid: 6daa606280464fc4f9cc6db3b91a5190, type: 2}
+  - {fileID: 11400000, guid: 479ce6bd689c8dc418e8a68cf65a33f9, type: 2}
   - {fileID: 11400000, guid: fa1aa15b72796f040b08c10e7b0c2557, type: 2}
   - {fileID: 11400000, guid: f2660a2d8a7215e41b348fcfaadbe983, type: 2}
   - {fileID: 11400000, guid: e6e94689cceba8544b88ceb62d774033, type: 2}

@@ -561,7 +561,7 @@ public static class DesertIslandSetup
             if (palm == null) continue;
             palm.name = "Palm_" + placed;
             AddTrunk(palm, 0.35f, 3f);
-            if (Rand() < 0.7f) AddHarvestable(palm, AcquireMethod.Axe, new Color(0.62f, 0.60f, 0.46f, 1f), dates);
+            AddHarvestable(palm, AcquireMethod.Axe, new Color(0.62f, 0.60f, 0.46f, 1f), dates);
             taken.Add(new Vector2(x, z));
             placed++;
         }
@@ -569,7 +569,7 @@ public static class DesertIslandSetup
         foreach (Vector2 q in new[] { new Vector2(-19f, 14f), new Vector2(21f, 12f) })
         {
             GameObject palm = Deco("deco_palm_tree", group.transform, new Vector3(q.x, GroundY(q.x, q.y), q.y), Rand() * 360f, 7.5f);
-            if (palm != null) { palm.name = "Palm_camp"; AddTrunk(palm, 0.35f, 3f); taken.Add(q); placed++; }
+            if (palm != null) { palm.name = "Palm_camp"; AddTrunk(palm, 0.35f, 3f); AddHarvestable(palm, AcquireMethod.Axe, new Color(0.62f, 0.60f, 0.46f, 1f), dates); taken.Add(q); placed++; }
         }
         // 물가의 알로에 무리와 마른 풀
         for (int i = 0; i < 12; i++)
@@ -624,7 +624,7 @@ public static class DesertIslandSetup
             c.name = type + "_" + placed;
             Bounds cb = BoundsOf(c);
             AddTrunk(c, Mathf.Clamp(Mathf.Min(cb.extents.x, cb.extents.z) * 0.75f, 0.3f, 1.5f), Mathf.Min(cb.size.y, 3f));
-            if (Rand() < 0.6f) AddHarvestable(c, AcquireMethod.Axe, new Color(0.62f, 0.58f, 0.44f, 1f), cactus);
+            AddHarvestable(c, AcquireMethod.Axe, new Color(0.62f, 0.58f, 0.44f, 1f), cactus);
             taken.Add(q);
             placed++;
         }

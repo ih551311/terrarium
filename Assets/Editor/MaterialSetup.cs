@@ -46,7 +46,7 @@ public static class MaterialSetup
         new Entry("fern",             "고사리",     Plant, "deco_fern",          new Color(0.45f, 0.70f, 0.42f), Forest, Hand, 1),
         new Entry("twig",             "나뭇가지",   Deco,  "deco_twig",          new Color(0.70f, 0.55f, 0.35f), Forest, Axe,  1),
         new Entry("pinecone",         "솔방울",     Deco,  "deco_pine_cone",     new Color(0.55f, 0.35f, 0.20f), Forest, Axe,  1),
-        new Entry("mushroom",         "버섯",       Deco,  "deco_mushroom_red",  new Color(0.85f, 0.35f, 0.33f), Forest, Hand, 2, 0, MaterialCondition.AfterRain),
+        new Entry("mushroom",         "버섯",       Deco,  "deco_mushroom_red",  new Color(0.85f, 0.35f, 0.33f), Forest, Hand, 2),
         // ── 바닷가 (병 2개 완성 후)
         new Entry("seashell",         "조개껍데기", Deco,  "deco_seashell",      new Color(0.96f, 0.82f, 0.79f), Beach, Hand, 2),
         new Entry("scallop",          "가리비",     Deco,  "deco_scallop",       new Color(0.96f, 0.68f, 0.52f), Beach, Hand, 2),
@@ -71,7 +71,7 @@ public static class MaterialSetup
         new Entry("firefly",          "반딧불이",   Deco,  "deco_firefly",         new Color(0.95f, 0.90f, 0.40f), MaterialZone.Anywhere, Hand, 8, 0, MaterialCondition.NightOnly),
         // ── 날씨가 만드는 재료 더 8종: 비 온 뒤 숲(이끼, 푸른 버섯, 청개구리), 안개 낀 날 숲(이슬 거미줄), 바람 부는 날 꽃 언덕(깃털, 홀씨), 폭풍우 치는 날 바닷가(번개 유리), 비 갠 날 바닷가(무지개 조약돌)
         new Entry("rain_moss",        "빗물 이끼",     Plant, "deco_rain_moss",       new Color(0.40f, 0.66f, 0.40f), Forest, Hand, 3, 0, MaterialCondition.AfterRain),
-        new Entry("blue_mushroom",    "푸른 버섯",     Deco,  "deco_blue_mushroom",   new Color(0.44f, 0.67f, 0.85f), Forest, Hand, 5, 0, MaterialCondition.AfterRain),
+        new Entry("blue_mushroom",    "푸른 버섯",     Deco,  "deco_blue_mushroom",   new Color(0.44f, 0.67f, 0.85f), Forest, Hand, 5),
         new Entry("tree_frog",        "청개구리",      Deco,  "deco_tree_frog",       new Color(0.45f, 0.70f, 0.42f), Forest, Hand, 7, 0, MaterialCondition.AfterRain),
         new Entry("spider_web",       "이슬 거미줄",   Deco,  "deco_spider_web",      new Color(0.95f, 0.95f, 0.92f), Forest, Hand, 5, 0, MaterialCondition.FogDay),
         new Entry("wind_feather",     "바람 깃털",     Deco,  "deco_wind_feather",    new Color(0.96f, 0.92f, 0.84f), Hill,   Hand, 4, 0, MaterialCondition.WindDay),
@@ -121,10 +121,10 @@ public static class MaterialSetup
         new Entry("grass_tuft",       "풀 다발",    Plant, "deco_grass_tuft",      new Color(0.45f, 0.70f, 0.40f), MaterialZone.Anywhere, Hoe,  1),
         new Entry("reed",             "갈대",       Plant, "deco_reed",            new Color(0.85f, 0.75f, 0.55f), MaterialZone.Anywhere, Hoe,  2),
         new Entry("foxtail",          "강아지풀",   Plant, "deco_foxtail",         new Color(0.75f, 0.70f, 0.45f), MaterialZone.Anywhere, Hoe,  1),
-        new Entry("green_leaf",       "나뭇잎",     Deco,  "deco_leaf_green",      new Color(0.40f, 0.70f, 0.40f), Forest, Hoe,  1),
-        new Entry("orange_leaf",      "단풍잎",     Deco,  "deco_leaf_orange",     new Color(0.93f, 0.55f, 0.25f), Forest, Hoe,  2),
+        new Entry("green_leaf",       "나뭇잎",     Deco,  "deco_leaf_green",      new Color(0.40f, 0.70f, 0.40f), Forest, Axe,  1),
+        new Entry("orange_leaf",      "단풍잎",     Deco,  "deco_leaf_orange",     new Color(0.93f, 0.55f, 0.25f), Forest, Axe,  2),
         new Entry("moss_dark",        "짙은 이끼",  MaterialKind.Cover, "deco_moss_dark", new Color(0.30f, 0.50f, 0.30f), Forest, Hoe,  1),
-        new Entry("acorn",            "도토리",     Deco,  "deco_acorn",           new Color(0.60f, 0.40f, 0.25f), Forest, Hoe,  1),
+        new Entry("acorn",            "도토리",     Deco,  "deco_acorn",           new Color(0.60f, 0.40f, 0.25f), Forest, Axe,  1),
         new Entry("brown_mushroom",   "갈색 버섯",  Deco,  "deco_mushroom_brown",  new Color(0.60f, 0.42f, 0.30f), Forest, Hoe,  2),
         new Entry("white_mushroom",   "흰 버섯",    Deco,  "deco_mushroom_white",  new Color(0.95f, 0.94f, 0.90f), Forest, Hoe,  2),
 
