@@ -1,12 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 /// <summary>대화하는 NPC의 성격 (NpcTalk가 고른다)</summary>
-public enum NpcPersona { Miku, Chibi }
+public enum NpcPersona { Miku }
 
 /// <summary>
 /// NPC 대사 모음. 날씨, 시간, 우체통과 병 만들기 진행 상황에 맞는 대사를 섞어서 말을 걸 때마다 다른 말이 나오게 한다.
 /// 같은 대사가 바로 다시 나오지 않도록 NpcTalk가 최근에 한 말을 기억해서 넘겨 준다.
-/// 미쿠는 밝고 수다스러운 말투(반말), 치비는 조용하고 짧게 말한다.
+/// 미쿠는 밝고 수다스러운 말투(반말)로 말한다. (치비는 말하지 않는다)
 /// (글꼴에 없는 글자 · → 는 쓰지 않는다)
 /// </summary>
 public static class NpcDialogue
@@ -15,8 +15,7 @@ public static class NpcDialogue
     {
         var contextual = new List<string>();
         var generic = new List<string>();
-        if (persona == NpcPersona.Miku) MikuLines(contextual, generic);
-        else ChibiLines(contextual, generic);
+        MikuLines(contextual, generic);
 
         // 상황에 맞는 말을 더 자주 하되, 같은 말이 연달아 나오지 않게 한다
         var pool = new List<string>();
@@ -104,33 +103,5 @@ public static class NpcDialogue
         g.Add("병 속에 뭐 넣을지 고민될 땐 일단 하나만 놓아 봐");
         g.Add("발소리 들려? 사박사박. 나는 이 소리가 좋아");
         g.Add("나 오늘 아무것도 안 했어. 근데 그게 좋은 하루야");
-    }
-
-    private static void ChibiLines(List<string> c, List<string> g)
-    {
-        switch (Weather.Today)
-        {
-            case WeatherKind.Clear: c.Add("햇볕이 따뜻해."); break;
-            case WeatherKind.Cloudy: c.Add("구름이 많아. 조용해서 좋아."); break;
-            case WeatherKind.Windy: c.Add("바람이 간지러워."); break;
-            case WeatherKind.Drizzle: c.Add("이슬비. 옷이 천천히 젖어."); break;
-            case WeatherKind.Rain: c.Add("빗소리 좋아."); break;
-            case WeatherKind.Storm: c.Add("...조금 무서워. 옆에 있어도 돼?"); break;
-            case WeatherKind.Fog: c.Add("안개 속은 비밀 같아."); break;
-            case WeatherKind.Snow: c.Add("눈 오면 소리가 줄어들어서 좋아."); break;
-        }
-        if (IsNight) { c.Add("별이 많아."); c.Add("졸려."); }
-        else if (IsMorning) c.Add("아침 공기가 차가워.");
-        if (BottleStore.CompletedCount > 0) c.Add("네 병 봤어. 예뻤어.");
-        if (GameState.HasMail) c.Add("우체통에 뭐가 왔어.");
-        if (GameState.HasUnreadRequest) c.Add("편지 왔어. 누군가 널 기다려.");
-
-        g.Add("...안녕.");
-        g.Add("집 문 앞이 제일 편해.");
-        g.Add("병은 오래 볼수록 예뻐.");
-        g.Add("그냥 여기 있는 거야.");
-        g.Add("조용한 게 좋아.");
-        g.Add("너 걸음 소리, 좋아해.");
-        g.Add("가끔 문이 삐걱 해. 그것도 좋아.");
     }
 }

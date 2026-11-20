@@ -13,6 +13,7 @@ public static class SaveSystem
     private static SaveData loaded; // 불러온 내용 (가방은 나중에 GameRoot가 받아 간다)
 
     public static string FilePath => Path.Combine(Application.persistentDataPath, "save.json");
+    private static string BackupPath => FilePath + ".bak"; // 바로 전 저장 (저장 파일이 깨졌을 때 이것으로 이어 간다)
 
     public static bool HasSave => File.Exists(FilePath);
 
@@ -55,7 +56,14 @@ public static class SaveSystem
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
-            File.WriteAllText(FilePath, JsonUtility.ToJson(data, true));
+
+            // 파일을 바로 덮어쓰면 쓰는 도중 꺼졌을 때 저장이 깨진다. 임시 파일에 먼저 다 쓰고, 이전 저장은 백업으로 남긴 뒤 바꾼다.
+            string temp = FilePath + ".tmp";
+            File.WriteAllText(temp, JsonUtility.ToJson(data, true));
+            if (File.Exists(FilePath)) File.Copy(FilePath, BackupPath, true);
+            File.Copy(temp, FilePath, true);
+            File.Delete(temp);
+
             loaded = data; // 메인 화면에서 다시 시작해도 방금 저장한 가방으로 채워진다
             return true;
         }
@@ -99,7 +107,7 @@ public static class SaveSystem
 
         try
         {
-            SaveData data = JsonUtility.FromJson<SaveData>(File.ReadAllText(FilePath));
+            SaveData data = ReadSaveFile();
             MaterialDatabase db = MaterialDatabase.Instance;
             if (data == null || db == null)
             {
@@ -146,6 +154,55 @@ public static class SaveSystem
         {
             Debug.LogError("저장 파일을 불러오지 못해서 새로 시작해요: " + e.Message);
         }
+    }
+
+    /// <summary>
+    /// 저장 파일을 읽는다. 깨져서 못 읽으면 바로 전 저장(백업)을 읽는다. 둘 다 못 읽으면 깨진 파일은 지우지 않고 따로 옮겨 두고
+    /// (save.json.broken), 새로 시작해서 다시 저장할 수 있게 한다. (읽지 못한 파일이 있다고 영영 저장이 안 되는 일이 없게)
+    /// </summary>
+    private static SaveData ReadSaveFile()
+    {
+        try
+        {
+            SaveData data = JsonUtility.FromJson<SaveData>(File.ReadAllText(FilePath));
+            if (data != null && data.day >= 1) return data;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("저장 파일을 읽지 못했어요: " + e.Message);
+        }
+
+        if (File.Exists(BackupPath))
+        {
+            try
+            {
+                SaveData backup = JsonUtility.FromJson<SaveData>(File.ReadAllText(BackupPath));
+                if (backup != null && backup.day >= 1)
+                {
+                    Debug.LogWarning("[저장] 저장 파일이 깨져서 바로 전 저장(백업)으로 이어 가요.");
+                    return backup;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("백업 저장도 읽지 못했어요: " + e.Message);
+            }
+        }
+
+        // 둘 다 못 읽는다: 깨진 파일을 따로 보관하고 새로 시작한다 (지우지 않는다)
+        try
+        {
+            string broken = FilePath + ".broken";
+            if (File.Exists(broken)) File.Delete(broken);
+            File.Move(FilePath, broken);
+            Debug.LogError("저장 파일이 깨져서 " + broken + " 로 옮겨 두고 새로 시작해요.");
+            LoadFailed = false; // 새 저장은 가능하다
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("깨진 저장 파일을 옮기지 못했어요: " + e.Message);
+        }
+        return null;
     }
 
     // Play를 껐다 켤 때 기억해 둔 것을 버린다.
