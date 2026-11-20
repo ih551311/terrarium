@@ -356,3 +356,8 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 가방 칸 수 32 -> 96 (한 칸에 같은 재료 5개까지는 그대로). UISetup.SlotCount, Bag.slotCount.
 - 칸 수에 묶인 화면 세 곳을 스크롤 영역(UISetup.MakeScroll: ScrollRect + RectMask2D + 오른쪽 스크롤 막대)으로 바꿨다: 가방 창(Tab, 8열, 약 다섯 줄이 보임), 병 꾸미기 아래 재료 칸(16열, 두 줄이 보임), 우체통 판매 화면(8열, 네 줄이 보임). 마우스 휠로 내려 본다. 가방의 병 탭은 칸 수 32(BottleCellCount)에 쪽 넘기기라 그대로다.
 - UI 바꾼 뒤에는 메뉴 유리병 정원 > UI 만들기를 눌러 GameRoot 프리팹을 다시 만든다.
+
+## 병 주문 편지 늘리기 (2026-11-20)
+- 편지 20통 -> 62통. 사막, 눈 섬, 날씨(번개 유리, 무지개 조약돌, 바람 깃털, 안개), 물고기, 동물, 바닥재, 재료 종류 수 같은 다양한 조건. 편지 번호는 저장에 쓰이니 앞의 순서를 바꾸지 말고 뒤에만 덧붙인다.
+- 최근 온 12통은 다시 오지 않는다 (BottleRequests.Roll).
+- 6일(GameState.RequestExpireDays) 동안 못 들어준 편지는 다른 편지로 바뀐다. 구하기 어려운 재료가 필요한 편지에 막혀 새 편지가 영영 안 오던 문제를 고쳤다. SaveData.requestAge에 저장한다.

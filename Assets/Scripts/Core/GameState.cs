@@ -212,6 +212,7 @@ public static class GameState
         LastRequestId = RequestId;
         RequestId = -1;
         RequestSeen = false;
+        RequestAge = 0;
         RequestsDone++;
         ArrivedCoins += Mathf.Max(0, coins);
         if (item != null) arrivedItems.Add(item);
@@ -225,12 +226,30 @@ public static class GameState
     private static void RollRequest()
     {
         NewRequestToday = false;
-        if (RequestId >= 0 || Day < 2 || BottleStore.CompletedCount < 1) return;
-        if (UnityEngine.Random.value > 0.65f) return;
+        bool replaced = false;
+        if (RequestId >= 0)
+        {
+            // 기한도 실패도 없는 편지라서, 구하기 어려운 재료가 필요한 편지에 막혀 새 편지가 영영 안 오는 일이 없게
+            // 6일이 지나도록 들어주지 못한 편지는 다른 편지로 바뀐다.
+            RequestAge++;
+            if (RequestAge < RequestExpireDays) return;
+            LastRequestId = RequestId;
+            RequestId = -1;
+            replaced = true;
+        }
+        if (Day < 2 || BottleStore.CompletedCount < 1) return;
+        if (!replaced && UnityEngine.Random.value > 0.65f) return;
         RequestId = BottleRequests.Roll(LastRequestId);
         RequestSeen = false;
+        RequestAge = 0;
         NewRequestToday = true;
     }
+
+    /// <summary>이 날 수가 지나도록 들어주지 못한 편지는 다른 편지로 바뀐다</summary>
+    public const int RequestExpireDays = 6;
+
+    /// <summary>지금 와 있는 편지가 온 지 며칠이 지났는가</summary>
+    public static int RequestAge { get; private set; }
 
     /// <summary>코인을 더한다. (병 만들기를 취소했을 때 돌려주는 코인 등)</summary>
     public static void AddCoins(int amount)
@@ -365,6 +384,7 @@ public static class GameState
         data.timeOfDay = TimeOfDay;
         data.requestId = RequestId;
         data.requestSeen = RequestSeen;
+        data.requestAge = RequestAge;
         data.lastRequestId = LastRequestId;
         data.requestsDone = RequestsDone;
         data.dockOpen = DockOpen;
@@ -402,6 +422,7 @@ public static class GameState
         TimeOfDay = data.timeOfDay >= 0f ? Mathf.Clamp01(data.timeOfDay) : 0f; // 예전 저장은 아침부터
         RequestId = data.requestId < BottleRequests.Total ? data.requestId : -1;
         RequestSeen = data.requestSeen;
+        RequestAge = Mathf.Max(0, data.requestAge);
         LastRequestId = data.lastRequestId;
         RequestsDone = data.requestsDone;
         DockOpen = data.dockOpen;
@@ -437,6 +458,7 @@ public static class GameState
         FreeBottles = 1;
         RequestId = -1;
         RequestSeen = false;
+        RequestAge = 0;
         LastRequestId = -1;
         RequestsDone = 0;
         NewRequestToday = false;

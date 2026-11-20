@@ -24,6 +24,7 @@ public class SaveData
     public List<string> taken = new List<string>();       // 오늘 이미 주웠거나 캔 자리 (껐다 켜도 다시 채워지지 않는다)
     public int requestId = -1;                            // 병 주문 편지 번호 (-1이면 편지 없음)
     public bool requestSeen;                              // 그 편지를 읽었는가
+    public int requestAge;                                // 그 편지가 온 지 며칠이 지났는가 (오래 못 들어준 편지는 바뀐다)
     public int lastRequestId = -1;                        // 바로 전에 받은 편지 번호 (같은 편지가 연달아 오지 않게)
     public int requestsDone;                              // 지금까지 들어준 병 주문 수
     public bool dockOpen;                                 // 선착장을 코인으로 열었는가 (눈 섬으로 가는 배)
