@@ -57,4 +57,12 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 6bb2e5506465dff499fa955461d47d56, type: 3}
   - {fileID: 8300000, guid: b3b19df5958678c48b5dae3bffc89a3a, type: 3}
   - {fileID: 8300000, guid: beb975ef42d10414d8bfc3f66dfa67de, type: 3}
-  snow: []
+  snow:
+  - {fileID: 8300000, guid: 68494b8c811f2784c99fc2a58c07f8ca, type: 3}
+  - {fileID: 8300000, guid: be5a61b8a34f3bb44be5a1a2436bfc16, type: 3}
+  - {fileID: 8300000, guid: c0bb3dc96e4681e41b82dbc05facffda, type: 3}
+  - {fileID: 8300000, guid: 9c9d7d674e9dfae4b8535ced0ddf1627, type: 3}
+  - {fileID: 8300000, guid: 1590a752bcf96fc46bd5e40d677a21b2, type: 3}
+  - {fileID: 8300000, guid: 40a9d68ef3da8d0428e82bc0ba0c48ea, type: 3}
+  - {fileID: 8300000, guid: 64c2637b439a2ee4293990bd597cd583, type: 3}
+  - {fileID: 8300000, guid: d5fc7859f19d75843abc22241038e675, type: 3}

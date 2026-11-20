@@ -381,3 +381,5 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 시험 결과: 모든 화면을 두 번 열고 두 번 닫아도 UIFocus가 0으로 돌아온다. 섬 사이 이동(눈 섬, 사막 섬 왕복 3번)은 GameRoot 1개, 소리 듣는 귀 1개, 이벤트 시스템 1개로 안정적이다. 실제 게임 파일(Windows 빌드, 305MB)은 오류 0으로 만들어지고 메인 화면을 25초 돌려도 오류가 없다.
 
 - **눈 발소리 에셋 삭제**: 라이선스를 확인할 수 없어 Assets/Footstep(Snow and Grass)를 지웠다. FootstepSet.snow는 비어 있고 FootstepPlayer가 눈/얼음 위에서 흙 소리를 쓴다. FootstepSetup도 눈 소리 연결을 뺐다. (문서 245줄 근처의 눈 발소리 설명은 옛 내용). 눈 에셋 Cozy Snowy Environment와 Footsteps Volume 02는 무료 + 표준 에셋 스토어 약관으로 확인함.
+
+- **눈 발소리(새로 만듦)**: 사신 Footsteps Volume 02의 Footstep_Sand_*를 0.9배속으로 늘이고 7kHz 저역 통과로 둔하게 가공해 Assets/Audio/SnowSteps/Snow_01~08.wav로 두고 FootstepSetup(발소리 연결)이 FootstepSet.snow에 연결한다. 도구는 EarShot(MIT, 설치 위치 C:\Users\ih551\tools\earshot, 게임 폴더 밖). EarShot은 눈 소리를 구별하는 어휘가 없어 '눈'을 확인해 주지 못한다(실제 모래 발소리도 weak). 코드로 합성한 소리는 스네어/하이햇으로 들린다고 나와 버렸다. **직접 귀로 확인 필요**. 크레딧: The Sound Guild(Footsteps Sounds Vol.02), EarShot(MIT).
