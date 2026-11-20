@@ -95,6 +95,9 @@ public static class SizeBalancer
                 changed++;
             }
         }
+        int clearedColliders = dryRun ? 0 : ClearSolidColliders(items);
+        if (clearedColliders > 0) { sb.AppendLine("막는 충돌 " + clearedColliders + "개 없앰 (풀과 꽃은 걸어서 지나간다)"); changed++; }
+
         if (!dryRun && changed > 0)
         {
             Physics.SyncTransforms();
@@ -102,6 +105,41 @@ public static class SizeBalancer
             EditorSceneManager.SaveOpenScenes();
         }
         return (dryRun ? "[미리보기] " : "") + "크기를 바꾼 것 " + changed + "개\n" + sb;
+    }
+
+    /// <summary>
+    /// 풀, 꽃, 버섯, 알로에는 막는 충돌(메시 콜라이더 3개씩)이 달려 있어서 풀밭을 걸으면 자꾸 걸렸고 물리 계산도 무거웠다.
+    /// 막는 충돌은 없애고, 캘 수 있는 것(Harvestable)에는 바라볼 때 잡히는 투명 상자(트리거)만 둔다. (이미 있으면 그대로)
+    /// </summary>
+    private static int ClearSolidColliders(Dictionary<string, List<Transform>> items)
+    {
+        int removed = 0;
+        foreach (var kv in items)
+        {
+            foreach (Transform t in kv.Value)
+            {
+                if (t == null) continue;
+                Collider[] all = t.GetComponentsInChildren<Collider>(true);
+                bool hasTrigger = false;
+                foreach (Collider c in all) if (c.isTrigger) hasTrigger = true;
+                bool harvestable = t.GetComponentInChildren<Harvestable>(true) != null;
+                if (harvestable && !hasTrigger && TryBounds(t, out Bounds b))
+                {
+                    BoxCollider box = t.gameObject.AddComponent<BoxCollider>();
+                    box.isTrigger = true;
+                    box.center = t.InverseTransformPoint(b.center);
+                    Vector3 size = t.InverseTransformVector(b.size);
+                    box.size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+                }
+                foreach (Collider c in all)
+                {
+                    if (c == null || c.isTrigger) continue;
+                    Object.DestroyImmediate(c);
+                    removed++;
+                }
+            }
+        }
+        return removed;
     }
 
     private static bool TargetFor(string key, out float target)
