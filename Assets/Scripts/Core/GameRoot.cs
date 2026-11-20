@@ -50,6 +50,7 @@ public class GameRoot : MonoBehaviour
         if (string.IsNullOrEmpty(pendingSpawnId) && player != null && GoHome()) player.Rotate(0f, 180f, 0f);
     }
 
+    private bool nightNoticed;
     private const float AutoSaveSeconds = 120f; // 이 시간마다 저절로 저장한다 (실제 시간)
     private float lastAutoSave;
     private bool quitting;
@@ -58,6 +59,21 @@ public class GameRoot : MonoBehaviour
     {
         // 하루의 시간이 흐른다 (집 안에서도 흐르고, 밤 끝에서 멈춘다)
         GameState.Tick(Time.deltaTime);
+
+        // 밤 끝에서 시간이 멈추고 세상이 어두운 채로 있으면 왜 그런지 알 수 없어서, 하루에 한 번만 알려 준다
+        if (GameState.TimeOfDay >= 1f)
+        {
+            if (!nightNoticed && !UIFocus.IsOpen && !travelling && player != null)
+            {
+                nightNoticed = true;
+                Interactor interactor = player.GetComponent<Interactor>();
+                if (interactor != null) interactor.ShowMessage("밤이 깊었어요. 침대에서 자면 아침이 와요");
+            }
+        }
+        else
+        {
+            nightNoticed = false; // 아침이 오면 다음 밤에 다시 알려 준다
+        }
 
         // 가끔 저절로 저장한다 (패널이 열려 있지 않을 때)
         if (Time.realtimeSinceStartup - lastAutoSave > AutoSaveSeconds && !UIFocus.IsOpen)
