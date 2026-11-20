@@ -74,6 +74,13 @@ public class GameAudio : MonoBehaviour
         sfxClips[Sfx.DoorOpen] = Creak("DoorOpen", 95f, 150f, 0.7f, false);
         sfxClips[Sfx.DoorClose] = Creak("DoorClose", 130f, 80f, 0.7f, true);
 
+        // 소리 파일이 Resources/Sfx에 있으면 코드로 만든 소리 대신 쓴다 (EarShot 소리 모음에서 뽑아 둔 것. 없으면 위의 코드 소리)
+        foreach (Sfx key in new[] { Sfx.Chime, Sfx.Coin, Sfx.Click, Sfx.Pickup, Sfx.Place, Sfx.Paper })
+        {
+            AudioClip file = Resources.Load<AudioClip>("Sfx/" + key);
+            if (file != null) sfxClips[key] = file;
+        }
+
         steps = new[] { Footstep("Step1", 0.16f, 0.10f, 32f, 1), Footstep("Step2", 0.13f, 0.11f, 30f, 2), Footstep("Step3", 0.19f, 0.095f, 34f, 3) };
         sandSteps = new[] { Footstep("Sand1", 0.38f, 0.13f, 24f, 4), Footstep("Sand2", 0.32f, 0.14f, 22f, 5), Footstep("Sand3", 0.42f, 0.12f, 26f, 6) };
         birds = new[] { Chirp("Bird1", 3200f, 4300f, 3), Chirp("Bird2", 2600f, 3900f, 2), Chirp("Bird3", 3600f, 2900f, 4) };
