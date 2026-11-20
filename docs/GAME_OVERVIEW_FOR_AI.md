@@ -424,3 +424,9 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 유니티가 .obj를 읽을 때 x가 뒤집히므로 `NewMirrored()`로 미리 x를 뒤집어 만든다 (안 하면 장식장 병이 모델 안쪽에 묻힌다).
 - 우체통은 `IslandSetup.BuildMailbox`가 `deco_furn_mailbox`를 쓰고 콜라이더는 별도 박스 (씬에는 직접 반영됨).
 - 가구의 충돌은 투명 박스(`Solid`)로 따로 둔다 (침대 BedBody/BedHead, 책상, 협탁, 장식장, 작업대).
+
+## 투명 창문 (집 안에서 밖이 보임)
+- 집 겉벽(Cabin, `Building_b_nodoor` 단일 메쉬)에는 창이 없어서, `Assets/Editor/CabinWindows.cs`가 창 자리의 면을 잘라 낸 복사본 `Assets/Models/House/Building_b_windows.asset`을 만들어 Cabin의 MeshFilter에 연결한다 (원본은 그대로). 겉벽 콜라이더는 원본 그대로.
+- 창 자리는 `InteriorSetup.WindowSpecs`(북 3, 동 1, 서 1)에서 정한다. `InteriorSetup.Build()` 끝에서 CabinWindows.Build()를 자동으로 부른다. 안쪽 벽(WallNorth/East/West)도 같은 자리에 구멍을 내서 짓고, 유리는 JarGlass(투명) + 보이지 않는 막이 콜라이더.
+- 큰 방 남쪽 벽 창 둘은 바깥이 집 앞쪽 빈 공간이라 없앴다. 침대 옆 서랍(bedside)도 없앴다.
+- 섬을 처음부터 다시 만드는 IslandSetup 코드는 이 Cabin 메쉬 교체를 모른다 → 섬을 다시 만들었다면 InteriorSetup.Build()를 다시 눌러야 한다.

@@ -28,6 +28,16 @@ public static class InteriorSetup
     private const float DoorWidth = 1.36f;   // 바깥 문 구멍(x -0.68 ~ 0.68)과 같다
     private const float DoorHeight = 2.5f;
     private const float WallThickness = 0.2f;
+    public const float HoleHalfW = 0.5f, HoleHalfH = 0.45f;   // 창 구멍 (가로 1.0 x 세로 0.9), 창 가운데 높이는 1.75
+    /// <summary>창 자리 (집 뿌리 기준 위치, 방 안쪽을 보는 yaw, 겉벽까지 거리, 불빛 여부). 겉벽 구멍은 CabinWindows가 같은 자리에 낸다.</summary>
+    public static readonly (Vector3 pos, float yaw, float outer, bool light)[] WindowSpecs =
+    {
+        (new Vector3(0f, 1.75f, HallHalfZ - 0.03f), 0f, 0.33f, false),
+        (new Vector3(-3.3f, 1.75f, HallHalfZ - 0.03f), 0f, 0.33f, false),
+        (new Vector3(3.3f, 1.75f, HallHalfZ - 0.03f), 0f, 0.33f, false),
+        (new Vector3(HallHalfX - 0.03f, 1.75f, -1.7f), 90f, 0.33f, true),
+        (new Vector3(-HallHalfX + 0.03f, 1.75f, -1.9f), 270f, 0.50f, true),
+    };
     private const float VestSouthZ = -(HallHalfZ + VestDepth); // 현관 앞방 남쪽 안벽 (큰 방 뿌리 기준)
 
     private static GameObject houseRoot;
@@ -69,6 +79,8 @@ public static class InteriorSetup
         BuildFurniture();
         BuildLighting();
         int cleared = ClearPlantsInside();
+        string cabinNote = CabinWindows.Build();
+        Debug.Log(cabinNote);
 
         // 집 안 영역: 큰 방과 현관 앞방
         IndoorZone zone = houseRoot.AddComponent<IndoorZone>();
@@ -190,9 +202,9 @@ public static class InteriorSetup
         Cube(room, "CeilingBeam", new Vector3(0f, Height - 0.1f, vestMid), new Vector3(vx * 2f, 0.2f, 0.25f), timber, false);
 
         // ── 큰 방 벽: 북, 동, 서는 통벽. 남쪽은 현관 앞방으로 열린다
-        Cube(room, "WallNorth", new Vector3(0f, Height / 2f, hz + t / 2f), new Vector3(hx * 2f + t * 2f, Height, t), plaster);
-        Cube(room, "WallEast", new Vector3(hx + t / 2f, Height / 2f, 0f), new Vector3(t, Height, hz * 2f + t * 2f), plaster);
-        Cube(room, "WallWest", new Vector3(-hx - t / 2f, Height / 2f, 0f), new Vector3(t, Height, hz * 2f + t * 2f), plaster);
+        WallWithHoles(room, "WallNorth", true, hz + t / 2f, t, hx + t, new[] { -3.3f, 0f, 3.3f }, plaster);       // 창 자리는 구멍을 낸다
+        WallWithHoles(room, "WallEast", false, hx + t / 2f, t, hz + t, new[] { -1.7f }, plaster);
+        WallWithHoles(room, "WallWest", false, -hx - t / 2f, t, hz + t, new[] { -1.9f }, plaster);
         float segLen = hx + t - vx;
         foreach (float sign in new[] { -1f, 1f })
             Cube(room, "WallHallSouth", new Vector3(sign * (vx + segLen / 2f), Height / 2f, -hz - t / 2f), new Vector3(segLen, Height, t), plaster);
@@ -231,16 +243,11 @@ public static class InteriorSetup
         foreach (float sign in new[] { -1f, 1f })
             Cube(room, "CornerPost", new Vector3(sign * (vx - 0.1f), Height / 2f, -hz - 0.1f), new Vector3(0.25f, Height, 0.25f), timber, false);
 
-        // 창: 큰 방 북쪽(작업대 뒤)과 그 양옆, 동쪽(침대 위), 서쪽(책상 위), 남쪽 현관 앞방 양옆. 따뜻한 빛이 들어오는 느낌
+        // 창: 큰 방 북쪽(작업대 뒤와 양옆), 동쪽(침대 위), 서쪽(책상 위). 투명한 유리로 밖이 보인다
         // 창 불빛은 둘만 켠다. 한 오브젝트가 받는 추가 불빛이 8개를 넘으면(URP) 그중 하나가 깜빡이며 꺼졌다 켜진다
-        Window(room, glass, timber, new Vector3(0f, 1.75f, hz - 0.03f), 0f, false);
-        Window(room, glass, timber, new Vector3(-3.3f, 1.75f, hz - 0.03f), 0f, false);
-        Window(room, glass, timber, new Vector3(3.3f, 1.75f, hz - 0.03f), 0f, false);
-        Window(room, glass, timber, new Vector3(hx - 0.03f, 1.75f, -1.7f), 90f, true);
-        Window(room, glass, timber, new Vector3(-hx + 0.03f, 1.75f, -1.9f), 270f, true);
-        Window(room, glass, timber, new Vector3(-3.6f, 1.75f, -hz + 0.03f), 180f, false);
-        Window(room, glass, timber, new Vector3(3.6f, 1.75f, -hz + 0.03f), 180f, false);
-    }
+        Material clear = AssetDatabase.LoadAssetAtPath<Material>(DecoFolder + "JarGlass.mat");
+        if (clear == null) clear = glass;
+        foreach (var w in WindowSpecs) Window(room, clear, timber, w.pos, w.yaw, w.light, w.outer);    }
 
     /// <summary>
     /// 벽 한 장의 안쪽 장식. (x, z)는 벽 안쪽 면 한가운데, yaw는 벽 쪽(바깥)을 바라보는 방향(0 북, 90 동, 180 남, 270 서), halfLength는 벽의 반 길이,
@@ -260,23 +267,50 @@ public static class InteriorSetup
             Cube(wall, "Stud", new Vector3(s, Height / 2f, face - 0.01f), new Vector3(0.15f, Height, 0.1f), timber, false);
     }
 
-    /// <summary>창틀과 따뜻하게 빛나는 유리. yaw는 창이 바라보는 방향(방 안쪽)이다.</summary>
-    private static void Window(GameObject parent, Material glass, Material timber, Vector3 pos, float yaw, bool withLight)
+    /// <summary>창틀과 투명한 유리 (겉벽 쪽에도 틀을 붙인다). yaw는 창이 바라보는 방향(방 안쪽)이다.</summary>
+    private static void Window(GameObject parent, Material glass, Material timber, Vector3 pos, float yaw, bool withLight, float outer)
     {
         GameObject w = new GameObject("Window");
         w.transform.SetParent(parent.transform, false);
         w.transform.localPosition = pos;
         w.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
-        Cube(w, "Glass", Vector3.zero, new Vector3(0.9f, 0.8f, 0.04f), glass, false);
+        Cube(w, "Glass", Vector3.zero, new Vector3(0.9f, 0.8f, 0.04f), glass, true);   // 눈에 안 띄는 막이 (창으로 못 나간다)
         Cube(w, "FrameTop", new Vector3(0f, 0.45f, -0.02f), new Vector3(1.1f, 0.1f, 0.12f), timber, false);
         Cube(w, "FrameBottom", new Vector3(0f, -0.45f, -0.02f), new Vector3(1.1f, 0.1f, 0.12f), timber, false);
         Cube(w, "FrameL", new Vector3(-0.5f, 0f, -0.02f), new Vector3(0.1f, 0.9f, 0.12f), timber, false);
         Cube(w, "FrameR", new Vector3(0.5f, 0f, -0.02f), new Vector3(0.1f, 0.9f, 0.12f), timber, false);
         Cube(w, "BarV", new Vector3(0f, 0f, -0.02f), new Vector3(0.06f, 0.8f, 0.08f), timber, false);
         Cube(w, "BarH", new Vector3(0f, 0f, -0.02f), new Vector3(0.9f, 0.06f, 0.08f), timber, false);
+        // 바깥 틀
+        Cube(w, "OuterTop", new Vector3(0f, 0.5f, outer), new Vector3(1.2f, 0.1f, 0.1f), timber, false);
+        Cube(w, "OuterBottom", new Vector3(0f, -0.5f, outer), new Vector3(1.2f, 0.1f, 0.1f), timber, false);
+        Cube(w, "OuterL", new Vector3(-0.55f, 0f, outer), new Vector3(0.1f, 1.0f, 0.1f), timber, false);
+        Cube(w, "OuterR", new Vector3(0.55f, 0f, outer), new Vector3(0.1f, 1.0f, 0.1f), timber, false);
         if (withLight) PointLight(w.transform, "WindowLight", new Vector3(0f, 0f, -0.5f), new Color(1f, 0.85f, 0.6f), 0.9f, 4f);
     }
 
+    /// <summary>벽 한 장을 창 자리마다 구멍을 내서 짓는다 (alongX: 벽이 x 방향으로 길다, fixedCoord: 벽 가운데의 z(또는 x)).</summary>
+    private static void WallWithHoles(GameObject room, string name, bool alongX, float fixedCoord, float thick, float halfLen, float[] holes, Material mat)
+    {
+        System.Array.Sort(holes);
+        float bottom = 1.75f - HoleHalfH, top = 1.75f + HoleHalfH;
+        System.Action<string, float, float, float, float> piece = (n, a, b, y0, y1) =>
+        {
+            float mid = (a + b) * 0.5f, len = b - a, ymid = (y0 + y1) * 0.5f, ht = y1 - y0;
+            if (len <= 0.001f || ht <= 0.001f) return;
+            if (alongX) Cube(room, n, new Vector3(mid, ymid, fixedCoord), new Vector3(len, ht, thick), mat);
+            else Cube(room, n, new Vector3(fixedCoord, ymid, mid), new Vector3(thick, ht, len), mat);
+        };
+        float cursor = -halfLen;
+        foreach (float h in holes)
+        {
+            piece(name, cursor, h - HoleHalfW, 0f, Height);
+            piece(name, h - HoleHalfW, h + HoleHalfW, 0f, bottom);
+            piece(name, h - HoleHalfW, h + HoleHalfW, top, Height);
+            cursor = h + HoleHalfW;
+        }
+        piece(name, cursor, halfLen, 0f, Height);
+    }
     // ───────── 가구 ─────────
 
     private static void BuildFurniture()
@@ -302,9 +336,6 @@ public static class InteriorSetup
         Furn(bed, "deco_furn_bed", new Vector3(bedX, 0f, bedZ), 0f);                         // 로우폴리 침대 모델 (머리판이 북쪽)
         Solid(bed, "BedBody", new Vector3(bedX, 0.30f, bedZ), new Vector3(1.1f, 0.6f, 2.1f)); // 바라보고 E, 막는 상자
         Solid(bed, "BedHead", new Vector3(bedX, 0.55f, bedZ + 1.0f), new Vector3(1.1f, 1.1f, 0.12f));
-        // 침대 옆 작은 상자
-        Furn(root, "deco_furn_bedside", new Vector3(bedX, 0f, bedZ + 1.65f), 180f);              // 서랍이 방 쪽(서쪽)을 본다
-        Solid(root, "BedsideBody", new Vector3(bedX, 0.25f, bedZ + 1.65f), new Vector3(0.5f, 0.5f, 0.46f));
 
         // 책상과 편지 (서쪽 벽, 남쪽)
         float deskX = -hx + 0.7f, deskZ = -1.9f;

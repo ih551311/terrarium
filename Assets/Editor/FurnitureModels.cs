@@ -40,40 +40,21 @@ public static partial class PropModelMaker
         b = NewMirrored();
         foreach (float x in new[] { -0.5f, 0.5f })
         {
-            foreach (float z in new[] { -1.0f, 1.0f }) BBox(V(x, 0.03f, z), V(0.11f, 0.06f, 0.11f), 0.012f, DarkBrown); // 발
-            BBox(V(x, 0.52f, 1.0f), V(0.09f, 0.92f, 0.09f), 0.012f, Brown);            // 머리 쪽 기둥
-            Blob(V(x, 1.03f, 1.0f), V(0.052f, 0.052f, 0.052f), 4, 8, Tan);              // 기둥 장식 구슬
-            BBox(V(x, 0.33f, -1.0f), V(0.09f, 0.54f, 0.09f), 0.012f, Brown);           // 발 쪽 기둥
-            Blob(V(x, 0.63f, -1.0f), V(0.042f, 0.042f, 0.042f), 4, 8, Tan);
-            BBox(V(x, 0.27f, 0f), V(0.05f, 0.14f, 1.9f), 0.01f, Brown);                  // 옆 가로대
-            Box(V(x * 0.93f, 0.19f, 0f), V(0.025f, 0.03f, 1.9f), DarkBrown);            // 판자를 받치는 턱
+            Box(V(x, 0.46f, 1.0f), V(0.09f, 0.92f, 0.09f), Brown);        // 머리 쪽 기둥
+            Box(V(x, 0.28f, -1.0f), V(0.09f, 0.56f, 0.09f), Brown);       // 발 쪽 기둥
+            Box(V(x, 0.27f, 0f), V(0.05f, 0.14f, 1.9f), Brown);           // 옆 가로대
         }
-        // 머리판: 위아래 가로대, 속 판 셋, 가운데 장식
-        BBox(V(0f, 0.92f, 1.0f), V(0.95f, 0.10f, 0.065f), 0.01f, Brown);
-        BBox(V(0f, 0.44f, 1.0f), V(0.95f, 0.09f, 0.065f), 0.01f, DarkBrown);
-        Box(V(0f, 0.68f, 1.0f), V(0.90f, 0.36f, 0.035f), Tan);
-        foreach (float x in new[] { -0.29f, 0f, 0.29f }) Box(V(x, 0.68f, 1.0f), V(0.23f, 0.29f, 0.052f), LightTan);
-        Blob(V(0f, 0.985f, 1.0f), V(0.17f, 0.055f, 0.04f), 3, 8, DarkBrown);
-        // 발판: 위아래 가로대와 가는 살
-        BBox(V(0f, 0.56f, -1.0f), V(0.95f, 0.08f, 0.055f), 0.01f, Brown);
-        BBox(V(0f, 0.30f, -1.0f), V(0.95f, 0.07f, 0.055f), 0.01f, DarkBrown);
-        foreach (float x in new[] { -0.36f, -0.18f, 0f, 0.18f, 0.36f }) Frustum(V(x, 0.335f, -1.0f), V(x, 0.525f, -1.0f), 0.015f, 0.015f, 6, Tan, Tan);
-        // 요
-        BBox(V(0f, 0.32f, 0f), V(0.96f, 0.20f, 1.94f), 0.04f, Cream);
-        Box(V(0f, 0.332f, 0f), V(0.985f, 0.014f, 1.965f), White);                        // 요 옆 줄
-        Box(V(0f, 0.428f, 0.62f), V(0.93f, 0.012f, 0.32f), White);                       // 접어 넘긴 시트
-        // 베개 둘
-        Blob(V(-0.235f, 0.475f, 0.74f), V(0.22f, 0.07f, 0.17f), 4, 10, White);
-        Blob(V(0.235f, 0.475f, 0.74f), V(0.22f, 0.07f, 0.17f), 4, 10, Cream);
-        // 이불: 발 쪽 6할을 덮고, 옆과 발로 늘어지고, 줄무늬와 접은 단
-        BBox(V(0f, 0.455f, -0.30f), V(1.0f, 0.06f, 1.2f), 0.02f, Blue);
+        Box(V(0f, 0.70f, 1.0f), V(0.95f, 0.45f, 0.05f), Tan);             // 머리판
+        Box(V(0f, 0.92f, 1.0f), V(0.95f, 0.08f, 0.07f), Brown);
+        Box(V(0f, 0.40f, -1.0f), V(0.95f, 0.26f, 0.05f), Tan);            // 발판
+        Box(V(0f, 0.32f, 0f), V(0.96f, 0.20f, 1.94f), Cream);             // 요
+        Box(V(-0.235f, 0.46f, 0.74f), V(0.40f, 0.08f, 0.30f), White);     // 베개 둘
+        Box(V(0.235f, 0.46f, 0.74f), V(0.40f, 0.08f, 0.30f), White);
+        Box(V(0f, 0.455f, -0.30f), V(1.0f, 0.06f, 1.2f), Blue);           // 이불
         foreach (float x in new[] { -0.505f, 0.505f }) Box(V(x, 0.36f, -0.30f), V(0.03f, 0.20f, 1.2f), Blue);
         Box(V(0f, 0.36f, -0.905f), V(1.0f, 0.20f, 0.03f), Blue);
-        foreach (float z in new[] { -0.12f, -0.42f, -0.72f }) Box(V(0f, 0.488f, z), V(0.99f, 0.006f, 0.07f), Teal);
-        BBox(V(0f, 0.475f, 0.33f), V(1.02f, 0.075f, 0.14f), 0.02f, White);
         b.Write("deco_furn_bed");
     }
-
     // ───────── 책상 (0.7 x 1.3, 높이 0.8, 서랍이 +x) ─────────
     private static void FurnDesk()
     {
