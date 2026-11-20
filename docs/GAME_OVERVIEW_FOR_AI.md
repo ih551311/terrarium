@@ -379,3 +379,5 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 ## 화면 중복 열기 방지 (2026-11-20)
 - 지도(MapPanel), 가방(InventoryPanel), 일시정지(PauseMenu)의 Open에 "이미 열려 있으면 다시 열지 않는다" 가드를 넣었다. 두 번 열리면 UIFocus 카운트가 올라가서 닫은 뒤에도 조작이 잠긴 채(커서가 안 잠김) 남을 수 있었다. 키 조작에서는 막혀 있었지만 다른 곳에서 부르면 생길 수 있는 문제였다.
 - 시험 결과: 모든 화면을 두 번 열고 두 번 닫아도 UIFocus가 0으로 돌아온다. 섬 사이 이동(눈 섬, 사막 섬 왕복 3번)은 GameRoot 1개, 소리 듣는 귀 1개, 이벤트 시스템 1개로 안정적이다. 실제 게임 파일(Windows 빌드, 305MB)은 오류 0으로 만들어지고 메인 화면을 25초 돌려도 오류가 없다.
+
+- **눈 발소리 에셋 삭제**: 라이선스를 확인할 수 없어 Assets/Footstep(Snow and Grass)를 지웠다. FootstepSet.snow는 비어 있고 FootstepPlayer가 눈/얼음 위에서 흙 소리를 쓴다. FootstepSetup도 눈 소리 연결을 뺐다. (문서 245줄 근처의 눈 발소리 설명은 옛 내용). 눈 에셋 Cozy Snowy Environment와 Footsteps Volume 02는 무료 + 표준 에셋 스토어 약관으로 확인함.

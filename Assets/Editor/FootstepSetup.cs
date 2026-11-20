@@ -17,7 +17,6 @@ public static class FootstepSetup
 {
     private const string Folder = "Assets/The_Sound_Guild_FREE_PACK_Footsteps_Volume_02";
     private const string AssetPath = "Assets/Resources/FootstepSet.asset";
-    private const string SnowFolder = "Assets/Footstep(Snow and Grass)/Stepssingle sound/snow";
 
     [MenuItem("유리병 정원/발소리 연결")]
     public static string Build()
@@ -35,8 +34,8 @@ public static class FootstepSetup
         set.soil = Find("Footstep_Soft_Surface_");
         set.wood = Find("Footstep_Wood_");
         set.wet = Find("Footstep_Mud_");
-        // 눈 섬의 눈 소리: 에셋 Footstep(Snow and Grass)의 한 걸음 소리(Snow1 N-Audio)
-        set.snow = FindIn(SnowFolder, "Snow1 ");
+        // 눈 섬의 눈 소리: 라이선스 확인이 안 된 에셋(Footstep(Snow and Grass))은 지웠다. 비워 두면 FootstepPlayer가 흙 소리를 쓴다
+        set.snow = new AudioClip[0];
         EditorUtility.SetDirty(set);
         AssetDatabase.SaveAssets();
         return "발소리 연결: 눈 " + set.snow.Length + ", 풀밭 " + set.grass.Length + ", 모래 " + set.sand.Length + ", 흙 " + set.soil.Length + ", 나무 " + set.wood.Length + ", 젖은 땅 " + set.wet.Length;
