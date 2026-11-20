@@ -17,7 +17,8 @@ public static class UISetup
     private const string PrefabPath = "Assets/Prefabs/GameRoot.prefab";
     private const string FontAssetPath = "Assets/Resources/Fonts/Cafe24DongdongLight SDF.asset";
     private const string RenderTexturePath = "Assets/Data/Placeholder/BottleView.renderTexture";
-    private const int SlotCount = 32; // 가방 칸 수 (가방 창은 8열 x 4행). Bag의 slotCount도 이 값으로 맞춘다.
+    private const int SlotCount = 96; // 가방 칸 수 (가방 창은 8열 x 12행이고 스크롤로 내려 본다). Bag의 slotCount도 이 값으로 맞춘다.
+    private const int BottleCellCount = 32; // 가방의 병 탭 한 쪽의 칸 수 (병은 쪽으로 넘긴다)
 
     private static readonly Color TextColor = new Color(0.2f, 0.25f, 0.2f, 1f);
 
@@ -159,10 +160,10 @@ public static class UISetup
         Label(edit.transform, "Hint", "클릭 놓기      우클릭 빼기      휠 돌리기, 확대      Q R 크기      끌기 병 돌리기",
             24, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 196f), new Vector2(1440f, 40f), TextAlignmentOptions.Center);
 
-        // 재료 칸: 가방 칸을 두 줄(16칸씩)로 늘어놓는다
-        GameObject strip = Rect(edit.transform, "MaterialStrip");
-        Anchor(strip, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(1440f, 164f));
-        GridLayoutGroup stripGrid = strip.AddComponent<GridLayoutGroup>();
+        // 재료 칸: 가방 칸을 16칸씩 줄로 늘어놓고, 두 줄만 보이게 해서 마우스 휠로 아래 줄을 본다
+        RectTransform stripContent;
+        GameObject strip = MakeScroll(edit.transform, "MaterialStrip", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(1440f, 164f), 14f, out stripContent).gameObject;
+        GridLayoutGroup stripGrid = stripContent.gameObject.AddComponent<GridLayoutGroup>();
         stripGrid.cellSize = new Vector2(84f, 78f); stripGrid.spacing = new Vector2(6f, 6f);
         stripGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount; stripGrid.constraintCount = 16;
         stripGrid.childAlignment = TextAnchor.UpperCenter;
@@ -173,7 +174,7 @@ public static class UISetup
         Image[] stripIcons = new Image[SlotCount];
         for (int i = 0; i < SlotCount; i++)
         {
-            GameObject slot = Rect(strip.transform, "Slot" + i);
+            GameObject slot = Rect(stripContent, "Slot" + i);
             Image bg = slot.AddComponent<Image>(); bg.color = new Color(0.88f, 0.9f, 0.87f, 1f);
             Button b = slot.AddComponent<Button>(); b.targetGraphic = bg;
             GameObject t = Rect(slot.transform, "Text");
@@ -420,9 +421,10 @@ public static class UISetup
             Label(mailPages[p].transform, "PageTitle", pageTitles[p], 46, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(430f, -12f), new Vector2(p == 3 ? 560f : 1000f, 60f), TextAlignmentOptions.TopLeft);
         }
 
-        // 1쪽 판매하기: 가방 칸마다 하나씩 (8열 x 4행 = 32칸), 누르면 1개 넣기
-        GameObject sendGrid = Rect(mailPages[1].transform, "SendGrid");
-        Anchor(sendGrid, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -100f), new Vector2(1440f, 440f));
+        // 1쪽 판매하기: 가방 칸마다 하나씩 (8열 x 12행 = 96칸, 네 줄만 보이고 휠로 내려 본다), 누르면 1개 넣기
+        RectTransform sendContent;
+        MakeScroll(mailPages[1].transform, "SendScroll", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30f, -100f), new Vector2(1440f, 440f), 14f, out sendContent);
+        GameObject sendGrid = sendContent.gameObject;
         GridLayoutGroup sendLayout = sendGrid.AddComponent<GridLayoutGroup>();
         sendLayout.cellSize = new Vector2(174f, 104f); sendLayout.spacing = new Vector2(6f, 8f);
         sendLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount; sendLayout.constraintCount = 8;
@@ -499,7 +501,7 @@ public static class UISetup
         Image invDim = invRoot.AddComponent<Image>(); invDim.color = new Color(0f, 0f, 0f, 0.35f);
 
         GameObject iWindow = Rect(invRoot.transform, "Window");
-        Center(iWindow, 1400f, 920f); // 창은 직사각형, 칸은 정사각형 (8열 x 4행 = 32칸)
+        Center(iWindow, 1400f, 920f); // 창은 직사각형, 칸은 정사각형 (8열, 네 줄이 보이고 96칸까지 휠로 내려 본다)
         Image iBg = iWindow.AddComponent<Image>(); iBg.color = new Color(0.93f, 0.95f, 0.9f, 1f);
         Label(iWindow.transform, "Title", "내 물건", 64, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -30f), new Vector2(500f, 90f), TextAlignmentOptions.TopLeft);
         Label(iWindow.transform, "Hint", "Tab 닫기", 40, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-50f, -45f), new Vector2(400f, 60f), TextAlignmentOptions.TopRight);
@@ -510,8 +512,9 @@ public static class UISetup
 
         GameObject bagGroup = Rect(iWindow.transform, "BagGroup");
         Stretch(bagGroup);
-        GameObject grid = Rect(bagGroup.transform, "Slots");
-        Anchor(grid, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -160f), new Vector2(1284f, 636f));
+        RectTransform gridContent;
+        MakeScroll(bagGroup.transform, "SlotsScroll", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -160f), new Vector2(1284f, 740f), 16f, out gridContent);
+        GameObject grid = gridContent.gameObject;
         GridLayoutGroup glg = grid.AddComponent<GridLayoutGroup>();
         glg.cellSize = new Vector2(150f, 150f); glg.spacing = new Vector2(12f, 12f);
         glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; glg.constraintCount = 8;
@@ -527,10 +530,10 @@ public static class UISetup
         bglg.cellSize = new Vector2(150f, 150f); bglg.spacing = new Vector2(12f, 12f);
         bglg.constraint = GridLayoutGroup.Constraint.FixedColumnCount; bglg.constraintCount = 8;
         bglg.childAlignment = TextAnchor.UpperCenter;
-        Image[] bottleIcons = new Image[SlotCount];
-        TMP_Text[] bottleTexts = new TMP_Text[SlotCount];
-        Button[] bottleButtons = new Button[SlotCount];
-        for (int i = 0; i < SlotCount; i++)
+        Image[] bottleIcons = new Image[BottleCellCount];
+        TMP_Text[] bottleTexts = new TMP_Text[BottleCellCount];
+        Button[] bottleButtons = new Button[BottleCellCount];
+        for (int i = 0; i < BottleCellCount; i++)
         {
             GameObject cell = Rect(bottleGrid.transform, "BottleCell" + i);
             Image cbg = cell.AddComponent<Image>(); cbg.color = new Color(0.82f, 0.88f, 0.82f, 1f);
@@ -720,6 +723,67 @@ public static class UISetup
     }
 
     // ───────── 도우미 ─────────
+
+    /// <summary>
+    /// 마우스 휠로 아래로 내려 보는 목록 영역을 만든다. 보이는 창(size)은 그대로 두고, 오른쪽에 스크롤 막대를 붙인다.
+    /// 칸들은 돌려주는 content 안에 만들고(GridLayoutGroup을 붙이면 높이가 저절로 늘어난다), 창 밖으로 나간 부분은 잘려 보이지 않는다.
+    /// 칸이 놓이는 가로 폭은 size.x 그대로다 (스크롤 막대 자리 barWidth만큼 창이 오른쪽으로 넓어진다).
+    /// </summary>
+    private static ScrollRect MakeScroll(Transform parent, string name, Vector2 anchor, Vector2 pivot, Vector2 pos, Vector2 size, float barWidth, out RectTransform content)
+    {
+        float extra = barWidth + 6f;
+        GameObject holder = Rect(parent, name);
+        // 가운데 기준 영역은 칸이 원래 자리에 오도록 막대 폭의 반만큼 오른쪽으로 옮긴다
+        float shift = Mathf.Approximately(anchor.x, 0.5f) ? extra * 0.5f : 0f;
+        Anchor(holder, anchor, pivot, pos + new Vector2(shift, 0f), new Vector2(size.x + extra, size.y));
+        Image hit = holder.AddComponent<Image>();
+        hit.color = new Color(0f, 0f, 0f, 0f); // 보이지 않지만 마우스 휠을 받는 바탕
+
+        GameObject viewport = Rect(holder.transform, "Viewport");
+        RectTransform vrt = (RectTransform)viewport.transform;
+        vrt.anchorMin = Vector2.zero; vrt.anchorMax = Vector2.one;
+        vrt.offsetMin = Vector2.zero; vrt.offsetMax = new Vector2(-extra, 0f);
+        viewport.AddComponent<RectMask2D>();
+
+        GameObject contentGo = Rect(viewport.transform, "Content");
+        content = (RectTransform)contentGo.transform;
+        content.anchorMin = new Vector2(0f, 1f); content.anchorMax = new Vector2(1f, 1f);
+        content.pivot = new Vector2(0.5f, 1f);
+        content.anchoredPosition = Vector2.zero; content.sizeDelta = Vector2.zero;
+        ContentSizeFitter fitter = contentGo.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+        // 스크롤 막대: 칸이 더 있다는 것을 보여 준다
+        GameObject bar = Rect(holder.transform, "Scrollbar");
+        RectTransform brt = (RectTransform)bar.transform;
+        brt.anchorMin = new Vector2(1f, 0f); brt.anchorMax = new Vector2(1f, 1f);
+        brt.pivot = new Vector2(1f, 0.5f);
+        brt.anchoredPosition = Vector2.zero; brt.sizeDelta = new Vector2(barWidth, 0f);
+        Image track = bar.AddComponent<Image>();
+        track.color = new Color(0.25f, 0.3f, 0.25f, 0.16f);
+        Scrollbar scrollbar = bar.AddComponent<Scrollbar>();
+        scrollbar.direction = Scrollbar.Direction.BottomToTop;
+        GameObject area = Rect(bar.transform, "SlidingArea");
+        Stretch(area);
+        GameObject handle = Rect(area.transform, "Handle");
+        Stretch(handle);
+        Image handleImage = handle.AddComponent<Image>();
+        handleImage.color = new Color(0.42f, 0.5f, 0.44f, 0.85f);
+        scrollbar.targetGraphic = handleImage;
+        scrollbar.handleRect = (RectTransform)handle.transform;
+
+        ScrollRect scroll = holder.AddComponent<ScrollRect>();
+        scroll.viewport = vrt;
+        scroll.content = content;
+        scroll.horizontal = false; scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 40f;
+        scroll.verticalScrollbar = scrollbar;
+        scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
+        scroll.verticalScrollbarSpacing = 0f;
+        return scroll;
+    }
 
     private static GameObject Rect(Transform parent, string name)
     {
