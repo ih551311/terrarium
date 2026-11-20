@@ -269,29 +269,50 @@ public static class InteriorSetup
             Cube(wall, "Stud", new Vector3(s, Height / 2f, face - 0.01f), new Vector3(0.15f, Height, 0.1f), timber, false);
     }
 
-    /// <summary>창틀과 투명한 유리 (겉벽 쪽에도 틀을 붙인다). yaw는 창이 바라보는 방향(방 안쪽)이다.</summary>
+    private const string WindowPrefabPath = "Assets/Prefabs/House/Window.prefab";
+
+    /// <summary>
+    /// 창 하나 (틀, 십자 살, 투명 유리, 바깥 틀)는 프리팹 Assets/Prefabs/House/Window.prefab 으로 둔다.
+    /// 처음 한 번만 코드로 만들고, 그 뒤로는 이 프리팹을 그대로 가져다 쓴다 → 유니티에서 프리팹을 열어 모양, 색, 크기를 직접 고치면 모든 창에 반영된다 (파일을 지우면 다시 만든다).
+    /// </summary>
+    private static GameObject LoadOrCreateWindowPrefab(Material glass)
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(WindowPrefabPath);
+        if (prefab != null) return prefab;
+        if (!AssetDatabase.IsValidFolder("Assets/Prefabs/House")) AssetDatabase.CreateFolder("Assets/Prefabs", "House");
+        Material wood = Mat("MedWindowWood", new Color(0.46f, 0.30f, 0.18f));
+        GameObject w = new GameObject("Window");
+        Cube(w, "Glass", Vector3.zero, new Vector3(0.9f, 0.8f, 0.04f), glass, true);   // 눈에 안 띄는 막이 (창으로 못 나간다)
+        Cube(w, "FrameTop", new Vector3(0f, 0.45f, -0.02f), new Vector3(1.1f, 0.1f, 0.12f), wood, false);
+        Cube(w, "FrameBottom", new Vector3(0f, -0.45f, -0.02f), new Vector3(1.1f, 0.1f, 0.12f), wood, false);
+        Cube(w, "FrameL", new Vector3(-0.5f, 0f, -0.02f), new Vector3(0.1f, 0.9f, 0.12f), wood, false);
+        Cube(w, "FrameR", new Vector3(0.5f, 0f, -0.02f), new Vector3(0.1f, 0.9f, 0.12f), wood, false);
+        Cube(w, "BarV", new Vector3(0f, 0f, -0.02f), new Vector3(0.05f, 0.8f, 0.07f), wood, false);
+        Cube(w, "BarH", new Vector3(0f, 0f, -0.02f), new Vector3(0.9f, 0.05f, 0.05f), wood, false);   // 세로 살보다 얇게 (겹친 면 줄무늬 방지)
+        GameObject outerGroup = new GameObject("Outer");                                                // 바깥 틀 (창마다 겉벽까지의 거리에 맞춰 앞뒤로 옮긴다)
+        outerGroup.transform.SetParent(w.transform, false);
+        Cube(outerGroup, "OuterTop", new Vector3(0f, 0.5f, 0f), new Vector3(1.2f, 0.1f, 0.1f), wood, false);
+        Cube(outerGroup, "OuterBottom", new Vector3(0f, -0.5f, 0f), new Vector3(1.2f, 0.1f, 0.1f), wood, false);
+        Cube(outerGroup, "OuterL", new Vector3(-0.55f, 0f, 0f), new Vector3(0.1f, 1.0f, 0.1f), wood, false);
+        Cube(outerGroup, "OuterR", new Vector3(0.55f, 0f, 0f), new Vector3(0.1f, 1.0f, 0.1f), wood, false);
+        prefab = PrefabUtility.SaveAsPrefabAsset(w, WindowPrefabPath);
+        Object.DestroyImmediate(w);
+        return prefab;
+    }
+
+    /// <summary>창 프리팹을 놓는다. yaw는 창이 바라보는 방향(방 안쪽), outer는 겉벽까지의 거리.</summary>
     private static void Window(GameObject parent, Material glass, Material timber, Vector3 pos, float yaw, bool withLight, float outer)
     {
-        GameObject w = new GameObject("Window");
+        GameObject prefab = LoadOrCreateWindowPrefab(glass);
+        GameObject w = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+        w.name = "Window";
         w.transform.SetParent(parent.transform, false);
         w.transform.localPosition = pos;
         w.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
-        Cube(w, "Glass", Vector3.zero, new Vector3(0.9f, 0.8f, 0.04f), glass, true);   // 눈에 안 띄는 막이 (창으로 못 나간다)
-        Cube(w, "FrameTop", new Vector3(0f, 0.45f, -0.02f), new Vector3(1.1f, 0.1f, 0.12f), timber, false);
-        Cube(w, "FrameBottom", new Vector3(0f, -0.45f, -0.02f), new Vector3(1.1f, 0.1f, 0.12f), timber, false);
-        Cube(w, "FrameL", new Vector3(-0.5f, 0f, -0.02f), new Vector3(0.1f, 0.9f, 0.12f), timber, false);
-        Cube(w, "FrameR", new Vector3(0.5f, 0f, -0.02f), new Vector3(0.1f, 0.9f, 0.12f), timber, false);
-        Cube(w, "BarV", new Vector3(0f, 0f, -0.02f), new Vector3(0.06f, 0.8f, 0.08f), timber, false);
-        Cube(w, "BarH", new Vector3(0f, 0f, -0.02f), new Vector3(0.9f, 0.06f, 0.08f), timber, false);
-        // 바깥 틀
-        outer += 0.02f; // 겉벽의 면과 같은 평면에 놓이지 않게
-        Cube(w, "OuterTop", new Vector3(0f, 0.5f, outer), new Vector3(1.2f, 0.1f, 0.1f), timber, false);
-        Cube(w, "OuterBottom", new Vector3(0f, -0.5f, outer), new Vector3(1.2f, 0.1f, 0.1f), timber, false);
-        Cube(w, "OuterL", new Vector3(-0.55f, 0f, outer), new Vector3(0.1f, 1.0f, 0.1f), timber, false);
-        Cube(w, "OuterR", new Vector3(0.55f, 0f, outer), new Vector3(0.1f, 1.0f, 0.1f), timber, false);
+        Transform o = w.transform.Find("Outer");
+        if (o != null) o.localPosition = new Vector3(0f, 0f, outer + 0.02f);   // 겉벽의 면과 같은 평면에 놓이지 않게 2cm 띄움
         if (withLight) PointLight(w.transform, "WindowLight", new Vector3(0f, 0f, -0.5f), new Color(1f, 0.85f, 0.6f), 0.9f, 4f);
     }
-
     /// <summary>벽 한 장을 창 자리마다 구멍을 내서 짓는다 (alongX: 벽이 x 방향으로 길다, fixedCoord: 벽 가운데의 z(또는 x)).</summary>
     private static void WallWithHoles(GameObject room, string name, bool alongX, float fixedCoord, float thick, float halfLen, float[] holes, Material mat)
     {
