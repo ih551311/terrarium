@@ -331,11 +331,16 @@ public class CollectionBook : MonoBehaviour
             return;
         }
         bool have = GameState.IsDiscovered(selected.id);
-        detailName.text = have ? selected.displayName + (selected.isRare ? "   (희귀)" : string.Empty) : "???";
-        string where = LoadingScreen.TipOf(selected);
-        string extra = string.Empty;
-        if (have && selected.sellPrice > 0) extra = "\n우체통에 넣으면 " + selected.sellPrice + "코인이에요.";
-        detailBody.text = (have ? string.Empty : "아직 얻지 못했어요.\n") + where + extra;
+        // 값은 이름 옆에 작고 옅게 쓴다. 우체통에서 사는 재료는 사는 값과 파는 값을 둘 다 쓴다.
+        string price = string.Empty;
+        if (have)
+        {
+            bool buyable = selected.buyPrice > 0;
+            string text = buyable ? "사면 " + selected.buyPrice + "코인, 팔면 " + selected.sellPrice + "코인" : selected.sellPrice + "코인";
+            price = "   <size=55%><color=#8a7a66>" + text + "</color></size>";
+        }
+        detailName.text = have ? selected.displayName + (selected.isRare ? "  (희귀)" : string.Empty) + price : "???";
+        detailBody.text = (have ? string.Empty : "아직 얻지 못했어요.\n") + LoadingScreen.TipOf(selected);
     }
 
     private void RefreshGift()

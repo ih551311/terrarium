@@ -307,7 +307,7 @@ public static class InteriorSetup
         foreach (Vector2 leg in new[] { new Vector2(deskX - 0.28f, deskZ - 0.58f), new Vector2(deskX + 0.28f, deskZ - 0.58f), new Vector2(deskX - 0.28f, deskZ + 0.58f), new Vector2(deskX + 0.28f, deskZ + 0.58f) })
             Cube(root, "DeskLeg", new Vector3(leg.x, 0.37f, leg.y), new Vector3(0.06f, 0.74f, 0.06f), darkWood);
         MakeLetterReadable(Cube(root, "Letter", new Vector3(deskX, 0.795f, deskZ), new Vector3(0.3f, 0.006f, 0.21f), paper, false));
-        Cube(root, "DeskStool", new Vector3(deskX + 0.95f, 0.22f, deskZ), new Vector3(0.4f, 0.44f, 0.4f), darkWood);
+        // 책상 앞에는 의자(상자)를 두지 않는다
 
         // 책상 위 촛불 (모델 + 불빛)
         GameObject candle = Deco(root, "deco_candle", new Vector3(deskX, 0.79f, deskZ - 0.4f), 6f);
@@ -321,9 +321,8 @@ public static class InteriorSetup
         Kitpiece(root, "Crate", new Vector3(hx - 1.4f, 0f, hz - 0.7f), 15f);
         Kitpiece(root, "Crate", new Vector3(hx - 1.4f, 0.8f, hz - 0.7f), 40f);
         Kitpiece(root, "Barrel", new Vector3(hx - 0.65f, 0f, hz - 0.7f), 0f);
-        Kitpiece(root, "Barrel", new Vector3(hx - 0.6f, 0f, hz - 1.75f), 40f);
-        Kitpiece(root, "Crate", new Vector3(-3.4f, 0f, -hz + 0.6f), 80f);
-        Kitpiece(root, "Barrel", new Vector3(3.4f, 0f, -hz + 0.65f), 20f);
+        // 침대 머리맡에는 통을 두지 않는다
+        // 책상 앞과 침대 앞에는 상자와 통을 두지 않는다
         // 현관 앞방(입구)에는 아무것도 두지 않는다
         Kitpiece(root, "Bucket", new Vector3(-hx + 0.6f, 0f, hz - 0.55f), 0f);
 
