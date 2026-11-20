@@ -30,6 +30,8 @@ public class NightGlow : MonoBehaviour
         { "lightning_glass",  new Glow(0.95f, 0.95f, 0.60f, 0.5f) },
         { "aurora_fish",      new Glow(0.55f, 1.00f, 0.80f, 0.9f) },
         { "lighthouse",       new Glow(1.00f, 0.92f, 0.55f, 0.8f) },
+        { "street_lamp",      new Glow(1.00f, 0.88f, 0.48f, 0.9f) },
+        { "house",            new Glow(1.00f, 0.80f, 0.45f, 0.5f) },
     };
 
     private Material[] materials;

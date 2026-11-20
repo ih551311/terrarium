@@ -178,6 +178,33 @@ public static class MaterialSetup
         new Entry("snow_cottage2",    "눈 오두막 2", Deco, "deco_snow_cottage2",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 32),
         new Entry("snow_cottage3",    "눈 오두막 3", Deco, "deco_snow_cottage3",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 35),
         new Entry("snow_well",        "눈 우물",     Deco, "deco_snow_well",       new Color(0.80f, 0.72f, 0.60f), Shop, Buy, 4, 24),
+        // ── 새 꾸밈 소품 12종 (우체통 구매하기). 모델은 PropModelMaker.BuildMore (ExtraPropModels.cs)
+        new Entry("house",            "작은 집",     Deco, "deco_house",           new Color(0.96f, 0.90f, 0.78f), Shop, Buy, 5, 24),
+        new Entry("wood_bridge",      "나무 다리",   Deco, "deco_bridge",          new Color(0.77f, 0.61f, 0.44f), Shop, Buy, 4, 18),
+        new Entry("windmill",         "풍차",        Deco, "deco_windmill",        new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 6, 32),
+        new Entry("birdhouse",        "새집",        Deco, "deco_birdhouse",       new Color(0.77f, 0.61f, 0.44f), Shop, Buy, 3, 16),
+        new Entry("scarecrow",        "허수아비",    Deco, "deco_scarecrow",       new Color(0.95f, 0.80f, 0.35f), Shop, Buy, 4, 22),
+        new Entry("pond",             "작은 연못",   Deco, "deco_pond",            new Color(0.45f, 0.78f, 0.88f), Shop, Buy, 4, 22),
+        new Entry("swing",            "그네",        Deco, "deco_swing",           new Color(0.65f, 0.45f, 0.30f), Shop, Buy, 4, 20),
+        new Entry("mini_mailbox",     "미니 우체통", Deco, "deco_mini_mailbox",    new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 2, 12),
+        new Entry("street_lamp",      "가로등",      Deco, "deco_street_lamp",     new Color(1.00f, 0.85f, 0.45f), Shop, Buy, 3, 18),
+        new Entry("parasol",          "해변 파라솔", Deco, "deco_parasol",         new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 3, 16),
+        new Entry("oasis",            "오아시스",    Deco, "deco_oasis",           new Color(0.45f, 0.78f, 0.88f), Shop, Buy, 5, 26),
+        new Entry("woodpile",         "장작더미",    Deco, "deco_woodpile",        new Color(0.65f, 0.45f, 0.30f), Shop, Buy, 2, 10),
+        new Entry("gnome",            "정원 요정",   Deco, "deco_gnome",           new Color(0.85f, 0.35f, 0.33f), Shop, Buy, 4, 18),
+        // ── 섬에서 구하는 새 재료 5종. 그루터기와 통나무는 숲의 나무를 도끼로, 불가사리와 산호는 바닷가에서 줍고, 터키석은 사막 바위를 곡괭이로
+        new Entry("stump",            "그루터기",    Deco, "deco_stump",           new Color(0.65f, 0.45f, 0.30f), Forest, Axe,  2),
+        new Entry("log",              "통나무",      Deco, "deco_log",             new Color(0.65f, 0.45f, 0.30f), Forest, Axe,  2),
+        new Entry("starfish",         "불가사리",    Deco, "deco_starfish",        new Color(0.96f, 0.60f, 0.45f), Beach, Hand, 4),
+        new Entry("coral",            "산호",        Deco, "deco_coral",           new Color(0.96f, 0.55f, 0.50f), Beach, Hand, 4),
+        new Entry("conch",            "소라",        Deco, "deco_conch",           new Color(0.96f, 0.78f, 0.70f), Beach, Hand, 3),
+        new Entry("pebble_black",     "검은 조약돌", Deco, "deco_pebble_black",     new Color(0.25f, 0.25f, 0.28f), Beach, Pick, 2),
+        new Entry("pebble_white",     "흰 조약돌",   Deco, "deco_pebble_white",     new Color(0.92f, 0.92f, 0.90f), Beach, Pick, 2),
+        new Entry("ladybug",          "무당벌레",    Deco, "deco_ladybug",         new Color(0.85f, 0.25f, 0.22f), Forest, Hand, 5),
+        new Entry("snail",            "달팽이",      Deco, "deco_snail",           new Color(0.80f, 0.65f, 0.45f), Forest, Hand, 5, 0, MaterialCondition.AfterRain),
+        new Entry("butterfly_blue",   "푸른 나비",   Deco, "deco_butterfly_blue",  new Color(0.45f, 0.65f, 0.95f), Hill, Hand, 6),
+        new Entry("butterfly_pink",   "분홍 나비",   Deco, "deco_butterfly_pink",  new Color(0.96f, 0.60f, 0.75f), Hill, Hand, 6),
+        new Entry("turquoise",        "터키석",      Deco, "deco_turquoise",       new Color(0.30f, 0.78f, 0.78f), Desert, Pick, 5),
     };
 
     // 괭이로 캘 때 꽃에서 나오는 재료 (나머지 식물, 이끼, 잎, 열매, 버섯은 풀에서 나온다)

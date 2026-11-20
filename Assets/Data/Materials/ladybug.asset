@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b4d29638df3a541bb631c3e1618cd0, type: 3}
+  m_Name: ladybug
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
+  id: ladybug
+  displayName: "\uBB34\uB2F9\uBC8C\uB808"
+  kind: 1
+  icon: {fileID: 21300000, guid: d13b350503a19d4468cf8dad5b338bdd, type: 3}
+  zone: 1
+  acquire: 0
+  condition: 0
+  isRare: 0
+  plantGroup: 0
+  sellPrice: 5
+  buyPrice: 0
+  placedPrefab: {fileID: 919132149155446097, guid: fc3faa2700bab3949a8d2fcbf70242b8, type: 3}
+  placeholderShape: 0
+  placeholderColor: {r: 0.85, g: 0.25, b: 0.22, a: 1}
+  placeholderSize: {x: 0.07, y: 0.07, z: 0.07}
+  pickupScale: 4

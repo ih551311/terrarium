@@ -10,7 +10,7 @@ using Builder = ShellModelMaker.Builder;
 /// 다른 장식 모델과 같은 팔레트 그림(34색)을 쓰는 각진 로우폴리다. 크기는 4~7cm.
 /// 메뉴: 유리병 정원 > 꾸밈 소품 모델 만들기 (그다음 장식 모델 가져오기 설정, 재료 데이터 만들기 ...)
 /// </summary>
-public static class PropModelMaker
+public static partial class PropModelMaker
 {
     // 팔레트 번호 (palette.png 참고)
     private const int Gray = 0, LightGray = 1, White = 2, Dark = 3, Brown = 4, DarkBrown = 5, Tan = 6, LightTan = 7, Green = 9, Leaf = 12,
