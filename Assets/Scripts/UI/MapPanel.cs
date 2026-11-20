@@ -122,6 +122,7 @@ public class MapPanel : MonoBehaviour
 
     private void Open()
     {
+        if (isOpen) return; // 두 번 열려서 조작이 잠긴 채 남지 않게
         isOpen = true;
         ApplyScene();
         if (messageText != null) messageText.text = string.Empty;

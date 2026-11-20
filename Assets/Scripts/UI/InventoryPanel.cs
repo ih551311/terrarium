@@ -108,6 +108,7 @@ public class InventoryPanel : MonoBehaviour
 
     private void Open()
     {
+        if (IsOpen) return; // 두 번 열려서 조작이 잠긴 채 남지 않게
         IsOpen = true;
         root.SetActive(true);
         UIFocus.Open();
