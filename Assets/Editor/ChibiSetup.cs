@@ -94,10 +94,16 @@ public static class ChibiSetup
 
         Directory.CreateDirectory("Assets/Prefabs");
         GameObject npc = Wrap("Chibi", StandHeight);
-        CapsuleCollider cap = npc.AddComponent<CapsuleCollider>(); // 말을 걸 수는 없고, 지나가다 부딪히기만 한다
+        CapsuleCollider cap = npc.AddComponent<CapsuleCollider>(); // 바라보고 E로 말을 걸 수 있다 (NpcTalk)
         cap.center = new Vector3(0f, StandHeight * 0.5f, 0f);
         cap.radius = 0.45f;
         cap.height = StandHeight;
+        NpcTalk talk = npc.AddComponent<NpcTalk>();
+        SerializedObject talkSo = new SerializedObject(talk);
+        talkSo.FindProperty("npcName").stringValue = "치비";
+        talkSo.FindProperty("persona").enumValueIndex = (int)NpcPersona.Chibi;
+        talkSo.FindProperty("lookDistance").floatValue = 5f;
+        talkSo.ApplyModifiedPropertiesWithoutUndo();
         PrefabUtility.SaveAsPrefabAsset(npc, NpcPrefabPath);
         Object.DestroyImmediate(npc);
 

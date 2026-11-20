@@ -367,3 +367,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 
 ## 바다로 걸어 나가지 못하게 (2026-11-20)
 - 바다로 걸어 들어가면 수심이 깊어져도(바다 밑 -7m) 한없이 걸어서 섬 밖으로 사라질 수 있었다. FirstPersonController.LimitSea: 지형이 -0.9m(바다 높이 0 기준 가슴 깊이)보다 깊어지는 쪽으로는 걸어 들어가지 못하고, 벽처럼 미끄러진다. 선착장, 얼음, 배처럼 지형이 아닌 곳 위에서는 제한하지 않는다. 이미 깊은 곳에 있으면 얕은 쪽으로는 갈 수 있다.
+
+## NPC 대화 (2026-11-20)
+- 미쿠는 "안녕 나는 미쿠야" 한 줄만 반복했다. NpcDialogue(Assets/Scripts/Player)가 날씨, 시간(밤, 아침), 우체통과 편지, 병 개수, 선착장 진행 상황에 맞는 대사를 섞어 말하고, 최근 6개는 다시 하지 않는다. 미쿠는 밝은 반말, 치비는 조용하고 짧게. NpcTalk.persona로 고른다. 치비도 이제 말을 걸 수 있다 (ChibiSetup이 NpcTalk를 붙인다).
+- 대사를 늘릴 때는 NpcDialogue.MikuLines, ChibiLines에 contextual(상황 맞음, 더 자주)과 generic(아무 때나)로 덧붙인다. 글꼴에 없는 글자(· →)는 쓰지 않는다.

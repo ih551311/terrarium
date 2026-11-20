@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2746128418553594530}
   - component: {fileID: 3506656842431345028}
+  - component: {fileID: 8254258167831636907}
   m_Layer: 0
   m_Name: Chibi
   m_TagString: Untagged
@@ -56,6 +57,24 @@ CapsuleCollider:
   m_Height: 1.95
   m_Direction: 1
   m_Center: {x: 0, y: 0.975, z: 0}
+--- !u!114 &8254258167831636907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3261806691346098874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33d7030292094964980a6e242825336b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcTalk
+  npcName: "\uCE58\uBE44"
+  lines:
+  - "\uC548\uB155 \uB098\uB294 \uBBF8\uCFE0\uC57C"
+  persona: 1
+  useDialogue: 1
+  lookDistance: 5
 --- !u!1001 &6181187361863603013
 PrefabInstance:
   m_ObjectHideFlags: 0
