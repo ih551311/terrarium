@@ -69,9 +69,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33d7030292094964980a6e242825336b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcTalk
-  npcName: "\uBBF8\uCFE0"
+  npcName: "\uD584\uBD80\uAE30"
   lines:
-  - "\uC548\uB155 \uB098\uB294 \uBBF8\uCFE0\uC57C"
+  - "\uC548\uB155 \uB098\uB294 \uD584\uBD80\uAE30\uC57C"
+  persona: 0
+  useDialogue: 1
   lookDistance: 7
 --- !u!1001 &3529420597273558048
 PrefabInstance:

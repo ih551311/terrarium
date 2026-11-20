@@ -10,7 +10,7 @@ using UnityEngine;
 ///  1) Assets/Models/Chibi/Chibi_Baked.prefab: 굳힌 모델 (키 그대로)
 ///  2) 꾸밈 재료용 작은 모델 Assets/Models/Deco/deco_chibi.prefab (키 9cm)
 ///  3) 집 앞에 세워 둘 Assets/Prefabs/Chibi.prefab (키 1.95m, 말은 못 걸고 충돌 캡슐만)
-///  4) 원래 섬(Island)의 집 문 바로 앞 왼쪽에 세운다 (더 왼쪽에는 우체통, 오른쪽에는 가로등이 있다) (이름 ChibiNPC. 시작 자리 앞 오른쪽은 미쿠)
+///  4) 원래 섬(Island)의 집 문 바로 앞 왼쪽에 세운다 (더 왼쪽에는 우체통, 오른쪽에는 가로등이 있다) (이름 ChibiNPC. 시작 자리 앞 오른쪽은 햄부기)
 /// 메뉴: 유리병 정원 > 치비 만들기. 여러 번 눌러도 같은 결과가 나온다. (재료 데이터와 아이콘은 재료 데이터 만들기, 재료 아이콘 만들기로)
 /// </summary>
 public static class ChibiSetup

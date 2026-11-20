@@ -4,12 +4,12 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>
-/// 미쿠(Assets/Models/Miku/MIKU.fbx)를 게임에 넣는다.
+/// 햄부기(Assets/Models/Miku/MIKU.fbx)를 게임에 넣는다.
 ///  1) 색 재질 다섯 개(피부, 머리, 옷, 눈, 입)를 만든다. FBX에는 피부색과 흰색밖에 없어서 부분별로 색을 입힌다.
 ///  2) 꾸밈 재료용 작은 모델 Assets/Models/Deco/deco_miku.prefab (키 8cm, 병 안에 놓는다)
 ///  3) NPC용 Assets/Prefabs/Miku.prefab (키 1.7m, NpcTalk, 충돌 캡슐)
 ///  4) 원래 섬(Island)의 집 앞에 NPC를 세운다 (이름 MikuNPC)
-/// 메뉴: 유리병 정원 > 미쿠 만들기. 여러 번 눌러도 같은 결과가 나온다. (재료 데이터와 아이콘은 재료 데이터 만들기, 재료 아이콘 만들기로)
+/// 메뉴: 유리병 정원 > 햄부기 만들기. 여러 번 눌러도 같은 결과가 나온다. (재료 데이터와 아이콘은 재료 데이터 만들기, 재료 아이콘 만들기로)
 /// </summary>
 public static class MikuSetup
 {
@@ -90,10 +90,10 @@ public static class MikuSetup
         return b;
     }
 
-    [MenuItem("유리병 정원/미쿠 만들기")]
+    [MenuItem("유리병 정원/햄부기 만들기")]
     public static string Build()
     {
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath) == null) return "미쿠 모델을 찾지 못했어요: " + FbxPath;
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath) == null) return "햄부기 모델을 찾지 못했어요: " + FbxPath;
         EditorSceneManager.SaveOpenScenes();
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != IslandPath)
             EditorSceneManager.OpenScene(IslandPath, OpenSceneMode.Single);
@@ -112,10 +112,10 @@ public static class MikuSetup
         cap.height = 1.7f;
         NpcTalk talk = npc.AddComponent<NpcTalk>();
         SerializedObject so = new SerializedObject(talk);
-        so.FindProperty("npcName").stringValue = "미쿠";
+        so.FindProperty("npcName").stringValue = "햄부기";
         SerializedProperty lines = so.FindProperty("lines");
         lines.arraySize = 1;
-        lines.GetArrayElementAtIndex(0).stringValue = "안녕 나는 미쿠야";
+        lines.GetArrayElementAtIndex(0).stringValue = "안녕 나는 햄부기야";
         so.ApplyModifiedPropertiesWithoutUndo();
         PrefabUtility.SaveAsPrefabAsset(npc, NpcPrefabPath);
         Object.DestroyImmediate(npc);
@@ -136,6 +136,6 @@ public static class MikuSetup
         EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
         AssetDatabase.SaveAssets();
-        return "미쿠를 만들었어요: NPC 위치 " + pos + ", 꾸밈 모델 " + DecoPrefabPath;
+        return "햄부기를 만들었어요: NPC 위치 " + pos + ", 꾸밈 모델 " + DecoPrefabPath;
     }
 }

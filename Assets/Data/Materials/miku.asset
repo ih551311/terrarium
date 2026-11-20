@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: miku
   m_EditorClassIdentifier: Assembly-CSharp::MaterialData
   id: miku
-  displayName: "\uBBF8\uCFE0"
+  displayName: "\uD584\uBD80\uAE30"
   kind: 1
   icon: {fileID: 21300000, guid: fe173d1ae268b1c498dbd8b44376dda5, type: 3}
   zone: 4
