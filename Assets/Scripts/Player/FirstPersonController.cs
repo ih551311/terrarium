@@ -51,8 +51,13 @@ public class FirstPersonController : MonoBehaviour
         {
             camBasePos = cameraTransform.localPosition;
             cam = cameraTransform.GetComponent<Camera>();
-            if (cam != null) baseFov = cam.fieldOfView;
+            if (cam != null)
+            {
+                baseFov = cam.fieldOfView;
+                cam.nearClipPlane = 0.08f; // 벽, 창에 바짝 붙어도 화면이 대각선으로 잘리지 않게 (예전 0.3은 몸 반지름과 같아서 벽 앞에서 잘렸다)
+            }
         }
+        controller.radius = 0.38f;        // 카메라가 벽 면에서 늘 near보다 멀리 있게
     }
 
     private void OnDestroy()

@@ -430,3 +430,6 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 창 자리는 `InteriorSetup.WindowSpecs`(북 3, 동 1, 서 1)에서 정한다. `InteriorSetup.Build()` 끝에서 CabinWindows.Build()를 자동으로 부른다. 안쪽 벽(WallNorth/East/West)도 같은 자리에 구멍을 내서 짓고, 유리는 JarGlass(투명) + 보이지 않는 막이 콜라이더.
 - 큰 방 남쪽 벽 창 둘은 바깥이 집 앞쪽 빈 공간이라 없앴다. 침대 옆 서랍(bedside)도 없앴다.
 - 섬을 처음부터 다시 만드는 IslandSetup 코드는 이 Cabin 메쉬 교체를 모른다 → 섬을 다시 만들었다면 InteriorSetup.Build()를 다시 눌러야 한다.
+
+## 카메라 near clip
+- FirstPersonController.Awake에서 카메라 near clip 0.08, 몸 반지름 0.38로 맞춘다 (예전 near 0.3 = 반지름 0.3이라 벽, 창에 붙으면 화면이 대각선으로 잘렸다). 모든 씬에 적용된다.
