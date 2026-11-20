@@ -251,6 +251,40 @@ public static class GameState
     /// <summary>지금 와 있는 편지가 온 지 며칠이 지났는가</summary>
     public static int RequestAge { get; private set; }
 
+    // ───────── 도감 ─────────
+
+    private static readonly HashSet<string> discovered = new HashSet<string>();
+    private static readonly HashSet<string> dexClaimed = new HashSet<string>();
+
+    /// <summary>재료를 처음 얻었을 때 부른다 (도감에 담긴다)</summary>
+    public static event Action<MaterialData> Discovered;
+
+    /// <summary>도감에 담긴 재료 수</summary>
+    public static int DiscoveredCount => discovered.Count;
+
+    /// <summary>이 재료를 한 번이라도 얻었는가</summary>
+    public static bool IsDiscovered(string id) { return !string.IsNullOrEmpty(id) && discovered.Contains(id); }
+
+    /// <summary>재료를 도감에 담는다. 처음이면 true.</summary>
+    public static bool Discover(MaterialData m)
+    {
+        if (m == null || string.IsNullOrEmpty(m.id) || !discovered.Add(m.id)) return false;
+        Discovered?.Invoke(m);
+        Changed?.Invoke();
+        return true;
+    }
+
+    /// <summary>도감 완성 선물(key)을 이미 받았는가</summary>
+    public static bool IsDexClaimed(string key) { return dexClaimed.Contains(key); }
+
+    /// <summary>도감 완성 선물을 받는다. 이미 받았으면 false.</summary>
+    public static bool TryClaimDex(string key, int coins)
+    {
+        if (string.IsNullOrEmpty(key) || !dexClaimed.Add(key)) return false;
+        AddCoins(coins);
+        return true;
+    }
+
     /// <summary>코인을 더한다. (병 만들기를 취소했을 때 돌려주는 코인 등)</summary>
     public static void AddCoins(int amount)
     {
@@ -389,6 +423,9 @@ public static class GameState
         data.requestsDone = RequestsDone;
         data.dockOpen = DockOpen;
         data.desertDockOpen = DesertDockOpen;
+        data.dexSeeded = true;
+        foreach (string id in discovered) data.discovered.Add(id);
+        foreach (string id in dexClaimed) data.dexClaimed.Add(id);
         foreach (string id in taken) data.taken.Add(id);
         foreach (MaterialData m in outbox) data.outbox.Add(m.id);
         foreach (MaterialData m in orders) data.orders.Add(m.id);
@@ -433,6 +470,26 @@ public static class GameState
         foreach (string id in data.outbox) { MaterialData m = db.Find(id); if (m != null) outbox.Add(m); }
         foreach (string id in data.orders) { MaterialData m = db.Find(id); if (m != null) orders.Add(m); }
         foreach (string id in data.arrivedItems) { MaterialData m = db.Find(id); if (m != null) arrivedItems.Add(m); }
+        // 도감: 저장된 것을 되살린다. 도감이 생기기 전의 저장은 가방, 우체통, 병에 있던 재료로 채운다 (이미 가진 것은 얻은 것으로 본다)
+        discovered.Clear(); dexClaimed.Clear();
+        if (data.dexSeeded)
+        {
+            if (data.discovered != null) foreach (string id in data.discovered) discovered.Add(id);
+            if (data.dexClaimed != null) foreach (string id in data.dexClaimed) dexClaimed.Add(id);
+        }
+        else
+        {
+            foreach (BagEntrySave e in data.bag) if (db.Find(e.id) != null) discovered.Add(e.id);
+            foreach (string id in data.outbox) if (db.Find(id) != null) discovered.Add(id);
+            foreach (string id in data.orders) if (db.Find(id) != null) discovered.Add(id);
+            foreach (string id in data.arrivedItems) if (db.Find(id) != null) discovered.Add(id);
+            foreach (BottleSave b in data.bottles)
+            {
+                if (!string.IsNullOrEmpty(b.groundId) && db.Find(b.groundId) != null) discovered.Add(b.groundId);
+                foreach (PlacedSave p in b.items) if (db.Find(p.id) != null) discovered.Add(p.id);
+            }
+        }
+
         upgradeOrders.Clear(); arrivedUpgrades.Clear();
         foreach (int t in data.upgradeOrders) upgradeOrders.Add((AcquireMethod)t);
         foreach (int t in data.arrivedUpgrades) arrivedUpgrades.Add((AcquireMethod)t);
@@ -448,6 +505,9 @@ public static class GameState
         upgradeOrders.Clear();
         arrivedUpgrades.Clear();
         taken.Clear();
+        discovered.Clear();
+        dexClaimed.Clear();
+        Discovered = null;
         TimeOfDay = 0f;
         AxeLevel = 0;
         PickaxeLevel = 0;

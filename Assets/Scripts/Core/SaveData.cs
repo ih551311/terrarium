@@ -30,6 +30,11 @@ public class SaveData
     public bool dockOpen;                                 // 선착장을 코인으로 열었는가 (눈 섬으로 가는 배)
     public bool desertDockOpen;                           // 사막 섬 선착장을 코인으로 열었는가
 
+    // 도감: 한 번이라도 얻은 재료와, 이미 받은 완성 선물. (dexSeeded가 false인 예전 저장은 가방과 병에 있던 재료로 채운다)
+    public bool dexSeeded;
+    public List<string> discovered = new List<string>();
+    public List<string> dexClaimed = new List<string>();
+
     // 우체통: 보낸 재료, 주문한 물건, 도착해서 받기를 기다리는 물건
     public List<string> outbox = new List<string>();
     public List<string> orders = new List<string>();

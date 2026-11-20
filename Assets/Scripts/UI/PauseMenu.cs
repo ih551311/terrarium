@@ -66,7 +66,7 @@ public class PauseMenu : MonoBehaviour
     {
         Keyboard keyboard = Keyboard.current;
         if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame) return;
-        if (CreditsPanel.IsOpen || CreditsPanel.ClosedFrame == Time.frameCount) return; // 크레딧이 위에 열려 있으면(또는 방금 닫혔으면) 그쪽이 먼저다
+        if (CreditsPanel.IsOpen || CreditsPanel.ClosedFrame == Time.frameCount || CollectionBook.IsOpen || CollectionBook.ClosedFrame == Time.frameCount) return; // 크레딧이 위에 열려 있으면(또는 방금 닫혔으면) 그쪽이 먼저다
 
         if (isOpen) Close();
         else if (!UIFocus.IsOpen && UIFocus.LastCloseFrame != Time.frameCount) Open();

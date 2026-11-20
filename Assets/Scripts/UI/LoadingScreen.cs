@@ -26,9 +26,9 @@ public class LoadingScreen : MonoBehaviour
     // 재료 데이터만으로는 알 수 없는 재료의 쪽지
     private static readonly Dictionary<string, string> Special = new Dictionary<string, string>
     {
-        { "firefly",       "밤에 섬 곳곳을 날아다녀요. 가까이 가서 E로 잡아요. 비나 눈이 오는 밤에는 안 나와요." },
-        { "smelt",         "눈 섬의 얼어붙은 연못에서 낚시로 잡아요. 얼음 구멍 앞에서 E." },
-        { "ice_trout",     "눈 섬의 얼어붙은 연못에서 낚시로 잡아요. 찌가 흔들리면 바로 E." },
+        { "firefly",       "밤에 섬 곳곳을 날아다녀요. 비나 눈이 오는 밤에는 안 나와요." },
+        { "smelt",         "눈 섬의 얼어붙은 연못에서 낚시로 잡아요." },
+        { "ice_trout",     "눈 섬의 얼어붙은 연못에서 낚시로 잡아요." },
         { "goldfish",      "눈 섬 얼음 낚시에서 가끔 걸려요." },
         { "aurora_fish",   "오로라가 뜨는 밤, 눈 섬 얼음 낚시에서 아주 가끔 걸려요." },
         { "mini_snowman",  "눈 섬 마을의 눈사람을 곡괭이로 캐면 나와요. 다음 날 아침이면 눈사람이 다시 서 있어요." },
@@ -100,7 +100,7 @@ public class LoadingScreen : MonoBehaviour
                 return (m.isRare ? "아주 드물게, " : "") + (m.plantGroup == PlantGroup.Flower ? "꽃" : "풀") + "을 괭이로 캐면 나와요." + (m.zone != MaterialZone.Anywhere ? " " + where + "에서 잘 나와요." : "");
             default:
                 bool plant = m.kind == MaterialKind.Plant || m.kind == MaterialKind.Cover;
-                return when + where + "에서 " + (plant ? "캘 수 있어요. 바라보고 E." : "주울 수 있어요. 바라보고 E.");
+                return when + where + "에서 " + (plant ? "캘 수 있어요." : "주울 수 있어요.");
         }
     }
 

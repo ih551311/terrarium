@@ -50,6 +50,7 @@ public class Bag : MonoBehaviour
                 slot.count++;
                 Changed?.Invoke();
                 GameAudio.Play(GameAudio.Sfx.Pickup, 0.7f);
+                GameState.Discover(material);
                 return true;
             }
         }
@@ -60,6 +61,7 @@ public class Bag : MonoBehaviour
             slots.Add(new Slot { material = material, count = 1 });
             Changed?.Invoke();
             GameAudio.Play(GameAudio.Sfx.Pickup, 0.7f);
+            GameState.Discover(material);
             return true;
         }
 
