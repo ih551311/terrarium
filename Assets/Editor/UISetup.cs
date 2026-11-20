@@ -201,12 +201,13 @@ public static class UISetup
 
         // 바닥재 고르기 (병 그림 오른쪽, 작게)
         GameObject groundBox = Rect(edit.transform, "GroundSelector");
-        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -110f), new Vector2(200f, 370f));
+        Anchor(groundBox, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-30f, -110f), new Vector2(200f, 450f));
         Label(groundBox.transform, "Title", "바닥재", 34, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(200f, 50f), TextAlignmentOptions.Center);
         Button soilButton = MakeSmallButton(groundBox.transform, "SoilButton", "흙", new Vector2(0.5f, 1f), new Vector2(0f, -60f), new Vector2(200f, 70f), 30);
         Button sandButton = MakeSmallButton(groundBox.transform, "SandButton", "모래 x0", new Vector2(0.5f, 1f), new Vector2(0f, -140f), new Vector2(200f, 70f), 30);
         Button snowButton = MakeSmallButton(groundBox.transform, "SnowButton", "눈 x0", new Vector2(0.5f, 1f), new Vector2(0f, -220f), new Vector2(200f, 70f), 30);
         Button redSandButton = MakeSmallButton(groundBox.transform, "RedSandButton", "붉은 모래 x0", new Vector2(0.5f, 1f), new Vector2(0f, -300f), new Vector2(200f, 70f), 26);
+        Button mossButton = MakeSmallButton(groundBox.transform, "MossButton", "이끼 바닥 x0", new Vector2(0.5f, 1f), new Vector2(0f, -380f), new Vector2(200f, 70f), 26);
         GroundSelector groundSelector = groundBox.AddComponent<GroundSelector>();
         SetRef(groundSelector, "bag", bag); SetRef(groundSelector, "decorator", decorator);
         SetRef(groundSelector, "sand", BottleSetup.EnsureSandAsset());
@@ -220,6 +221,9 @@ public static class UISetup
         SetRef(groundSelector, "redSand", BottleSetup.EnsureRedSandAsset());
         SetRef(groundSelector, "redSandButton", redSandButton); SetRef(groundSelector, "redSandBackground", redSandButton.GetComponent<Image>());
         SetRef(groundSelector, "redSandLabel", redSandButton.GetComponentInChildren<TextMeshProUGUI>());
+        SetRef(groundSelector, "mossGround", BottleSetup.EnsureMossGroundAsset());
+        SetRef(groundSelector, "mossButton", mossButton); SetRef(groundSelector, "mossBackground", mossButton.GetComponent<Image>());
+        SetRef(groundSelector, "mossLabel", mossButton.GetComponentInChildren<TextMeshProUGUI>());
 
         // 병 만들기 화면: 꾸미는 중인 병이 없을 때 먼저 나온다. 흙의 양을 고르고 병 카드를 누르면 병이 만들어진다.
         // 병 종류와 흙의 양은 이때 정해지고 그 뒤로는 바꿀 수 없다. (창 전체를 덮어서, 닫기 버튼 말고는 아래 화면이 보이지 않는다)

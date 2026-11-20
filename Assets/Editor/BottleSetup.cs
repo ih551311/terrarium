@@ -14,6 +14,7 @@ public static class BottleSetup
     private const string SandPath = "Assets/Data/Materials/sand.asset";
     private const string SnowPath = "Assets/Data/Materials/snow.asset";
     private const string RedSandPath = "Assets/Data/Materials/red_sand.asset";
+    private const string MossGroundPath = "Assets/Data/Materials/moss_ground.asset";
 
     [MenuItem("유리병 정원/병 설정")]
     public static string Build()
@@ -77,6 +78,21 @@ public static class BottleSetup
         red.placeholderColor = new Color(0.82f, 0.45f, 0.26f);
         AssetDatabase.CreateAsset(red, RedSandPath);
         return red;
+    }
+
+    /// <summary>바닥재 이끼 재료(데이터). 없으면 만든다. 우체통에서 사서 병 바닥에 깐다.</summary>
+    public static MaterialData EnsureMossGroundAsset()
+    {
+        MaterialData moss = AssetDatabase.LoadAssetAtPath<MaterialData>(MossGroundPath);
+        if (moss != null) return moss;
+
+        moss = ScriptableObject.CreateInstance<MaterialData>();
+        moss.id = "moss_ground";
+        moss.displayName = "이끼 바닥";
+        moss.kind = MaterialKind.Ground;
+        moss.placeholderColor = new Color(0.30f, 0.52f, 0.22f);
+        AssetDatabase.CreateAsset(moss, MossGroundPath);
+        return moss;
     }
 
     private static void AddTestSand(MaterialData sand)

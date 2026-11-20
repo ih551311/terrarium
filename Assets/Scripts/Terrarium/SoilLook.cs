@@ -13,13 +13,13 @@ public static class SoilLook
     private const int Size = 256;
     private const float TileMeters = 0.07f; // 그림 한 장이 덮는 길이 (7cm). 작을수록 알갱이가 곱다
 
-    private static Texture2D soilAlbedo, soilNormal, sandAlbedo, sandNormal, snowAlbedo, snowNormal, redAlbedo, redNormal;
+    private static Texture2D soilAlbedo, soilNormal, sandAlbedo, sandNormal, snowAlbedo, snowNormal, redAlbedo, redNormal, mossAlbedo, mossNormal;
     private static readonly Dictionary<Mesh, Mesh> styled = new Dictionary<Mesh, Mesh>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
-        soilAlbedo = soilNormal = sandAlbedo = sandNormal = snowAlbedo = snowNormal = redAlbedo = redNormal = null;
+        soilAlbedo = soilNormal = sandAlbedo = sandNormal = snowAlbedo = snowNormal = redAlbedo = redNormal = mossAlbedo = mossNormal = null;
         styled.Clear();
         flattened.Clear();
     }
@@ -34,8 +34,9 @@ public static class SoilLook
         bool soil = ground == null;
         bool snow = !soil && ground.id == "snow";
         bool red = !soil && ground.id == "red_sand";
-        Texture2D albedo = soil ? soilAlbedo : (snow ? snowAlbedo : (red ? redAlbedo : sandAlbedo));
-        Texture2D normal = soil ? soilNormal : (snow ? snowNormal : (red ? redNormal : sandNormal));
+        bool moss = !soil && ground.id == "moss_ground";
+        Texture2D albedo = soil ? soilAlbedo : (snow ? snowAlbedo : (red ? redAlbedo : (moss ? mossAlbedo : sandAlbedo)));
+        Texture2D normal = soil ? soilNormal : (snow ? snowNormal : (red ? redNormal : (moss ? mossNormal : sandNormal)));
 
         m.mainTexture = albedo;
         if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", albedo);
@@ -46,7 +47,7 @@ public static class SoilLook
         if (m.HasProperty("_SpecularHighlights")) m.SetFloat("_SpecularHighlights", 0f);
         // 그림에 색이 다 들어 있으니 재질 색은 흰색. 다른 바닥재는 그 재료 색을 살짝 입힌다 (모래는 그림이 이미 모래색이라 흰색)
         Color tint = Color.white;
-        if (!soil && ground.id != "sand" && !snow && !red) tint = Color.Lerp(Color.white, ground.placeholderColor, 0.8f);
+        if (!soil && ground.id != "sand" && !snow && !red && !moss) tint = Color.Lerp(Color.white, ground.placeholderColor, 0.8f);
         m.color = tint;
     }
 
@@ -158,6 +159,7 @@ public static class SoilLook
         BuildSand();
         BuildSnow();
         BuildRedSand();
+        BuildMoss();
     }
 
     /// <summary>흙: 얼룩 + 알갱이 + 자갈. 높이 그림도 같이 만들어 울퉁불퉁한 법선 그림을 얻는다.</summary>
@@ -322,6 +324,46 @@ public static class SoilLook
         }
         redAlbedo = MakeTexture("RedSand_Albedo", color, false);
         redNormal = MakeNormal("RedSand_Normal", height, 1.8f);
+    }
+
+    /// <summary>
+    /// 이끼: 폭신한 초록 융단. 짙고 옅은 초록 덩어리(큰 얼룩), 작은 이끼 방울(알갱이), 군데군데 밝은 새순 점.
+    /// 흙보다 윤기가 조금 있고 울퉁불퉁함은 부드럽게 둔다.
+    /// </summary>
+    private static void BuildMoss()
+    {
+        var color = new Color32[Size * Size];
+        var height = new float[Size * Size];
+        var rnd = new System.Random(808);
+
+        for (int y = 0; y < Size; y++)
+        for (int x = 0; x < Size; x++)
+        {
+            float u = x / (float)Size, v = y / (float)Size;
+            float patch = Fbm(u, v, 4, 4, 51);   // 큰 이끼 덩어리
+            float tuft = Fbm(u, v, 22, 3, 73);   // 작은 이끼 방울
+            float fine = Fbm(u, v, 80, 2, 97);   // 아주 고운 결
+            float shade = 0.62f + 0.55f * patch;
+            shade *= 0.88f + 0.28f * tuft;
+            shade *= 0.94f + 0.10f * fine;
+            height[y * Size + x] = tuft * 0.6f + patch * 0.25f + fine * 0.15f;
+            // 짙은 초록에서 노란 초록으로: 밝은 곳일수록 노란 기가 돈다
+            float warm = Mathf.Clamp01((shade - 0.7f) * 1.6f);
+            color[y * Size + x] = ToColor32(Mathf.Lerp(0.16f, 0.40f, warm) * shade, Mathf.Lerp(0.34f, 0.58f, warm) * shade, Mathf.Lerp(0.12f, 0.16f, warm) * shade);
+        }
+        for (int i = 0; i < Size * Size / 40; i++) // 밝은 새순 점
+        {
+            int x = rnd.Next(Size), y = rnd.Next(Size);
+            color[y * Size + x] = ToColor32(0.56f, 0.76f, 0.26f);
+        }
+        for (int i = 0; i < Size * Size / 14; i++) // 어두운 틈
+        {
+            int x = rnd.Next(Size), y = rnd.Next(Size);
+            Color32 c = color[y * Size + x];
+            color[y * Size + x] = ToColor32(c.r / 255f * 0.7f, c.g / 255f * 0.72f, c.b / 255f * 0.7f);
+        }
+        mossAlbedo = MakeTexture("Moss_Albedo", color, false);
+        mossNormal = MakeNormal("Moss_Normal", height, 1.4f);
     }
 
     private static Color32 ToColor32(float r, float g, float b)

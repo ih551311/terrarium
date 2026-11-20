@@ -243,7 +243,13 @@ public static class MaterialSetup
         redSand.zone = Desert; redSand.acquire = Hand; redSand.condition = MaterialCondition.Always; redSand.sellPrice = 2;
         EditorUtility.SetDirty(redSand);
 
+        // 바닥재 이끼: 우체통에서 산다 (모래, 눈, 붉은 모래처럼 줍는 것이 아니다)
+        MaterialData mossGround = BottleSetup.EnsureMossGroundAsset();
+        mossGround.zone = Shop; mossGround.acquire = AcquireMethod.Shop; mossGround.condition = MaterialCondition.Always;
+        mossGround.buyPrice = 8; mossGround.sellPrice = 3;
+        EditorUtility.SetDirty(mossGround);
+
         AssetDatabase.SaveAssets();
-        return "재료 데이터 " + (Entries.Length + 2) + "종 (새로 " + created + "개), 모델 못 찾음 " + missingModel + "개";
+        return "재료 데이터 " + (Entries.Length + 3) + "종 (새로 " + created + "개), 모델 못 찾음 " + missingModel + "개";
     }
 }

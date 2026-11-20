@@ -28,6 +28,11 @@ public class GroundSelector : MonoBehaviour
     [SerializeField] private Button redSandButton;
     [SerializeField] private Image redSandBackground;
     [SerializeField] private TMP_Text redSandLabel;
+    [Tooltip("바닥재로 쓰는 이끼 재료 (우체통에서 산다)")]
+    [SerializeField] private MaterialData mossGround;
+    [SerializeField] private Button mossButton;
+    [SerializeField] private Image mossBackground;
+    [SerializeField] private TMP_Text mossLabel;
 
     [SerializeField] private Color normalColor = new Color(0.82f, 0.88f, 0.82f, 1f);
     [SerializeField] private Color selectedColor = new Color(0.98f, 0.82f, 0.45f, 1f);
@@ -61,6 +66,7 @@ public class GroundSelector : MonoBehaviour
         sandButton.onClick.AddListener(() => Choose(sand));
         if (snowButton != null) snowButton.onClick.AddListener(() => Choose(snow));
         if (redSandButton != null) redSandButton.onClick.AddListener(() => Choose(redSand));
+        if (mossButton != null) mossButton.onClick.AddListener(() => Choose(mossGround));
     }
 
     /// <summary>다룰 병을 받는다. 닫을 때는 null.</summary>
@@ -108,7 +114,10 @@ public class GroundSelector : MonoBehaviour
         bool redSelected = contents.Ground == redSand && redSand != null;
         int redCount = redSand != null ? bag.CountOf(redSand) : 0;
 
-        soilBackground.color = (sandSelected || snowSelected || redSelected) ? normalColor : selectedColor;
+        bool mossSelected = contents.Ground == mossGround && mossGround != null;
+        int mossCount = mossGround != null ? bag.CountOf(mossGround) : 0;
+
+        soilBackground.color = (sandSelected || snowSelected || redSelected || mossSelected) ? normalColor : selectedColor;
         sandBackground.color = sandSelected ? selectedColor : (sandCount > 0 ? normalColor : disabledColor);
         sandButton.interactable = sandSelected || sandCount > 0;
         sandLabel.text = "모래 x" + sandCount;
@@ -123,6 +132,12 @@ public class GroundSelector : MonoBehaviour
             redSandBackground.color = redSelected ? selectedColor : (redCount > 0 ? normalColor : disabledColor);
             redSandButton.interactable = redSelected || redCount > 0;
             redSandLabel.text = "붉은 모래 x" + redCount;
+        }
+        if (mossButton != null)
+        {
+            mossBackground.color = mossSelected ? selectedColor : (mossCount > 0 ? normalColor : disabledColor);
+            mossButton.interactable = mossSelected || mossCount > 0;
+            mossLabel.text = "이끼 바닥 x" + mossCount;
         }
     }
 }
