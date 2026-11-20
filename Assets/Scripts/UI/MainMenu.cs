@@ -89,6 +89,8 @@ public class MainMenu : MonoBehaviour
         helpButton.onClick.AddListener(() => OpenPanel(helpPanel));
         settingsButton.onClick.AddListener(() => OpenPanel(settingsPanel));
         foreach (Button b in closeButtons) b.onClick.AddListener(ClosePanel);
+        Canvas menuCanvas = settingsButton.GetComponentInParent<Canvas>();
+        if (menuCanvas != null) CreditsPanel.AddCornerButton(settingsButton, menuCanvas.transform).transform.SetSiblingIndex(1);
 
         string note = null;
         if (SaveSystem.LoadFailed) note = "저장 파일을 읽지 못해서 새로 시작해요";
