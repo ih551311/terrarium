@@ -10,9 +10,9 @@ using UnityEngine.UI;
 public class CreditsPanel : MonoBehaviour
 {
     private const string Text =
-        "<size=150%>크레딧</size>\n\n" +
+        "<size=150%>Mini Terra</size>\n미니 테라리움 꾸미기\n\n" +
         "<b>만든 사람</b>\n" +
-        "기획, 제작: (제작자 이름을 여기에 적어 주세요)\n" +
+        "기획, 제작: CheeseBugi\n" +
         "미쿠 모델: 제작자가 직접 만듦\n\n" +
         "<b>3D 에셋 (Unity Asset Store)</b>\n" +
         "Cozy Snowy Environment - Low Poly (HobiSoLoved)\n" +
