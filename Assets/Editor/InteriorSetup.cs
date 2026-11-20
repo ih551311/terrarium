@@ -116,7 +116,7 @@ public static class InteriorSetup
     /// </summary>
     private static void DressWorkbench(GameObject bench)
     {
-        foreach (string n in new[] { "WorkbenchTop", "WorkbenchShelf" })
+        foreach (string n in new[] { "WorkbenchTop", "WorkbenchShelf", "deco_furn_workbench" })
         {
             Transform old = bench.transform.Find(n);
             while (old != null) { Object.DestroyImmediate(old.gameObject); old = bench.transform.Find(n); }
@@ -124,7 +124,13 @@ public static class InteriorSetup
         Material wood = Mat("FurnitureWood", new Color(0.69f, 0.51f, 0.35f));
         Material darkWood = Mat("FurnitureDarkWood", new Color(0.47f, 0.33f, 0.23f));
         Transform body = bench.transform.Find("Table");
-        if (body != null)
+        GameObject benchModel = body != null ? Furn(bench, "deco_furn_workbench", new Vector3(body.localPosition.x, 0f, body.localPosition.z), 180f) : null;
+        if (benchModel != null)
+        {
+            // 상자 하나였던 작업대를 로우폴리 작업대 모델로 바꾼다 (문 달린 몸통, 모서리 기둥, 상판). 막는 상자와 병 자리는 그대로 두고 상자의 겉모습만 숨긴다.
+            body.GetComponent<Renderer>().enabled = false;
+        }
+        else if (body != null)
         {
             body.GetComponent<Renderer>().sharedMaterial = darkWood;
             Vector3 s = body.localScale;
@@ -293,21 +299,22 @@ public static class InteriorSetup
         GameObject bed = new GameObject("Bed");
         bed.transform.SetParent(root.transform, false);
         bed.AddComponent<Bed>();
-        Cube(bed, "BedFrame", new Vector3(bedX, 0.18f, bedZ), new Vector3(1.1f, 0.36f, 2.1f), darkWood);
-        Cube(bed, "BedMattress", new Vector3(bedX, 0.46f, bedZ), new Vector3(1.0f, 0.2f, 2.0f), cream);
-        Cube(bed, "BedBlanket", new Vector3(bedX, 0.6f, bedZ - 0.45f), new Vector3(1.04f, 0.1f, 1.2f), blanket);
-        Cube(bed, "BedPillow", new Vector3(bedX, 0.62f, bedZ + 0.75f), new Vector3(0.8f, 0.12f, 0.4f), pillow);
-        Cube(bed, "BedHeadboard", new Vector3(bedX, 0.55f, bedZ + 1.1f), new Vector3(1.1f, 0.9f, 0.08f), wood);
+        Furn(bed, "deco_furn_bed", new Vector3(bedX, 0f, bedZ), 0f);                         // 로우폴리 침대 모델 (머리판이 북쪽)
+        Solid(bed, "BedBody", new Vector3(bedX, 0.30f, bedZ), new Vector3(1.1f, 0.6f, 2.1f)); // 바라보고 E, 막는 상자
+        Solid(bed, "BedHead", new Vector3(bedX, 0.55f, bedZ + 1.0f), new Vector3(1.1f, 1.1f, 0.12f));
         // 침대 옆 작은 상자
-        Cube(root, "BedsideTable", new Vector3(bedX, 0.25f, bedZ + 1.65f), new Vector3(0.5f, 0.5f, 0.45f), wood);
+        Furn(root, "deco_furn_bedside", new Vector3(bedX, 0f, bedZ + 1.65f), 180f);              // 서랍이 방 쪽(서쪽)을 본다
+        Solid(root, "BedsideBody", new Vector3(bedX, 0.25f, bedZ + 1.65f), new Vector3(0.5f, 0.5f, 0.46f));
 
         // 책상과 편지 (서쪽 벽, 남쪽)
         float deskX = -hx + 0.7f, deskZ = -1.9f;
-        Cube(root, "DeskTop", new Vector3(deskX, 0.76f, deskZ), new Vector3(0.7f, 0.06f, 1.3f), wood);
-        foreach (Vector2 leg in new[] { new Vector2(deskX - 0.28f, deskZ - 0.58f), new Vector2(deskX + 0.28f, deskZ - 0.58f), new Vector2(deskX - 0.28f, deskZ + 0.58f), new Vector2(deskX + 0.28f, deskZ + 0.58f) })
-            Cube(root, "DeskLeg", new Vector3(leg.x, 0.37f, leg.y), new Vector3(0.06f, 0.74f, 0.06f), darkWood);
-        MakeLetterReadable(Cube(root, "Letter", new Vector3(deskX, 0.795f, deskZ), new Vector3(0.3f, 0.006f, 0.21f), paper, false));
-        // 책상 앞에는 의자(상자)를 두지 않는다
+        Furn(root, "deco_furn_desk", new Vector3(deskX, 0f, deskZ), 0f);                    // 로우폴리 책상 (서랍이 방 쪽)
+        Solid(root, "DeskBody", new Vector3(deskX, 0.40f, deskZ), new Vector3(0.74f, 0.80f, 1.34f));
+        // 책상 위의 도감: 보이는 것은 책 모델이고, 바라보고 E를 누르는 상자는 눈에 안 보이게 둔다 (DeskLetter가 도감을 연다)
+        GameObject letter = Cube(root, "Letter", new Vector3(deskX, 0.80f, deskZ + 0.02f), new Vector3(0.34f, 0.01f, 0.25f), paper, false);
+        Object.DestroyImmediate(letter.GetComponent<MeshRenderer>());
+        MakeLetterReadable(letter);
+        Furn(root, "deco_furn_book", new Vector3(deskX, 0.80f, deskZ + 0.02f), 90f);
 
         // 책상 위 촛불 (모델 + 불빛)
         GameObject candle = Deco(root, "deco_candle", new Vector3(deskX, 0.79f, deskZ - 0.4f), 6f);
@@ -355,13 +362,9 @@ public static class InteriorSetup
     {
         Vector3 shelfCenter = new Vector3(-HallHalfX + 0.42f, 0f, 0.8f);
         GameObject root = furniture.gameObject;
-        foreach (float y in ShelfBoardY)
-            // 판은 기둥 사이에 끼워 둔다: 양 끝이 바깥 기둥 안쪽에서 끝나 기둥 밖으로 삐져나오지 않는다
-            Cube(root, "ShelfBoard", shelfCenter + new Vector3(0f, y, 0f), new Vector3(ShelfDepth, 0.04f, ShelfLength - 0.04f), wood);
-        foreach (float z in new[] { -ShelfLength / 2f + 0.03f, 0f, ShelfLength / 2f - 0.03f })
-            // 기둥은 판보다 앞뒤로 1.5cm씩 더 두꺼워서 판 앞면과 같은 면이 되어 깜빡이는 일이 없다
-            Cube(root, "ShelfPost", shelfCenter + new Vector3(0f, 1.27f, z), new Vector3(ShelfDepth + 0.03f, 2.5f, 0.05f), darkWood);
-        Cube(root, "ShelfBack", shelfCenter + new Vector3(-0.13f, 1.27f, 0f), new Vector3(0.03f, 2.5f, ShelfLength), darkWood, false);
+        // 로우폴리 선반 모델(판, 기둥, 뒤판, 윗 띠, 밑 받침). 판의 높이는 ShelfBoardY 그대로라 병 자리(슬롯)가 맞는다.
+        Furn(root, "deco_furn_shelf", shelfCenter + new Vector3(0.01f, 0f, 0f), 0f);
+        Solid(root, "ShelfBody", shelfCenter + new Vector3(0f, 1.3f, 0f), new Vector3(ShelfDepth + 0.03f, 2.6f, ShelfLength));
 
         GameObject shelfRoot = new GameObject("BottleShelf");
         shelfRoot.transform.SetParent(furniture, false);
@@ -381,8 +384,8 @@ public static class InteriorSetup
         // 선반 말고도 병을 둘 자리 5곳: 책상 위(24번), 북쪽 창턱 둘(25, 26번), 동쪽 창턱 둘(27, 28번). 선반이 안 열려도 처음부터 쓸 수 있다.
         // (BottleStore.ExtraSlotStart, ExtraSlotCount와 맞춰야 한다)
         float bedWindowZ = -1.7f;
-        Cube(root, "SillBoard", new Vector3(0f, 1.30f, HallHalfZ - 0.15f), new Vector3(1.25f, 0.04f, 0.26f), wood, false);
-        Cube(root, "SillBoard", new Vector3(HallHalfX - 0.15f, 1.30f, bedWindowZ), new Vector3(0.26f, 0.04f, 1.25f), wood, false);
+        Furn(root, "deco_furn_sill", new Vector3(0f, 1.145f, HallHalfZ - 0.15f), 180f);   // 창턱: 받침 보가 달린 로우폴리 판
+        Furn(root, "deco_furn_sill", new Vector3(HallHalfX - 0.15f, 1.145f, bedWindowZ), -90f);
         Vector3[] extra =
         {
             new Vector3(deskX, 0.79f, deskZ + 0.45f),
@@ -468,6 +471,30 @@ public static class InteriorSetup
         box.center = go.transform.InverseTransformPoint(b.center);
         Vector3 size = go.transform.InverseTransformVector(b.size);
         box.size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+        return go;
+    }
+
+    /// <summary>가구 모델(deco_furn_*, 실제 크기)을 놓는다. 앞쪽이 +z인 모델을 yaw만큼 돌린다.</summary>
+    private static GameObject Furn(GameObject parent, string model, Vector3 pos, float yaw)
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DecoFolder + model + ".obj");
+        if (prefab == null) { Debug.LogWarning("가구 모델이 없어요: " + model + " (메뉴 가구 모델 만들기 다음 장식 모델 가져오기 설정)"); return null; }
+        GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+        go.name = model;
+        go.transform.SetParent(parent.transform, false);
+        go.transform.localPosition = pos;
+        go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        return go;
+    }
+
+    /// <summary>눈에 안 보이는 막는 상자 (가구 모델은 모양만 있고 충돌은 이것이 맡는다)</summary>
+    private static GameObject Solid(GameObject parent, string name, Vector3 center, Vector3 size)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent.transform, false);
+        go.transform.localPosition = center;
+        BoxCollider box = go.AddComponent<BoxCollider>();
+        box.size = size;
         return go;
     }
 

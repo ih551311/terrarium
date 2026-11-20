@@ -496,11 +496,34 @@ public static class IslandSetup
         Material red = BottleSetup.GetOrCreateMaterial("MailboxRed", new Color(0.72f, 0.2f, 0.18f));
         Material gold = BottleSetup.GetOrCreateMaterial("MailboxFlag", new Color(0.97f, 0.8f, 0.3f));
 
-        MailboxPart(box.transform, "Post", new Vector3(0f, 0.55f, 0f), new Vector3(0.14f, 1.1f, 0.14f), wood);
-        MailboxPart(box.transform, "Body", new Vector3(0f, 1.25f, 0f), new Vector3(0.5f, 0.36f, 0.72f), red);
-        MailboxPart(box.transform, "Roof", new Vector3(0f, 1.47f, 0f), new Vector3(0.56f, 0.07f, 0.78f), wood);
-        MailboxPart(box.transform, "FlagPole", new Vector3(0.3f, 1.4f, 0.12f), new Vector3(0.04f, 0.3f, 0.04f), wood);
-        MailboxPart(box.transform, "Flag", new Vector3(0.34f, 1.52f, 0.12f), new Vector3(0.13f, 0.1f, 0.03f), gold);
+        // 로우폴리 우체통 모델(deco_furn_mailbox: 깎은 기둥, 둥근 지붕 통, 문, 깃발, 종). 문이 남쪽(오는 쪽)을 본다.
+        GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Models/Deco/deco_furn_mailbox.obj");
+        if (model != null)
+        {
+            GameObject m = (GameObject)PrefabUtility.InstantiatePrefab(model);
+            m.name = "MailboxModel";
+            m.transform.SetParent(box.transform, false);
+            m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            // 눈에 안 보이는 막는 상자: 기둥과 통 (바라보고 E를 누르는 자리)
+            MailboxCollider(box.transform, "PostBody", new Vector3(0f, 0.55f, 0f), new Vector3(0.16f, 1.1f, 0.16f));
+            MailboxCollider(box.transform, "BoxBody", new Vector3(0f, 1.25f, 0f), new Vector3(0.5f, 0.5f, 0.74f));
+        }
+        else
+        {
+            MailboxPart(box.transform, "Post", new Vector3(0f, 0.55f, 0f), new Vector3(0.14f, 1.1f, 0.14f), wood);
+            MailboxPart(box.transform, "Body", new Vector3(0f, 1.25f, 0f), new Vector3(0.5f, 0.36f, 0.72f), red);
+            MailboxPart(box.transform, "Roof", new Vector3(0f, 1.47f, 0f), new Vector3(0.56f, 0.07f, 0.78f), wood);
+            MailboxPart(box.transform, "FlagPole", new Vector3(0.3f, 1.4f, 0.12f), new Vector3(0.04f, 0.3f, 0.04f), wood);
+            MailboxPart(box.transform, "Flag", new Vector3(0.34f, 1.52f, 0.12f), new Vector3(0.13f, 0.1f, 0.03f), gold);
+        }
+    }
+
+    private static void MailboxCollider(Transform parent, string name, Vector3 localPos, Vector3 size)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = localPos;
+        go.AddComponent<BoxCollider>().size = size;
     }
 
     private static void MailboxPart(Transform parent, string name, Vector3 localPos, Vector3 scale, Material mat)
