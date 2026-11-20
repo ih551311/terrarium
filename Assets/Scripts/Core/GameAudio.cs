@@ -1,11 +1,11 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
 /// 게임의 소리 전부. 소리 파일이 없어서 모두 코드로 만든다. (진짜 소리 파일을 구하면 이 스크립트의 clip만 바꿔 끼우면 된다)
 /// - 배경 음악: 낮에는 밝고 느린 펜타토닉 선율, 밤에는 더 느리고 낮은 선율. 하루 시간(GameState.TimeOfDay)에 따라 서로 섞인다.
-/// - 주변 소리: 파도(바닷가에 가까울수록 크게), 바람, 낮의 새 소리, 밤의 풀벌레, 빗소리, 집 안의 조용한 방 소리
+/// - 주변 소리: 파도(바닷가에 가까울수록 크게), 바람, 낮의 새 소리, 빗소리, 집 안의 조용한 방 소리
 /// - 효과음: 줍기, 병 안에 놓기, 빼기, 완성 종소리, 코인, 종이, 버튼 누르기, 발소리
 /// - P 키: 음악 켜기/끄기
 /// 게임이 시작될 때 스스로 만들어지고 씬이 바뀌어도 남는다. 효과음은 GameAudio.Play(GameAudio.Sfx.Pickup)처럼 부른다.
@@ -53,7 +53,7 @@ public class GameAudio : MonoBehaviour
 
     private readonly Dictionary<Sfx, AudioClip> sfxClips = new Dictionary<Sfx, AudioClip>();
     private AudioClip[] steps, sandSteps, birds;
-    private AudioSource sfxSource, waves, wind, rainLoop, crickets, roomTone, musicDay, musicNight;
+    private AudioSource sfxSource, waves, wind, rainLoop, roomTone, musicDay, musicNight;
 
     private MusicPlayer music;
     private FootstepPlayer footsteps;
@@ -91,7 +91,6 @@ public class GameAudio : MonoBehaviour
         // 바람은 진짜 녹음(Resources/Sfx/WindLoop)이 있으면 그것으로 바꾼다. (빗소리는 날씨 에셋이 따로 낸다)
         AudioClip windFile = Resources.Load<AudioClip>("Sfx/WindLoop");
         if (windFile != null) { wind.clip = windFile; wind.Play(); }
-        crickets = NewSource("Crickets", Loop("Crickets", CricketData(), Rate), 0f, true);
         roomTone = NewSource("Room", Loop("Room", RoomData(), Rate), 0f, true);
 
         // 발소리: 사신 소리 모음(Footsteps Sounds)이 있으면 바닥에 맞는 진짜 소리를, 없으면 코드로 만든 소리를 쓴다
@@ -167,7 +166,6 @@ public class GameAudio : MonoBehaviour
         Fade(waves, outdoors ? Mathf.Lerp(0.05f, 0.26f, shore) : 0.015f);
         Fade(wind, outdoors ? 0.17f + 0.12f * rain : 0.03f);
         Fade(rainLoop, 0f); // 빗소리와 폭풍 소리는 날씨 에셋(AudioModule)이 낸다
-        Fade(crickets, outdoors ? 0.07f * night * (1f - rain) : 0f);
         Fade(roomTone, outdoors ? 0f : 0.10f);
 
         // 낮의 새 소리 (바깥, 맑은 날)
@@ -448,44 +446,6 @@ public class GameAudio : MonoBehaviour
         return d;
     }
 
-    /// <summary>
-    /// 밤의 풀벌레: 예전에는 높은 사인음이 쉬지 않고 "삐삐삐" 하고 켜졌다 꺼져서 기계음처럼 거슬렸다.
-    /// 지금은 귀뚜라미 두 마리가 번갈아 "찌르르" 하고 짧게 울고(세 번 끊어 우는 한 묶음), 한참 쉬었다가 다시 운다.
-    /// 소리는 부드럽게 시작하고 끝나며, 높이가 조금씩 흔들리고 숨 같은 잡음이 약간 섞여서 사인음처럼 들리지 않는다.
-    /// </summary>
-    private static float[] CricketData()
-    {
-        int n = Rate * 10 + LoopFade;
-        var d = new float[n];
-        var rnd = new System.Random(61);
-        float[] pitch = { 3650f, 4150f };
-        float[] nextAt = { 0.4f, 2.6f }; // 두 마리가 서로 다른 때에 운다
-        for (int k = 0; k < 2; k++)
-        {
-            float t0 = nextAt[k];
-            while (t0 < 10f)
-            {
-                int pulses = 3;
-                for (int p = 0; p < pulses; p++)
-                {
-                    float start = t0 + p * 0.085f;
-                    int i0 = (int)(start * Rate), len = (int)(0.05f * Rate);
-                    float f = pitch[k] * (1f + 0.012f * (float)(rnd.NextDouble() - 0.5));
-                    float phase = 0f;
-                    for (int i = 0; i < len && i0 + i < n; i++)
-                    {
-                        float u = i / (float)len;
-                        float env = Mathf.Sin(Mathf.PI * u); env *= env;        // 부드럽게 커졌다 작아진다
-                        phase += 2f * Mathf.PI * (f * (1f + 0.02f * u)) / Rate;
-                        float hiss = (float)(rnd.NextDouble() * 2.0 - 1.0) * 0.18f;
-                        d[i0 + i] += (Mathf.Sin(phase) + 0.25f * Mathf.Sin(phase * 2.02f) + hiss) * env * 0.22f;
-                    }
-                }
-                t0 += 0.9f + (float)rnd.NextDouble() * 1.8f; // 한 묶음 우는 사이 한참 쉰다
-            }
-        }
-        return d;
-    }
     /// <summary>집 안의 조용한 방 소리: 아주 낮은 웅웅 소리와 가끔 장작 타는 톡톡</summary>
     private static float[] RoomData()
     {
