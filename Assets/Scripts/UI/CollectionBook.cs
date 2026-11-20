@@ -11,7 +11,8 @@ using UnityEngine.UI;
 /// 구역(숲, 꽃 언덕, 바닷가, 눈 섬, 사막 섬, 어디서나, 우체통 가게)마다 칸이 있고,
 /// 한 구역을 다 채우면 선물(코인)을 한 번 받을 수 있다. 시간 제한이나 불이익은 없다.
 /// 새 재료를 처음 얻으면 화면 아래에 "도감에 담겼어요"가 잠깐 뜬다.
-/// 화면은 처음 열 때 코드로 만들고 씬을 넘어 남겨 둔다.
+/// 화면은 Assets/Resources/UI/CollectionBook.prefab (유니티에서 열어 모양을 직접 고칠 수 있다)을 처음 열 때 꺼내 와 씬을 넘어 남겨 둔다.
+/// 재료 칸(Cell_*)만 열 때마다 코드가 채운다.
 /// </summary>
 public class CollectionBook : MonoBehaviour
 {
@@ -35,18 +36,20 @@ public class CollectionBook : MonoBehaviour
         new Tab("shop",    "우체통 가게", 80, MaterialZone.Shop),
     };
 
-    private const int Columns = 8;
+    public const int Columns = 8;
+    public static int TabCount => Tabs.Length;
+    public static string TabLabel(int i) => Tabs[i].label;
 
     private static CollectionBook instance;
     private static readonly HashSet<string> recent = new HashSet<string>(); // 이번에 새로 담겨서 아직 도감을 안 열어 본 것
 
-    private GameObject root;
-    private TMP_Text titleCount, detailName, detailBody, giftLabel;
-    private Button giftButton;
-    private Button[] tabButtons;
+    [SerializeField] private GameObject root;
+    [SerializeField] private TMP_Text titleCount, detailName, detailBody, giftLabel;
+    [SerializeField] private Button giftButton, closeButton;
+    [SerializeField] private Button[] tabButtons;
+    [SerializeField] private RectTransform content;
+    [SerializeField] private ScrollRect scroll;
     private TMP_Text[] tabLabels;
-    private RectTransform content;
-    private ScrollRect scroll;
     private int tabIndex;
     private MaterialData selected;
     private bool isOpen;
@@ -92,84 +95,40 @@ public class CollectionBook : MonoBehaviour
     public static void Show()
     {
         if (ClosedFrame == Time.frameCount) return; // 닫는 E 키로 같은 프레임에 다시 열리지 않게
-        if (instance == null) Build();
+        if (instance == null) LoadPrefab();
         if (instance != null) instance.Open();
     }
 
-    // ───────── 화면 만들기 ─────────
+    // ───────── 화면 꺼내기 ─────────
 
-    private static void Build()
+    private static void LoadPrefab()
     {
-        Canvas canvas = UIKit.CreateCanvas("CollectionBook", 810);
-        instance = canvas.gameObject.AddComponent<CollectionBook>();
-        CollectionBook b = instance;
-
-        b.root = new GameObject("Root", typeof(RectTransform));
-        b.root.transform.SetParent(canvas.transform, false);
-        RectTransform rootRect = (RectTransform)b.root.transform;
-        rootRect.anchorMin = Vector2.zero; rootRect.anchorMax = Vector2.one;
-        rootRect.offsetMin = rootRect.offsetMax = Vector2.zero;
-
-        UIKit.Backdrop(rootRect).GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.65f);
-        RectTransform panel = UIKit.Panel(rootRect, "Panel", new Vector2(1640f, 940f));
-
-        UIKit.Label(panel, "정원 도감", 58f, new Vector2(-250f, 408f), new Vector2(700f, 80f), TextAlignmentOptions.Center);
-        b.titleCount = UIKit.Label(panel, "", 38f, new Vector2(100f, 408f), new Vector2(400f, 60f), TextAlignmentOptions.Left);
-        UIKit.MakeButton(panel, "닫기", new Vector2(690f, 408f), new Vector2(180f, 64f), () => b.Close(), 32f);
-
-        // 왼쪽: 구역 칸
-        b.tabButtons = new Button[Tabs.Length];
-        b.tabLabels = new TMP_Text[Tabs.Length];
-        for (int i = 0; i < Tabs.Length; i++)
-        {
-            int index = i;
-            Button t = UIKit.MakeButton(panel, Tabs[i].label, new Vector2(-640f, 290f - i * 78f), new Vector2(290f, 66f), () => b.SelectTab(index), 30f);
-            b.tabButtons[i] = t;
-            b.tabLabels[i] = t.GetComponentInChildren<TMP_Text>();
-        }
-
-        // 왼쪽 아래: 완성 선물
-        b.giftButton = UIKit.MakeButton(panel, "선물 받기", new Vector2(-640f, -330f), new Vector2(290f, 74f), () => b.Claim(), 28f);
-        b.giftLabel = UIKit.Label(panel, "", 26f, new Vector2(-640f, -405f), new Vector2(300f, 60f), TextAlignmentOptions.Center);
-
-        // 가운데: 재료 칸 (스크롤)
-        RectTransform view = UIKit.Rect(panel, "View");
-        view.anchorMin = view.anchorMax = new Vector2(0.5f, 0.5f);
-        view.sizeDelta = new Vector2(1090f, 600f);      // 위는 제목줄(닫기 버튼 아래 끝 376) 아래, 아래는 설명칸(위 끝 -255) 위에 둔다
-        view.anchoredPosition = new Vector2(140f, 62f);
-        view.gameObject.AddComponent<RectMask2D>();
-        b.content = UIKit.Rect(view, "Content");
-        b.content.anchorMin = new Vector2(0f, 1f); b.content.anchorMax = new Vector2(1f, 1f);
-        b.content.pivot = new Vector2(0.5f, 1f);
-        b.content.sizeDelta = new Vector2(0f, 0f); // 가로는 보이는 창 너비 그대로 (UIKit.Rect가 정한 기본 크기를 지운다)
-        b.content.anchoredPosition = Vector2.zero;
-        GridLayoutGroup grid = b.content.gameObject.AddComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(124f, 140f);
-        grid.spacing = new Vector2(10f, 10f);
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = Columns;
-        grid.padding = new RectOffset(6, 6, 6, 6);
-        ContentSizeFitter fit = b.content.gameObject.AddComponent<ContentSizeFitter>();
-        fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        b.scroll = view.gameObject.AddComponent<ScrollRect>();
-        b.scroll.viewport = view; b.scroll.content = b.content;
-        b.scroll.horizontal = false; b.scroll.vertical = true;
-        b.scroll.movementType = ScrollRect.MovementType.Clamped;
-        b.scroll.scrollSensitivity = 40f;
-
-        // 아래: 고른 재료의 설명
-        RectTransform detail = UIKit.Rect(panel, "Detail");
-        detail.anchorMin = detail.anchorMax = new Vector2(0.5f, 0.5f);
-        detail.sizeDelta = new Vector2(1090f, 200f);
-        detail.anchoredPosition = new Vector2(140f, -355f);
-        Image detailBg = detail.gameObject.AddComponent<Image>();
-        detailBg.color = new Color(0.93f, 0.89f, 0.80f, 1f);
-        b.detailName = UIKit.Label(detail, "", 38f, new Vector2(0f, 62f), new Vector2(1040f, 56f), TextAlignmentOptions.Left);
-        b.detailBody = UIKit.Label(detail, "", 28f, new Vector2(0f, -28f), new Vector2(1040f, 120f), TextAlignmentOptions.TopLeft);
-
-        b.root.SetActive(false);
+        GameObject prefab = Resources.Load<GameObject>("UI/CollectionBook");
+        if (prefab == null) { Debug.LogError("UI/CollectionBook 프리팹이 없어요. 메뉴 '유리병 정원 > 화면 캔버스 다시 만들기'를 눌러 주세요."); return; }
+        GameObject go = Object.Instantiate(prefab);
+        go.name = "CollectionBook";
+        Object.DontDestroyOnLoad(go);
+        instance = go.GetComponent<CollectionBook>();
     }
 
+    private void Awake()
+    {
+        tabLabels = new TMP_Text[tabButtons.Length];
+        for (int i = 0; i < tabButtons.Length; i++)
+        {
+            int index = i;
+            tabLabels[i] = tabButtons[i].GetComponentInChildren<TMP_Text>();
+            tabButtons[i].onClick.AddListener(() => SelectTab(index));
+        }
+        giftButton.onClick.AddListener(Claim);
+        closeButton.onClick.AddListener(Close);
+        root.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
+    }
     // ───────── 열고 닫기 ─────────
 
     private void Open()

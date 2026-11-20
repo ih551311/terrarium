@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +9,7 @@ using UnityEngine.UI;
 ///   2) 검은 화면에서 "쿨쿨..." 하고, 그동안 밤이 지나간다 (여기서 GameState.Sleep()과 저장을 한다)
 ///   3) 아침 소리와 함께 천천히 밝아지고, 가운데에 "N일째 아침"과 오늘의 날씨가 떴다가 사라진다
 /// 연출 중에는 UIFocus로 걷기와 줍기가 멈춘다. 이미 자는 중이면 또 시작하지 않는다.
-/// 화면은 처음 쓸 때 코드로 만들어 씬을 넘어 남겨 둔다.
+/// 화면은 Assets/Resources/UI/SleepSequence.prefab (유니티에서 열어 글꼴, 색, 자리를 직접 고칠 수 있다)을 처음 쓸 때 꺼내 와 씬을 넘어 남겨 둔다.
 /// </summary>
 public class SleepSequence : MonoBehaviour
 {
@@ -23,9 +23,9 @@ public class SleepSequence : MonoBehaviour
     /// <summary>자는 중이면 true</summary>
     public static bool Sleeping => instance != null && instance.running;
 
-    private CanvasGroup curtain;
-    private CanvasGroup titleGroup;
-    private TMP_Text dreamText, titleText, subText;
+    [SerializeField] private CanvasGroup curtain;
+    [SerializeField] private CanvasGroup titleGroup;
+    [SerializeField] private TMP_Text dreamText, titleText, subText;
     private bool running;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -38,38 +38,31 @@ public class SleepSequence : MonoBehaviour
     public static void Begin(Interactor who)
     {
         if (Sleeping) return;
-        if (instance == null) Build();
+        if (instance == null) LoadPrefab();
+        if (instance == null) return;
         instance.StartCoroutine(instance.Run(who));
     }
 
-    private static void Build()
+    private static void LoadPrefab()
     {
-        Canvas canvas = UIKit.CreateCanvas("SleepSequence", 900);
-        instance = canvas.gameObject.AddComponent<SleepSequence>();
-
-        RectTransform black = UIKit.Rect(canvas.transform, "Curtain");
-        black.anchorMin = Vector2.zero; black.anchorMax = Vector2.one;
-        black.offsetMin = black.offsetMax = Vector2.zero;
-        Image image = black.gameObject.AddComponent<Image>();
-        image.color = new Color(0.02f, 0.03f, 0.07f, 1f);
-        instance.curtain = black.gameObject.AddComponent<CanvasGroup>();
-        instance.curtain.alpha = 0f;
-        instance.curtain.blocksRaycasts = false;
-
-        Color soft = new Color(0.86f, 0.88f, 0.96f, 1f);
-        instance.dreamText = UIKit.Label(black, "", 64f, new Vector2(0f, 0f), new Vector2(900f, 140f), TextAlignmentOptions.Center, soft);
-
-        RectTransform titleRoot = UIKit.Rect(canvas.transform, "Title");
-        titleRoot.anchorMin = titleRoot.anchorMax = new Vector2(0.5f, 0.5f);
-        titleRoot.sizeDelta = new Vector2(1200f, 300f);
-        instance.titleGroup = titleRoot.gameObject.AddComponent<CanvasGroup>();
-        instance.titleGroup.alpha = 0f;
-        instance.titleGroup.blocksRaycasts = false;
-        Color warm = new Color(1f, 0.96f, 0.86f, 1f);
-        instance.titleText = UIKit.Label(titleRoot, "", 96f, new Vector2(0f, 40f), new Vector2(1200f, 150f), TextAlignmentOptions.Center, warm);
-        instance.subText = UIKit.Label(titleRoot, "", 44f, new Vector2(0f, -60f), new Vector2(1200f, 90f), TextAlignmentOptions.Center, warm);
+        GameObject prefab = Resources.Load<GameObject>("UI/SleepSequence");
+        if (prefab == null) { Debug.LogError("UI/SleepSequence 프리팹이 없어요. 메뉴 '유리병 정원 > 화면 캔버스 다시 만들기'를 눌러 주세요."); return; }
+        GameObject go = Object.Instantiate(prefab);
+        go.name = "SleepSequence";
+        Object.DontDestroyOnLoad(go);
+        instance = go.GetComponent<SleepSequence>();
     }
 
+    private void Awake()
+    {
+        curtain.alpha = 0f; curtain.blocksRaycasts = false;
+        titleGroup.alpha = 0f; titleGroup.blocksRaycasts = false;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
+    }
     private IEnumerator Run(Interactor who)
     {
         running = true;

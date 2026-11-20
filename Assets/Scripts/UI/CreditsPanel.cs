@@ -5,11 +5,12 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 크레딧 화면. 메인 화면과 일시정지 메뉴의 "크레딧" 버튼으로 연다. Esc나 닫기 버튼으로 닫는다.
-/// 화면은 처음 열 때 코드로 만들고 씬을 넘어 남겨 둔다. 글자는 아래 Text에서 고친다.
+/// 화면은 Assets/Resources/UI/CreditsPanel.prefab (유니티에서 열어 모양을 직접 고칠 수 있다)을 처음 열 때 꺼내 와 씬을 넘어 남겨 둔다.
+/// 글자는 프리팹 안의 Content/Label 에서 고친다. 아래 Text는 프리팹을 새로 만들 때(UIBake) 쓰는 처음 글자다.
 /// </summary>
 public class CreditsPanel : MonoBehaviour
 {
-    private const string Text =
+    public const string Text =
         "<size=150%>Mini Terra</size>\n미니 테라리움 꾸미기\n\n" +
         "<b>만든 사람</b>\n" +
         "기획, 제작: CheeseBugi\n" +
@@ -33,8 +34,8 @@ public class CreditsPanel : MonoBehaviour
         "플레이해 주셔서 고마워요.";
 
     private static CreditsPanel instance;
-    private GameObject root;
-    // (ClosedFrame은 아래 IsOpen 옆에 있다)
+    [SerializeField] private GameObject root;
+    [SerializeField] private Button closeButton;
     private bool isOpen;
 
     public static bool IsOpen => instance != null && instance.isOpen;
@@ -50,8 +51,8 @@ public class CreditsPanel : MonoBehaviour
     /// <summary>크레딧 화면을 연다.</summary>
     public static void Show()
     {
-        if (instance == null) Build();
-        instance.Open();
+        if (instance == null) LoadPrefab();
+        if (instance != null) instance.Open();
     }
 
     /// <summary>
@@ -96,53 +97,26 @@ public class CreditsPanel : MonoBehaviour
         return button;
     }
 
-    private static void Build()
+    private static void LoadPrefab()
     {
-        Canvas canvas = UIKit.CreateCanvas("CreditsPanel", 800);
-        instance = canvas.gameObject.AddComponent<CreditsPanel>();
-        instance.root = new GameObject("Root", typeof(RectTransform));
-        instance.root.transform.SetParent(canvas.transform, false);
-        RectTransform rootRect = (RectTransform)instance.root.transform;
-        rootRect.anchorMin = Vector2.zero; rootRect.anchorMax = Vector2.one;
-        rootRect.offsetMin = rootRect.offsetMax = Vector2.zero;
-
-        UIKit.Backdrop(rootRect).GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.7f);
-        RectTransform panel = UIKit.Panel(rootRect, "Panel", new Vector2(1100f, 880f));
-
-        // 스크롤 영역
-        RectTransform view = UIKit.Rect(panel, "View");
-        view.anchorMin = view.anchorMax = new Vector2(0.5f, 0.5f);
-        view.sizeDelta = new Vector2(1000f, 700f);
-        view.anchoredPosition = new Vector2(0f, 50f);
-        view.gameObject.AddComponent<RectMask2D>();
-        RectTransform content = UIKit.Rect(view, "Content");
-        content.anchorMin = new Vector2(0f, 1f); content.anchorMax = new Vector2(1f, 1f);
-        content.pivot = new Vector2(0.5f, 1f);
-        content.anchoredPosition = Vector2.zero;
-        TMP_Text label = UIKit.Label(content, Text, 34f, Vector2.zero, new Vector2(960f, 100f), TextAlignmentOptions.Top);
-        RectTransform labelRect = label.rectTransform;
-        labelRect.anchorMin = new Vector2(0f, 1f); labelRect.anchorMax = new Vector2(1f, 1f);
-        labelRect.pivot = new Vector2(0.5f, 1f);
-        labelRect.offsetMin = new Vector2(20f, 0f); labelRect.offsetMax = new Vector2(-20f, 0f);
-        label.richText = true;
-        label.lineSpacing = 12f;
-        ContentSizeFitter fit = labelRect.gameObject.AddComponent<ContentSizeFitter>();
-        fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        ContentSizeFitter fitContent = content.gameObject.AddComponent<ContentSizeFitter>();
-        fitContent.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        VerticalLayoutGroup layout = content.gameObject.AddComponent<VerticalLayoutGroup>();
-        layout.childControlWidth = true; layout.childControlHeight = true;
-        layout.childForceExpandWidth = true; layout.childForceExpandHeight = false;
-        ScrollRect scroll = view.gameObject.AddComponent<ScrollRect>();
-        scroll.viewport = view; scroll.content = content;
-        scroll.horizontal = false; scroll.vertical = true;
-        scroll.movementType = ScrollRect.MovementType.Clamped;
-        scroll.scrollSensitivity = 40f;
-
-        UIKit.MakeButton(panel, "닫기", new Vector2(0f, -370f), new Vector2(300f, 70f), () => instance.Close(), 34f);
-        instance.root.SetActive(false);
+        GameObject prefab = Resources.Load<GameObject>("UI/CreditsPanel");
+        if (prefab == null) { Debug.LogError("UI/CreditsPanel 프리팹이 없어요. 메뉴 '유리병 정원 > 화면 캔버스 다시 만들기'를 눌러 주세요."); return; }
+        GameObject go = Object.Instantiate(prefab);
+        go.name = "CreditsPanel";
+        Object.DontDestroyOnLoad(go);
+        instance = go.GetComponent<CreditsPanel>();
     }
 
+    private void Awake()
+    {
+        closeButton.onClick.AddListener(Close);
+        root.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
+    }
     private void Open()
     {
         if (isOpen) return;

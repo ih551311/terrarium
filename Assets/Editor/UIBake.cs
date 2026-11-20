@@ -42,6 +42,9 @@ public static class UIBake
             SavePrefab(BuildLoading(), "LoadingScreen");
             SavePrefab(BuildRequest(), "RequestPanel");
             SavePrefab(BuildDock(), "DockPanel");
+            SavePrefab(BuildCredits(), "CreditsPanel");
+            SavePrefab(BuildBook(), "CollectionBook");
+            SavePrefab(BuildSleep(), "SleepSequence");
         }
         finally
         {
@@ -50,7 +53,32 @@ public static class UIBake
         }
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        return "화면 프리팹 네 개를 만들었어요: " + PrefabFolder;
+        return "화면 프리팹 일곱 개를 만들었어요: " + PrefabFolder;
+    }
+
+    /// <summary>크레딧과 정원 도감 프리팹만 새로 만든다 (다른 화면 프리팹에 손으로 고친 것이 있으면 건드리지 않는다).</summary>
+    [MenuItem("유리병 정원/크레딧, 도감 화면 프리팹만 만들기")]
+    public static string BakeCreditsAndBook()
+    {
+        if (EditorApplication.isPlaying) return "Play 중에는 만들 수 없어요";
+        Directory.CreateDirectory(PrefabFolder);
+        Scene previous = SceneManager.GetActiveScene();
+        Scene temp = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+        SceneManager.SetActiveScene(temp);
+        try
+        {
+            SavePrefab(BuildCredits(), "CreditsPanel");
+            SavePrefab(BuildBook(), "CollectionBook");
+            SavePrefab(BuildSleep(), "SleepSequence");
+        }
+        finally
+        {
+            SceneManager.SetActiveScene(previous);
+            EditorSceneManager.CloseScene(temp, true);
+        }
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        return "크레딧, 정원 도감, 잠자기 화면 프리팹을 만들었어요: " + PrefabFolder;
     }
 
     private static void SavePrefab(GameObject root, string name)
@@ -217,6 +245,150 @@ public static class UIBake
         Put(comp, "blurbs", blurbs);
         Put(comp, "buttons", buttons);
         Put(comp, "closeButton", close);
+        return go;
+    }
+
+    // ───────── 잠자기 연출 (까만 막, 글자) ─────────
+
+    private static GameObject BuildSleep()
+    {
+        GameObject go = NewHolder("SleepSequence", "SleepSequenceCanvas", 900, out RectTransform root, out Component comp, typeof(SleepSequence));
+        RectTransform black = Full(root, "Curtain");
+        black.gameObject.AddComponent<Image>().color = new Color(0.02f, 0.03f, 0.07f, 1f);
+        CanvasGroup curtain = black.gameObject.AddComponent<CanvasGroup>();
+        curtain.alpha = 0f; curtain.blocksRaycasts = false;
+        TMP_Text dream = UIKit.Label(black, "", 64f, Vector2.zero, new Vector2(900f, 140f), TextAlignmentOptions.Center, new Color(0.86f, 0.88f, 0.96f, 1f));
+        dream.name = "DreamText";
+
+        RectTransform titleRoot = UIKit.Rect(root, "Title");
+        titleRoot.anchorMin = titleRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        titleRoot.sizeDelta = new Vector2(1200f, 300f);
+        CanvasGroup titleGroup = titleRoot.gameObject.AddComponent<CanvasGroup>();
+        titleGroup.alpha = 0f; titleGroup.blocksRaycasts = false;
+        Color warm = new Color(1f, 0.96f, 0.86f, 1f);
+        TMP_Text title = UIKit.Label(titleRoot, "", 96f, new Vector2(0f, 40f), new Vector2(1200f, 150f), TextAlignmentOptions.Center, warm);
+        title.name = "TitleText";
+        TMP_Text sub = UIKit.Label(titleRoot, "", 44f, new Vector2(0f, -60f), new Vector2(1200f, 90f), TextAlignmentOptions.Center, warm);
+        sub.name = "SubText";
+
+        Put(comp, "curtain", curtain);
+        Put(comp, "titleGroup", titleGroup);
+        Put(comp, "dreamText", dream);
+        Put(comp, "titleText", title);
+        Put(comp, "subText", sub);
+        return go;
+    }
+    // ───────── 크레딧 ─────────
+
+    private static GameObject BuildCredits()
+    {
+        GameObject go = NewHolder("CreditsPanel", "CreditsPanelCanvas", 800, out RectTransform root, out Component comp, typeof(CreditsPanel));
+        UIKit.Backdrop(root).GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.7f);
+        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(1100f, 880f));
+
+        RectTransform view = UIKit.Rect(panel, "View");
+        view.anchorMin = view.anchorMax = new Vector2(0.5f, 0.5f);
+        view.sizeDelta = new Vector2(1000f, 700f);
+        view.anchoredPosition = new Vector2(0f, 50f);
+        view.gameObject.AddComponent<RectMask2D>();
+        RectTransform content = UIKit.Rect(view, "Content");
+        content.anchorMin = new Vector2(0f, 1f); content.anchorMax = new Vector2(1f, 1f);
+        content.pivot = new Vector2(0.5f, 1f);
+        content.anchoredPosition = Vector2.zero;
+        TMP_Text label = UIKit.Label(content, CreditsPanel.Text, 34f, Vector2.zero, new Vector2(960f, 100f), TextAlignmentOptions.Top);
+        label.name = "Label";
+        RectTransform labelRect = label.rectTransform;
+        labelRect.anchorMin = new Vector2(0f, 1f); labelRect.anchorMax = new Vector2(1f, 1f);
+        labelRect.pivot = new Vector2(0.5f, 1f);
+        labelRect.offsetMin = new Vector2(20f, 0f); labelRect.offsetMax = new Vector2(-20f, 0f);
+        label.richText = true;
+        label.lineSpacing = 12f;
+        labelRect.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        content.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        VerticalLayoutGroup layout = content.gameObject.AddComponent<VerticalLayoutGroup>();
+        layout.childControlWidth = true; layout.childControlHeight = true;
+        layout.childForceExpandWidth = true; layout.childForceExpandHeight = false;
+        ScrollRect scroll = view.gameObject.AddComponent<ScrollRect>();
+        scroll.viewport = view; scroll.content = content;
+        scroll.horizontal = false; scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 40f;
+
+        Button close = Btn(panel, "닫기", new Vector2(0f, -370f), new Vector2(300f, 70f), 34f);
+        close.name = "CloseButton";
+        Put(comp, "root", root.gameObject);
+        Put(comp, "closeButton", close);
+        return go;
+    }
+
+    // ───────── 정원 도감 (재료 칸 Cell_*은 열 때 코드가 채운다) ─────────
+
+    private static GameObject BuildBook()
+    {
+        GameObject go = NewHolder("CollectionBook", "CollectionBookCanvas", 810, out RectTransform root, out Component comp, typeof(CollectionBook));
+        UIKit.Backdrop(root).GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.65f);
+        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(1640f, 940f));
+
+        UIKit.Label(panel, "정원 도감", 58f, new Vector2(-250f, 408f), new Vector2(700f, 80f), TextAlignmentOptions.Center).name = "Title";
+        TMP_Text titleCount = UIKit.Label(panel, "", 38f, new Vector2(100f, 408f), new Vector2(400f, 60f), TextAlignmentOptions.Left);
+        titleCount.name = "TitleCount";
+        Button close = Btn(panel, "닫기", new Vector2(690f, 408f), new Vector2(180f, 64f), 32f);
+        close.name = "CloseButton";
+
+        var tabs = new Button[CollectionBook.TabCount];
+        for (int i = 0; i < tabs.Length; i++)
+        {
+            tabs[i] = Btn(panel, CollectionBook.TabLabel(i), new Vector2(-640f, 290f - i * 78f), new Vector2(290f, 66f), 30f);
+            tabs[i].name = "Tab" + i;
+        }
+        Button gift = Btn(panel, "선물 받기", new Vector2(-640f, -330f), new Vector2(290f, 74f), 28f);
+        gift.name = "GiftButton";
+        TMP_Text giftLabel = UIKit.Label(panel, "", 26f, new Vector2(-640f, -405f), new Vector2(300f, 60f), TextAlignmentOptions.Center);
+        giftLabel.name = "GiftLabel";
+
+        RectTransform view = UIKit.Rect(panel, "View");
+        view.anchorMin = view.anchorMax = new Vector2(0.5f, 0.5f);
+        view.sizeDelta = new Vector2(1090f, 600f);
+        view.anchoredPosition = new Vector2(140f, 62f);
+        view.gameObject.AddComponent<RectMask2D>();
+        RectTransform content = UIKit.Rect(view, "Content");
+        content.anchorMin = new Vector2(0f, 1f); content.anchorMax = new Vector2(1f, 1f);
+        content.pivot = new Vector2(0.5f, 1f);
+        content.sizeDelta = Vector2.zero;
+        content.anchoredPosition = Vector2.zero;
+        GridLayoutGroup grid = content.gameObject.AddComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(124f, 140f);
+        grid.spacing = new Vector2(10f, 10f);
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = CollectionBook.Columns;
+        grid.padding = new RectOffset(6, 6, 6, 6);
+        content.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        ScrollRect scroll = view.gameObject.AddComponent<ScrollRect>();
+        scroll.viewport = view; scroll.content = content;
+        scroll.horizontal = false; scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 40f;
+
+        RectTransform detail = UIKit.Rect(panel, "Detail");
+        detail.anchorMin = detail.anchorMax = new Vector2(0.5f, 0.5f);
+        detail.sizeDelta = new Vector2(1090f, 200f);
+        detail.anchoredPosition = new Vector2(140f, -355f);
+        detail.gameObject.AddComponent<Image>().color = new Color(0.93f, 0.89f, 0.80f, 1f);
+        TMP_Text detailName = UIKit.Label(detail, "", 38f, new Vector2(0f, 62f), new Vector2(1040f, 56f), TextAlignmentOptions.Left);
+        detailName.name = "DetailName";
+        TMP_Text detailBody = UIKit.Label(detail, "", 28f, new Vector2(0f, -28f), new Vector2(1040f, 120f), TextAlignmentOptions.TopLeft);
+        detailBody.name = "DetailBody";
+
+        Put(comp, "root", root.gameObject);
+        Put(comp, "titleCount", titleCount);
+        Put(comp, "detailName", detailName);
+        Put(comp, "detailBody", detailBody);
+        Put(comp, "giftLabel", giftLabel);
+        Put(comp, "giftButton", gift);
+        Put(comp, "closeButton", close);
+        Put(comp, "tabButtons", tabs);
+        Put(comp, "content", content);
+        Put(comp, "scroll", scroll);
         return go;
     }
 
