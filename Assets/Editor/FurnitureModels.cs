@@ -78,29 +78,14 @@ public static partial class PropModelMaker
     private static void FurnDesk()
     {
         b = NewMirrored();
-        BBox(V(0f, 0.775f, 0f), V(0.74f, 0.05f, 1.34f), 0.012f, Tan);
-        Box(V(0f, 0.742f, 0f), V(0.72f, 0.014f, 1.32f), DarkBrown);
-        foreach (float x in new[] { -0.28f, 0.28f })
-            foreach (float z in new[] { -0.58f, 0.58f })
-            {
-                Frustum(V(x, 0.035f, z), V(x, 0.74f, z), 0.030f, 0.042f, 8, Brown, Brown); // 위가 굵은 다리
-                Frustum(V(x, 0f, z), V(x, 0.04f, z), 0.034f, 0.030f, 8, DarkBrown, DarkBrown); // 발
-                Frustum(V(x, 0.58f, z), V(x, 0.64f, z), 0.046f, 0.046f, 8, DarkBrown, DarkBrown); // 다리 고리
-            }
-        foreach (float x in new[] { -0.3f, 0.3f }) Box(V(x, 0.69f, 0f), V(0.03f, 0.09f, 1.1f), Brown);         // 옆 가로대
-        foreach (float z in new[] { -0.58f, 0.58f }) Box(V(0f, 0.69f, z), V(0.56f, 0.09f, 0.03f), Brown);
-        foreach (float z in new[] { -0.28f, 0.28f })                                                            // 서랍 둘
-        {
-            Box(V(0.31f, 0.69f, z), V(0.02f, 0.115f, 0.48f), DarkBrown);
-            Box(V(0.322f, 0.69f, z), V(0.012f, 0.095f, 0.44f), LightTan);
-            Blob(V(0.335f, 0.69f, z), V(0.02f, 0.02f, 0.02f), 3, 8, Gold);
-        }
-        foreach (float x in new[] { -0.28f, 0.28f }) Box(V(x, 0.22f, 0f), V(0.035f, 0.04f, 1.1f), Brown);       // 아래 가로대
-        foreach (float z in new[] { -0.58f, 0.58f }) Box(V(0f, 0.22f, z), V(0.56f, 0.04f, 0.035f), Brown);
-        Box(V(0f, 0.235f, 0f), V(0.54f, 0.02f, 1.1f), LightTan);                                                 // 아래 선반 판
+        Box(V(0f, 0.775f, 0f), V(0.74f, 0.05f, 1.34f), Tan);                                                     // 상판
+        foreach (float x in new[] { -0.3f, 0.3f })
+            foreach (float z in new[] { -0.6f, 0.6f }) Box(V(x, 0.375f, z), V(0.06f, 0.75f, 0.06f), Brown);       // 다리
+        foreach (float x in new[] { -0.3f, 0.3f }) Box(V(x, 0.68f, 0f), V(0.03f, 0.1f, 1.14f), Brown);          // 옆 가로대
+        foreach (float z in new[] { -0.6f, 0.6f }) Box(V(0f, 0.68f, z), V(0.6f, 0.1f, 0.03f), Brown);
+        foreach (float z in new[] { -0.28f, 0.28f }) Box(V(0.31f, 0.68f, z), V(0.02f, 0.1f, 0.48f), DarkBrown);   // 서랍 둘
         b.Write("deco_furn_desk");
     }
-
     // ───────── 침대 옆 탁자 (0.5 x 0.45, 높이 0.5, 서랍이 +x) ─────────
     private static void FurnBedside()
     {
@@ -123,28 +108,11 @@ public static partial class PropModelMaker
     {
         b = NewMirrored();
         float[] boardY = { 0.25f, 0.80f, 1.35f, 1.90f, 2.45f };
-        foreach (float y in boardY)
-        {
-            Box(V(0f, y, 0f), V(0.30f, 0.04f, 3.06f), Tan);
-            Box(V(0.16f, y - 0.025f, 0f), V(0.02f, 0.05f, 3.06f), DarkBrown);                                    // 앞 턱
-        }
-        foreach (float z in new[] { -1.52f, 0f, 1.52f })
-        {
-            BBox(V(0f, 1.27f, z), V(0.33f, 2.5f, 0.06f), 0.012f, DarkBrown);                                      // 기둥
-            Box(V(0f, 2.545f, z), V(0.36f, 0.05f, 0.1f), Tan);                                                    // 기둥머리
-        }
-        for (int i = 0; i < 12; i++)                                                                              // 뒤판: 세로 판자
-            Box(V(-0.13f, 1.27f, -1.4f + i * 0.255f), V(0.025f, 2.46f, 0.262f), i % 2 == 0 ? Brown : DarkBrown);
-        Box(V(0.01f, 2.60f, 0f), V(0.38f, 0.06f, 3.16f), Tan);                                                    // 윗 장식 띠
-        Box(V(0.175f, 2.555f, 0f), V(0.03f, 0.04f, 3.1f), DarkBrown);
-        Box(V(0.01f, 0.07f, 0f), V(0.35f, 0.14f, 3.14f), DarkBrown);                                              // 밑 받침
-        Box(V(0.185f, 0.11f, 0f), V(0.02f, 0.04f, 3.1f), Tan);
-        // 판 아래 받침 장식(작은 삼각 받침 대신 짧은 보)
-        foreach (float y in new[] { 0.80f, 1.35f, 1.90f })
-            foreach (float z in new[] { -0.75f, 0.75f }) Box(V(0.12f, y - 0.06f, z), V(0.05f, 0.08f, 0.08f), Brown);
+        foreach (float y in boardY) Box(V(0f, y, 0f), V(0.30f, 0.04f, 3.06f), Tan);                              // 판
+        foreach (float z in new[] { -1.52f, 0f, 1.52f }) Box(V(0f, 1.27f, z), V(0.33f, 2.5f, 0.06f), DarkBrown);  // 기둥
+        Box(V(-0.13f, 1.27f, 0f), V(0.025f, 2.46f, 3.06f), Brown);                                               // 뒤판: 한 색 한 장
         b.Write("deco_furn_shelf");
     }
-
     // ───────── 작업대 (2.14 x 0.92, 높이 1.0, 앞이 +z) ─────────
     private static void FurnWorkbench()
     {

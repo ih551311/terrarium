@@ -308,16 +308,16 @@ public static class InteriorSetup
 
         // 책상과 편지 (서쪽 벽, 남쪽)
         float deskX = -hx + 0.7f, deskZ = -1.9f;
-        Furn(root, "deco_furn_desk", new Vector3(deskX, 0f, deskZ), 0f);                    // 로우폴리 책상 (서랍이 방 쪽)
-        Solid(root, "DeskBody", new Vector3(deskX, 0.40f, deskZ), new Vector3(0.74f, 0.80f, 1.34f));
+        Furn(root, "deco_furn_desk", new Vector3(deskX, 0f, deskZ), 0f, new Vector3(1.4f, 1f, 1.5f));                    // 로우폴리 책상 (서랍이 방 쪽)
+        Solid(root, "DeskBody", new Vector3(deskX, 0.40f, deskZ), new Vector3(1.04f, 0.80f, 2.0f));
         // 책상 위의 도감: 보이는 것은 책 모델이고, 바라보고 E를 누르는 상자는 눈에 안 보이게 둔다 (DeskLetter가 도감을 연다)
-        GameObject letter = Cube(root, "Letter", new Vector3(deskX, 0.80f, deskZ + 0.02f), new Vector3(0.34f, 0.01f, 0.25f), paper, false);
+        GameObject letter = Cube(root, "Letter", new Vector3(deskX, 0.80f, deskZ + 0.02f), new Vector3(0.51f, 0.01f, 0.375f), paper, false);
         Object.DestroyImmediate(letter.GetComponent<MeshRenderer>());
         MakeLetterReadable(letter);
-        Furn(root, "deco_furn_book", new Vector3(deskX, 0.80f, deskZ + 0.02f), 90f);
+        Furn(root, "deco_furn_book", new Vector3(deskX, 0.80f, deskZ + 0.02f), 90f, Vector3.one * 1.5f);
 
         // 책상 위 촛불 (모델 + 불빛)
-        GameObject candle = Deco(root, "deco_candle", new Vector3(deskX, 0.79f, deskZ - 0.4f), 6f);
+        GameObject candle = Deco(root, "deco_candle", new Vector3(deskX, 0.79f, deskZ - 0.7f), 6f);
         PointLight(candle.transform, "CandleLight", new Vector3(0f, 0.25f, 0f), new Color(1f, 0.82f, 0.55f), 1.2f, 3.5f);
 
         BuildShelf(root.transform, wood, darkWood, deskX, deskZ);
@@ -388,7 +388,7 @@ public static class InteriorSetup
         Furn(root, "deco_furn_sill", new Vector3(HallHalfX - 0.15f, 1.145f, bedWindowZ), -90f);
         Vector3[] extra =
         {
-            new Vector3(deskX, 0.79f, deskZ + 0.45f),
+            new Vector3(deskX, 0.79f, deskZ + 0.65f),
             new Vector3(-0.28f, 1.32f, HallHalfZ - 0.15f), new Vector3(0.28f, 1.32f, HallHalfZ - 0.15f),
             new Vector3(HallHalfX - 0.15f, 1.32f, bedWindowZ - 0.3f), new Vector3(HallHalfX - 0.15f, 1.32f, bedWindowZ + 0.3f)
         };
@@ -475,7 +475,7 @@ public static class InteriorSetup
     }
 
     /// <summary>가구 모델(deco_furn_*, 실제 크기)을 놓는다. 앞쪽이 +z인 모델을 yaw만큼 돌린다.</summary>
-    private static GameObject Furn(GameObject parent, string model, Vector3 pos, float yaw)
+    private static GameObject Furn(GameObject parent, string model, Vector3 pos, float yaw, Vector3? scale = null)
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DecoFolder + model + ".obj");
         if (prefab == null) { Debug.LogWarning("가구 모델이 없어요: " + model + " (메뉴 가구 모델 만들기 다음 장식 모델 가져오기 설정)"); return null; }
@@ -484,6 +484,7 @@ public static class InteriorSetup
         go.transform.SetParent(parent.transform, false);
         go.transform.localPosition = pos;
         go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        if (scale.HasValue) go.transform.localScale = scale.Value;
         return go;
     }
 
