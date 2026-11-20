@@ -50,6 +50,7 @@ public class CollectionBook : MonoBehaviour
     private int tabIndex;
     private MaterialData selected;
     private bool isOpen;
+    private int openedFrame = -1;
     private readonly List<GameObject> cells = new List<GameObject>();
 
     public static bool IsOpen => instance != null && instance.isOpen;
@@ -90,6 +91,7 @@ public class CollectionBook : MonoBehaviour
 
     public static void Show()
     {
+        if (ClosedFrame == Time.frameCount) return; // 닫는 E 키로 같은 프레임에 다시 열리지 않게
         if (instance == null) Build();
         if (instance != null) instance.Open();
     }
@@ -174,6 +176,7 @@ public class CollectionBook : MonoBehaviour
     {
         if (isOpen) return;
         isOpen = true;
+        openedFrame = Time.frameCount;
         root.SetActive(true);
         selected = null;
         UIFocus.Open();
@@ -196,7 +199,7 @@ public class CollectionBook : MonoBehaviour
 
     private void Update()
     {
-        if (!isOpen) return;
+        if (!isOpen || Time.frameCount == openedFrame) return; // 여는 데 쓴 E 키로 바로 닫히지 않게
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame || keyboard.eKey.wasPressedThisFrame)) Close();
     }
