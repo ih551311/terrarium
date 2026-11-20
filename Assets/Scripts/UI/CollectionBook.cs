@@ -113,9 +113,9 @@ public class CollectionBook : MonoBehaviour
         UIKit.Backdrop(rootRect).GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.65f);
         RectTransform panel = UIKit.Panel(rootRect, "Panel", new Vector2(1640f, 940f));
 
-        UIKit.Label(panel, "정원 도감", 58f, new Vector2(-250f, 400f), new Vector2(700f, 80f), TextAlignmentOptions.Center);
-        b.titleCount = UIKit.Label(panel, "", 38f, new Vector2(100f, 400f), new Vector2(400f, 60f), TextAlignmentOptions.Left);
-        UIKit.MakeButton(panel, "닫기", new Vector2(690f, 400f), new Vector2(180f, 64f), () => b.Close(), 32f);
+        UIKit.Label(panel, "정원 도감", 58f, new Vector2(-250f, 408f), new Vector2(700f, 80f), TextAlignmentOptions.Center);
+        b.titleCount = UIKit.Label(panel, "", 38f, new Vector2(100f, 408f), new Vector2(400f, 60f), TextAlignmentOptions.Left);
+        UIKit.MakeButton(panel, "닫기", new Vector2(690f, 408f), new Vector2(180f, 64f), () => b.Close(), 32f);
 
         // 왼쪽: 구역 칸
         b.tabButtons = new Button[Tabs.Length];
@@ -135,8 +135,8 @@ public class CollectionBook : MonoBehaviour
         // 가운데: 재료 칸 (스크롤)
         RectTransform view = UIKit.Rect(panel, "View");
         view.anchorMin = view.anchorMax = new Vector2(0.5f, 0.5f);
-        view.sizeDelta = new Vector2(1090f, 560f);
-        view.anchoredPosition = new Vector2(140f, 100f);
+        view.sizeDelta = new Vector2(1090f, 600f);      // 위는 제목줄(닫기 버튼 아래 끝 376) 아래, 아래는 설명칸(위 끝 -255) 위에 둔다
+        view.anchoredPosition = new Vector2(140f, 62f);
         view.gameObject.AddComponent<RectMask2D>();
         b.content = UIKit.Rect(view, "Content");
         b.content.anchorMin = new Vector2(0f, 1f); b.content.anchorMax = new Vector2(1f, 1f);
