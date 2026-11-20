@@ -226,7 +226,8 @@ public static class InteriorSetup
             Cube(room, "CornerPost", new Vector3(sign * (vx - 0.1f), Height / 2f, -hz - 0.1f), new Vector3(0.25f, Height, 0.25f), timber, false);
 
         // 창: 큰 방 북쪽(작업대 뒤)과 그 양옆, 동쪽(침대 위), 서쪽(책상 위), 남쪽 현관 앞방 양옆. 따뜻한 빛이 들어오는 느낌
-        Window(room, glass, timber, new Vector3(0f, 1.75f, hz - 0.03f), 0f, true);
+        // 창 불빛은 둘만 켠다. 한 오브젝트가 받는 추가 불빛이 8개를 넘으면(URP) 그중 하나가 깜빡이며 꺼졌다 켜진다
+        Window(room, glass, timber, new Vector3(0f, 1.75f, hz - 0.03f), 0f, false);
         Window(room, glass, timber, new Vector3(-3.3f, 1.75f, hz - 0.03f), 0f, false);
         Window(room, glass, timber, new Vector3(3.3f, 1.75f, hz - 0.03f), 0f, false);
         Window(room, glass, timber, new Vector3(hx - 0.03f, 1.75f, -1.7f), 90f, true);
