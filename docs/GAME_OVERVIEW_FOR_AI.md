@@ -464,3 +464,9 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 메인 화면 제목 상수(`MainMenu.GameTitle`)가 옛 이름 "유리병 정원"으로 남아 있어서 "Mini Terra"로 고쳤다 (씬의 글자는 이미 Mini Terra였고, 이 상수는 메인 화면을 UIBake로 다시 만들 때 쓰인다).
 - 메인 화면에 "게임 종료" 버튼(왼쪽 버튼 줄 맨 아래)과 "새로 시작" 버튼(왼쪽 아래, 크레딧 옆. 저장이 있을 때만 보임)을 추가했다. 새로 시작은 4초 안에 두 번 눌러야 저장을 지우고, 지운 뒤에는 게임을 끈다(게임 안의 날짜, 가방이 메모리에 남아 있어서 끄고 다시 켜는 것이 가장 안전). 저장 백업(save.json.bak)은 남긴다. 버튼은 MainMenu 씬 안의 실제 오브젝트이고 MainMenu의 quitButton, newGameButton 칸에 연결돼 있다.
 - 설정에 "그래픽: 높음/보통" 줄을 추가했다. 윈도우에서 품질 단계가 PC 하나뿐이어서(Mobile이 Standalone에서 빠져 있었음) ProjectSettings/QualitySettings.asset 의 Mobile 단계에서 Standalone 제외를 풀었다. 처음에는 높음, 고른 값은 PlayerPrefs(quality_level)에 남는다 (PerformanceDefaults).
+
+## 일시정지 메뉴 설정, 해상도
+- `DisplaySettings`(Core): 화면 모드와 해상도를 메인 화면 설정과 일시정지 메뉴가 같이 쓴다. 전체 화면은 테두리 없는 전체 화면(모니터 해상도 그대로, 이때 해상도 단추는 눌리지 않는다). 창 모드는 모니터가 지원하는 1024x576 이상 해상도 목록을 단추로 한 칸씩 돌린다. 창 모드로 바꿀 때는 모니터 높이의 90% 안에 드는 가장 큰 해상도.
+- 일시정지 메뉴(Resources/UI/PauseMenu.prefab)에 마우스 감도 슬라이더, 화면, 해상도, 그래픽 단추를 추가했다 (메인 화면 설정과 같은 PlayerPrefs 값). 크레딧 단추가 밑에 붙으며 판이 112 늘어나므로 판 높이는 840으로 맞췄다. 메인 화면 설정에도 해상도 줄을 추가했다 (MainMenu 씬의 오브젝트).
+- 프리팹만 다시 만들 때: 메뉴 "유리병 정원 > 일시정지 메뉴 프리팹만 만들기".
+- 에디터에서는 Screen.SetResolution이 게임 창에 적용되지 않으므로 해상도, 전체 화면 전환은 빌드에서 확인해야 한다.

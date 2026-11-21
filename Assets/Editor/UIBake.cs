@@ -56,6 +56,26 @@ public static class UIBake
         return "화면 프리팹 일곱 개를 만들었어요: " + PrefabFolder;
     }
 
+    /// <summary>일시정지 메뉴 프리팹만 새로 만든다.</summary>
+    [MenuItem("유리병 정원/일시정지 메뉴 프리팹만 만들기")]
+    public static string BakePauseOnly()
+    {
+        if (EditorApplication.isPlaying) return "Play 중에는 만들 수 없어요";
+        Directory.CreateDirectory(PrefabFolder);
+        Scene previous = SceneManager.GetActiveScene();
+        Scene temp = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+        SceneManager.SetActiveScene(temp);
+        try { SavePrefab(BuildPause(), "PauseMenu"); }
+        finally
+        {
+            SceneManager.SetActiveScene(previous);
+            EditorSceneManager.CloseScene(temp, true);
+        }
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        return "일시정지 메뉴 프리팹을 만들었어요: " + PrefabFolder;
+    }
+
     /// <summary>크레딧과 정원 도감 프리팹만 새로 만든다 (다른 화면 프리팹에 손으로 고친 것이 있으면 건드리지 않는다).</summary>
     [MenuItem("유리병 정원/크레딧, 도감 화면 프리팹만 만들기")]
     public static string BakeCreditsAndBook()
@@ -124,23 +144,33 @@ public static class UIBake
     {
         GameObject go = NewHolder("PauseMenu", "PauseMenuCanvas", 400, out RectTransform root, out Component comp, typeof(PauseMenu));
         UIKit.Backdrop(root);
-        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(640f, 560f));
+        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(640f, 840f)); // 크레딧 버튼이 밑에 붙으며 판이 112 늘어나도 화면(1080) 안에 들어오는 높이
 
-        UIKit.Label(panel, "잠시 쉬어가요", 48f, new Vector2(0f, 205f), new Vector2(560f, 70f));
-        UIKit.Label(panel, "소리 크기", 28f, new Vector2(0f, 110f), new Vector2(460f, 40f));
-        Slider volume = UIKit.MakeSlider(panel, new Vector2(0f, 65f), new Vector2(420f, 40f), 1f, null);
-        Button music = Btn(panel, "음악 끄기", new Vector2(0f, -15f), new Vector2(460f, 72f));
-        Button menu = Btn(panel, "메인 화면으로", new Vector2(0f, -105f), new Vector2(460f, 72f));
-        Button quit = Btn(panel, "게임 끝내기", new Vector2(0f, -195f), new Vector2(460f, 72f));
+        UIKit.Label(panel, "잠시 쉬어가요", 48f, new Vector2(0f, 355f), new Vector2(560f, 70f));
+        UIKit.Label(panel, "소리 크기", 28f, new Vector2(0f, 285f), new Vector2(460f, 40f));
+        Slider volume = UIKit.MakeSlider(panel, new Vector2(0f, 245f), new Vector2(420f, 40f), 1f, null);
+        UIKit.Label(panel, "마우스 감도", 28f, new Vector2(0f, 185f), new Vector2(460f, 40f));
+        Slider look = UIKit.MakeSlider(panel, new Vector2(0f, 145f), new Vector2(420f, 40f), 0.5f, null);
+        look.name = "LookSlider";
+
+        Button music = Btn(panel, "음악 끄기", new Vector2(0f, 70f), new Vector2(460f, 64f));
+        Button screen = Btn(panel, "창 모드", new Vector2(0f, 0f), new Vector2(460f, 64f)); screen.name = "ScreenButton";
+        Button resolution = Btn(panel, "1920 x 1080", new Vector2(0f, -70f), new Vector2(460f, 64f)); resolution.name = "ResolutionButton";
+        Button quality = Btn(panel, "높음", new Vector2(0f, -140f), new Vector2(460f, 64f)); quality.name = "QualityButton";
+        Button menu = Btn(panel, "메인 화면으로", new Vector2(0f, -230f), new Vector2(460f, 72f));
+        Button quit = Btn(panel, "게임 끝내기", new Vector2(0f, -315f), new Vector2(460f, 72f));
 
         Put(comp, "root", root.gameObject);
         Put(comp, "volumeSlider", volume);
+        Put(comp, "lookSlider", look);
         Put(comp, "musicButton", music);
+        Put(comp, "screenButton", screen);
+        Put(comp, "resolutionButton", resolution);
+        Put(comp, "qualityButton", quality);
         Put(comp, "menuButton", menu);
         Put(comp, "quitButton", quit);
         return go;
     }
-
     // ───────── 로딩 화면 ─────────
 
     private static GameObject BuildLoading()

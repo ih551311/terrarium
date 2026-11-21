@@ -44,7 +44,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private TMP_Text volumeValue;
     [SerializeField] private Slider lookSlider;
     [SerializeField] private TMP_Text lookValue;
-    [SerializeField] private Button musicButton, screenButton, qualityButton;
+    [SerializeField] private Button musicButton, screenButton, resolutionButton, qualityButton;
 
     [Header("그림")]
     [SerializeField] private CanvasGroup curtain;
@@ -55,7 +55,6 @@ public class MainMenu : MonoBehaviour
 
     private GameObject openPanel;
     private bool starting;
-    private bool fullScreen;
     private float jarBaseX, jarBaseY;
     private float newGameArmedUntil;
     private string savedNote;
@@ -72,7 +71,6 @@ public class MainMenu : MonoBehaviour
     {
         Time.timeScale = 1f;
         AudioListener.volume = Mathf.Clamp01(PlayerPrefs.GetFloat(VolumeKey, 1f));
-        fullScreen = Screen.fullScreen;
         curtain.alpha = 1f; // 까만 막으로 시작해서 걷힌다 (씬에서는 투명하게 두어 편집이 가려지지 않는다)
         Wire();
         PlantSprouts();
@@ -140,12 +138,9 @@ public class MainMenu : MonoBehaviour
             GameAudio.MusicOn = !GameAudio.MusicOn;
             RefreshSettingTexts();
         });
-        screenButton.onClick.AddListener(() =>
-        {
-            fullScreen = !fullScreen;
-            Screen.fullScreenMode = fullScreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
-            RefreshSettingTexts();
-        });
+        screenButton.onClick.AddListener(() => { DisplaySettings.ToggleFullScreen(); StartCoroutine(RefreshAfterScreenChange()); });
+        if (resolutionButton != null)
+            resolutionButton.onClick.AddListener(() => { DisplaySettings.CycleResolution(); StartCoroutine(RefreshAfterScreenChange()); });
         RefreshSettingTexts();
 
         jarBaseX = jar.anchoredPosition.x;
@@ -190,8 +185,21 @@ public class MainMenu : MonoBehaviour
     private void RefreshSettingTexts()
     {
         UIKit.SetButtonText(musicButton, GameAudio.MusicOn ? "켜짐" : "꺼짐");
-        UIKit.SetButtonText(screenButton, fullScreen ? "전체 화면" : "창 모드");
+        UIKit.SetButtonText(screenButton, DisplaySettings.ScreenLabel());
+        if (resolutionButton != null)
+        {
+            UIKit.SetButtonText(resolutionButton, DisplaySettings.ResolutionLabel());
+            resolutionButton.interactable = !DisplaySettings.FullScreen;
+        }
         if (qualityButton != null) UIKit.SetButtonText(qualityButton, PerformanceDefaults.QualityLabel());
+    }
+
+    // 화면 크기는 바뀐 다음 프레임에 적용되므로 글자는 잠시 뒤에 다시 쓴다
+    private IEnumerator RefreshAfterScreenChange()
+    {
+        yield return null;
+        yield return null;
+        RefreshSettingTexts();
     }
 
     // ───────── 패널 열고 닫기 ─────────

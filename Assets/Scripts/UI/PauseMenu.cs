@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// Esc로 여는 일시정지 메뉴. 소리 크기, 음악 켜기/끄기, 메인 화면으로, 게임 끝내기.
+/// Esc로 여는 일시정지 메뉴. 소리 크기, 마우스 감도, 음악, 화면 모드, 해상도, 그래픽, 메인 화면으로, 게임 끝내기.
 /// 열려 있는 동안 게임 시간이 멈춘다. 다른 패널이 열려 있으면 열리지 않는다.
 /// 화면은 Assets/Resources/UI/PauseMenu.prefab (캔버스)에 있고, 게임이 켜질 때 하나 꺼내 씬을 넘어 남겨 둔다.
 /// 화면을 다시 만들려면 메뉴 "유리병 정원 > 화면 캔버스 다시 만들기" (UIBake).
@@ -17,6 +17,9 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private GameObject root;
     [SerializeField] private Slider volumeSlider;
     [SerializeField] private Button musicButton, menuButton, quitButton;
+    [Header("설정 (메인 화면 설정과 같은 값)")]
+    [SerializeField] private Slider lookSlider;
+    [SerializeField] private Button screenButton, resolutionButton, qualityButton;
 
     private bool isOpen;
     private float savedTimeScale = 1f;
@@ -50,6 +53,15 @@ public class PauseMenu : MonoBehaviour
             AudioListener.volume = v;
             PlayerPrefs.SetFloat(VolumeKey, v);
         });
+        if (lookSlider != null)
+        {
+            float look = Mathf.Clamp(PlayerPrefs.GetFloat(MainMenu.LookKey, 1f), MainMenu.LookMin, MainMenu.LookMax);
+            lookSlider.SetValueWithoutNotify(Mathf.InverseLerp(MainMenu.LookMin, MainMenu.LookMax, look));
+            lookSlider.onValueChanged.AddListener(v => PlayerPrefs.SetFloat(MainMenu.LookKey, Mathf.Round(Mathf.Lerp(MainMenu.LookMin, MainMenu.LookMax, v) * 20f) / 20f));
+        }
+        if (screenButton != null) screenButton.onClick.AddListener(() => { DisplaySettings.ToggleFullScreen(); StartCoroutine(RefreshAfterScreenChange()); });
+        if (resolutionButton != null) resolutionButton.onClick.AddListener(() => { DisplaySettings.CycleResolution(); StartCoroutine(RefreshAfterScreenChange()); });
+        if (qualityButton != null) qualityButton.onClick.AddListener(() => { PerformanceDefaults.CycleQuality(); RefreshTexts(); });
         musicButton.onClick.AddListener(ToggleMusic);
         menuButton.onClick.AddListener(MenuClicked);
         quitButton.onClick.AddListener(QuitClicked);
@@ -96,6 +108,20 @@ public class PauseMenu : MonoBehaviour
     private void RefreshTexts()
     {
         UIKit.SetButtonText(musicButton, GameAudio.MusicOn ? "음악 끄기" : "음악 켜기");
+        if (screenButton != null) UIKit.SetButtonText(screenButton, "화면: " + DisplaySettings.ScreenLabel());
+        if (resolutionButton != null)
+        {
+            UIKit.SetButtonText(resolutionButton, "해상도: " + DisplaySettings.ResolutionLabel());
+            resolutionButton.interactable = !DisplaySettings.FullScreen;
+        }
+        if (qualityButton != null) UIKit.SetButtonText(qualityButton, "그래픽: " + PerformanceDefaults.QualityLabel());
+    }
+
+    // 화면 크기는 바뀐 다음 프레임에 적용되므로 글자는 잠시 뒤에 다시 쓴다 (메뉴가 멈춘 시간 안에서도 돌도록 실제 시간으로 기다린다)
+    private System.Collections.IEnumerator RefreshAfterScreenChange()
+    {
+        yield return new WaitForSecondsRealtime(0.15f);
+        RefreshTexts();
     }
 
     // 저장은 메인 화면으로 갈 때와 끝낼 때 저절로 한다 (GameRoot)
