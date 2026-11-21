@@ -53,7 +53,7 @@ public class WeatherEffects : MonoBehaviour
 
         // F9: 날씨를 하나씩 바꿔 본다 (맑음, 흐림, 바람, 이슬비, 비, 폭풍우, 안개, 눈, 날짜대로). 개발할 때 쓰는 키다.
         UnityEngine.InputSystem.Keyboard keyboard = UnityEngine.InputSystem.Keyboard.current;
-        if (keyboard != null && keyboard.f9Key.wasPressedThisFrame)
+        if (keyboard != null && keyboard.f9Key.wasPressedThisFrame && (Application.isEditor || Debug.isDebugBuild)) // 개발용 키: 출시 빌드에서는 막는다
         {
             if (Weather.Forced == null) Weather.Forced = WeatherKind.Clear;
             else if (Weather.Forced == WeatherKind.Snow) Weather.Forced = null;
@@ -148,16 +148,16 @@ public class WeatherEffects : MonoBehaviour
         foreach (ParticleSystemRenderer pr in particleRenderers)
         {
             // 가까이 지나가는 빗방울이 화면을 가로지르는 굵은 막대로 보이지 않게 크기에 한계를 둔다
-            pr.maxParticleSize = 0.012f;
+            pr.maxParticleSize = 0.02f;
             if (pr.renderMode == ParticleSystemRenderMode.Stretch)
             {
-                pr.lengthScale = 0.8f;
-                pr.velocityScale = 0.035f;
+                pr.lengthScale = 1.2f;
+                pr.velocityScale = 0.05f;
                 ParticleSystem ps = pr.GetComponent<ParticleSystem>();
                 if (ps != null)
                 {
                     var main = ps.main;
-                    main.startSize = new ParticleSystem.MinMaxCurve(0.008f, 0.016f); // 빗방울을 가늘게
+                    main.startSize = new ParticleSystem.MinMaxCurve(0.016f, 0.03f); // 빗방울을 가늘게
                 }
             }
         }
