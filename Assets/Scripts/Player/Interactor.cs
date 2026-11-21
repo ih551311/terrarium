@@ -71,7 +71,7 @@ public class Interactor : MonoBehaviour
         if (cameraTransform == null) return null;
 
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, reachDistance, ~0, QueryTriggerInteraction.Collide))
+        if (Physics.Raycast(ray, out RaycastHit hit, reachDistance, ~(1 << 2), QueryTriggerInteraction.Collide)) // 2번 층(Ignore Raycast)은 건너뛴다: 걷기만 막는 보이지 않는 상자(장식장 등)가 병을 가리지 않게
             return hit.collider.GetComponentInParent<IInteractable>();
         return null;
     }

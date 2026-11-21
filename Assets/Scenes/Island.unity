@@ -182565,7 +182565,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1904231886}
   - component: {fileID: 1904231887}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: ShelfBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}

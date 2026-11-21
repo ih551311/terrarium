@@ -419,7 +419,8 @@ public static class InteriorSetup
         GameObject root = furniture.gameObject;
         // 로우폴리 선반 모델(판, 기둥, 뒤판, 윗 띠, 밑 받침). 판의 높이는 ShelfBoardY 그대로라 병 자리(슬롯)가 맞는다.
         Furn(root, "deco_furn_shelf", shelfCenter + new Vector3(0.01f, 0f, 0f), 0f);
-        Solid(root, "ShelfBody", shelfCenter + new Vector3(0f, 1.3f, 0f), new Vector3(ShelfDepth + 0.03f, 2.6f, ShelfLength));
+        // 장식장의 막는 상자는 걷기만 막고 바라보기(E)는 통과시킨다 (Ignore Raycast 층). 안 그러면 선반 위 병을 바라볼 수 없다
+        Solid(root, "ShelfBody", shelfCenter + new Vector3(0f, 1.3f, 0f), new Vector3(ShelfDepth + 0.03f, 2.6f, ShelfLength)).layer = 2;
 
         GameObject shelfRoot = new GameObject("BottleShelf");
         shelfRoot.transform.SetParent(furniture, false);
