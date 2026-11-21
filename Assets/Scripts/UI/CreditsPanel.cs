@@ -26,7 +26,9 @@ public class CreditsPanel : MonoBehaviour
         "<b>음악과 소리</b>\n" +
         "Dreamcore Music (juanjo_sound / Michael Barker)\n" +
         "Footsteps Sounds - Volume 02 (The Sound Guild)\n" +
-        "효과음 일부: EarShot (Leon Lin, MIT License)\n\n" +
+        "효과음 일부: EarShot (Leon Lin, MIT License)\n" +
+        "파도 소리: Water Waves (transitking, CC0)\n" +
+        "새 소리: Birds and Wind - Ambient (Spring Spring, CC0)\n\n" +
         "<b>글꼴</b>\n" +
         "Cafe24 동동 (Cafe24)\n\n" +
         "<b>만든 도구</b>\n" +

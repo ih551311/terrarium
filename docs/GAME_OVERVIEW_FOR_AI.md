@@ -494,3 +494,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 
 ## 진짜 주변 소리 연결 준비
 - GameAudio가 Resources/Sfx/Wave1~4(파도 한 번짜리, 있는 만큼)와 Resources/Sfx/BirdsAmbient(이어 틀기용 새 소리)가 있으면 코드로 만든 파도, 새 소리 대신 쓴다. 없으면 이전 소리 그대로. 후보(둘 다 CC0): OpenGameArt 'Water Waves'(transitking, flac 4개 약 1.6MB), 'Birds and Wind - Ambient'(Spring Spring, ogg 1.9MB, 바람 소리도 섞여 있어 바람은 따로 키우지 말 것). 받는 것은 사용자가 직접(또는 허락 규칙을 준 뒤) 한다.
+
+
+## 진짜 파도, 새 소리 연결 완료
+- Assets/Resources/Sfx/Wave1~4.flac (OpenGameArt 'Water Waves', transitking, CC0, 한 번짜리 파도 1.8~3.2초)와 BirdsAmbient.ogg ('Birds and Wind - Ambient', Spring Spring, CC0, 84초 이어 틀기, 바람 소리도 섞임)를 연결했다. GameAudio가 파도는 몇 초마다 하나씩 겹쳐 틀고(바닷가에 가까울수록 잦고 크게), 새 소리는 낮 맑은 날 바깥에서 이어 튼다. 코드로 만든 파도, 새는 파일이 있으면 꺼진다. 크레딧에 출처를 적었다. 소리는 귀로 확인하지 못했다.

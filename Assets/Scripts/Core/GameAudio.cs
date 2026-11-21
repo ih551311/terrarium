@@ -200,7 +200,7 @@ public class GameAudio : MonoBehaviour
             waveTimer -= Time.deltaTime;
             if (waveTimer <= 0f)
             {
-                waveTimer = Random.Range(Mathf.Lerp(7f, 2.5f, shore), Mathf.Lerp(12f, 5f, shore));
+                waveTimer = Random.Range(Mathf.Lerp(4.5f, 1.2f, shore), Mathf.Lerp(8f, 2.8f, shore));
                 if (outdoors) { waveSfx.panStereo = Random.Range(-0.5f, 0.5f); waveSfx.PlayOneShot(waveFiles[Random.Range(0, waveFiles.Length)], Mathf.Clamp01(waveLevel * 3.2f) * sfxVolume); waveSfx.panStereo = 0f; }
             }
         }
