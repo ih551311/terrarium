@@ -548,3 +548,10 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 
 ## 빌드 v2
 - C:\Users\ih551\tools\MiniTerra_build_v2\Mini Terra.exe (315MB, 오류 0). 튜토리얼, 섬 점검 수정 포함. 25초 실행해 로그 오류 없음. v1은 옛 빌드.
+
+
+## 빌드에서 나온 문제 (보라색 눈비, 허공에 뜬 물체, 설정 정리)
+- 빌드에서 눈, 비가 보라색 네모, 선으로 보였다: 날씨 에셋이 Shader.Find로 'Universal Render Pipeline/Particles/Unlit'을 찾는데 이 셰이더가 빌드에 들어가지 않았다(에디터에서는 보임). ProjectSettings 그래픽 > Always Included Shaders에 URP Particles Unlit, Lit, Simple Lit, Unlit을 넣었다. Shader.Find를 쓰는 코드를 새로 쓰면 그 셰이더를 이 목록에 넣어야 한다.
+- 허공에 뜬 바위, 나무: 비탈에 선 물체의 바닥이 한쪽만 땅에서 떴다. 읽을 수 없는 메쉬(원래 섬 바위 51, 눈 섬 전부)는 지금까지 점검에서 빠져 있었다. 물체 발밑 범위의 가장 낮은 땅에 맞춰 0.1m 묻히게 다시 맞췄다(원래 섬 나무 327, 바위 49, 사막 162, 눈 섬 275 등). 지형 Pixel Error를 5에서 1로 낮춰 빌드에서 보이는 땅과 계산한 높이가 같게 했다.
+- 일시정지 메뉴: 첫 화면에는 소리 설정, 화면 설정, 메인 화면으로, 게임 끝내기, 크레딧만 있고, 소리 설정(소리, 음악, 효과음 크기, 음악 끄기), 화면 설정(마우스 감도, 화면 모드, 해상도, 그래픽)은 따로 연다. Esc로 첫 화면으로 돌아간다. 메인 화면의 설정 판은 아직 한 판에 모여 있다.
+- 빌드 v3: C:\Users\ih551\tools\MiniTerra_build_v3\Mini Terra.exe

@@ -3,7 +3,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// Esc로 여는 일시정지 메뉴. 소리 크기, 마우스 감도, 음악, 화면 모드, 해상도, 그래픽, 메인 화면으로, 게임 끝내기.
+/// Esc로 여는 일시정지 메뉴. 첫 화면에는 "소리 설정", "화면 설정", 메인 화면으로, 게임 끝내기만 있고,
+/// 소리 설정(소리, 음악, 효과음 크기, 음악 켜기/끄기)과 화면 설정(마우스 감도, 화면 모드, 해상도, 그래픽)은 각각 따로 연다.
 /// 열려 있는 동안 게임 시간이 멈춘다. 다른 패널이 열려 있으면 열리지 않는다.
 /// 화면은 Assets/Resources/UI/PauseMenu.prefab (캔버스)에 있고, 게임이 켜질 때 하나 꺼내 씬을 넘어 남겨 둔다.
 /// 화면을 다시 만들려면 메뉴 "유리병 정원 > 화면 캔버스 다시 만들기" (UIBake).
@@ -21,8 +22,19 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private Slider lookSlider, musicSlider, sfxSlider;
     [SerializeField] private Button screenButton, resolutionButton, qualityButton;
 
+    [Header("화면 묶음 (첫 화면, 소리 설정, 화면 설정)")]
+    [SerializeField] private GameObject mainGroup, soundGroup, screenGroup;
+    [SerializeField] private Button soundOpenButton, screenOpenButton, soundBackButton, screenBackButton;
+
     private bool isOpen;
     private float savedTimeScale = 1f;
+
+    private void ShowGroup(GameObject group)
+    {
+        if (mainGroup != null) mainGroup.SetActive(group == mainGroup);
+        if (soundGroup != null) soundGroup.SetActive(group == soundGroup);
+        if (screenGroup != null) screenGroup.SetActive(group == screenGroup);
+    }
 
     public static bool IsOpen => instance != null && instance.isOpen;
 
@@ -75,7 +87,12 @@ public class PauseMenu : MonoBehaviour
         musicButton.onClick.AddListener(ToggleMusic);
         menuButton.onClick.AddListener(MenuClicked);
         quitButton.onClick.AddListener(QuitClicked);
+        if (soundOpenButton != null) soundOpenButton.onClick.AddListener(() => ShowGroup(soundGroup));
+        if (screenOpenButton != null) screenOpenButton.onClick.AddListener(() => ShowGroup(screenGroup));
+        if (soundBackButton != null) soundBackButton.onClick.AddListener(() => ShowGroup(mainGroup));
+        if (screenBackButton != null) screenBackButton.onClick.AddListener(() => ShowGroup(mainGroup));
         CreditsPanel.AddButtonBelow(quitButton, 16f);
+        ShowGroup(mainGroup);
         root.SetActive(false);
     }
 
@@ -90,7 +107,11 @@ public class PauseMenu : MonoBehaviour
         if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame) return;
         if (CreditsPanel.IsOpen || CreditsPanel.ClosedFrame == Time.frameCount || CollectionBook.IsOpen || CollectionBook.ClosedFrame == Time.frameCount) return; // 크레딧이 위에 열려 있으면(또는 방금 닫혔으면) 그쪽이 먼저다
 
-        if (isOpen) Close();
+        if (isOpen)
+        {
+            if (mainGroup != null && !mainGroup.activeSelf) ShowGroup(mainGroup); // 설정 화면에서는 Esc로 첫 화면으로 돌아간다
+            else Close();
+        }
         else if (!UIFocus.IsOpen && UIFocus.LastCloseFrame != Time.frameCount) Open();
     }
 
@@ -99,6 +120,7 @@ public class PauseMenu : MonoBehaviour
         if (isOpen) return; // 두 번 열려서 조작이 잠긴 채 남지 않게
         isOpen = true;
         root.SetActive(true);
+        ShowGroup(mainGroup);
         RefreshTexts();
         savedTimeScale = Time.timeScale > 0f ? Time.timeScale : 1f;
         Time.timeScale = 0f;
