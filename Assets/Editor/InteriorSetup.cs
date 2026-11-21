@@ -41,6 +41,7 @@ public static class InteriorSetup
     private const float VestSouthZ = -(HallHalfZ + VestDepth); // 현관 앞방 남쪽 안벽 (큰 방 뿌리 기준)
 
     private static GameObject houseRoot;
+    private static int trimCounter;
 
     [MenuItem("유리병 정원/집 안 꾸미기")]
     public static string Build()
@@ -68,6 +69,7 @@ public static class InteriorSetup
         houseRoot.transform.position = new Vector3(0f, house.min.y + 0.43f, southInnerZ - VestSouthZ);
         houseRoot.transform.rotation = Quaternion.identity;
 
+        trimCounter = 0;
         BuildRoom();
 
         // 작업대는 큰 방 북쪽 벽 앞에
@@ -194,12 +196,12 @@ public static class InteriorSetup
         float vestLen = -hz - vs + 0.1f;               // 현관 앞방 바닥 길이 (큰 방 바닥과 살짝 겹친다)
         float vestMid = (vs - 0.1f + -hz) * 0.5f + 0.05f;
         Cube(room, "Floor", new Vector3(0f, -0.1f, 0f), new Vector3(hx * 2f + 0.3f, 0.2f, hz * 2f + 0.3f), floorMat);
-        Cube(room, "FloorVestibule", new Vector3(0f, -0.1f, vestMid), new Vector3(vx * 2f + 0.3f, 0.2f, vestLen + 0.1f), floorMat);
+        Cube(room, "FloorVestibule", new Vector3(0f, -0.105f, vestMid), new Vector3(vx * 2f + 0.3f, 0.2f, vestLen + 0.1f), floorMat);
         Cube(room, "Ceiling", new Vector3(0f, Height + 0.1f, 0f), new Vector3(hx * 2f + 0.3f, 0.2f, hz * 2f + 0.3f), ceilingMat, false);
-        Cube(room, "CeilingVestibule", new Vector3(0f, Height + 0.1f, vestMid), new Vector3(vx * 2f + 0.3f, 0.2f, vestLen + 0.1f), ceilingMat, false);
+        Cube(room, "CeilingVestibule", new Vector3(0f, Height + 0.105f, vestMid), new Vector3(vx * 2f + 0.3f, 0.2f, vestLen + 0.1f), ceilingMat, false);
         foreach (float z in new[] { -1.7f, 0f, 1.7f })
             Cube(room, "CeilingBeam", new Vector3(0f, Height - 0.1f, z), new Vector3(hx * 2f, 0.2f, 0.25f), timber, false);
-        Cube(room, "CeilingBeam", new Vector3(0f, Height - 0.1f, vestMid), new Vector3(vx * 2f, 0.2f, 0.25f), timber, false);
+        Cube(room, "CeilingBeam", new Vector3(0f, Height - 0.1f, vestMid), new Vector3(vx * 2f, 0.2f, 0.27f), timber, false);
 
         // ── 큰 방 벽: 북, 동, 서는 통벽. 남쪽은 현관 앞방으로 열린다
         WallWithHoles(room, "WallNorth", true, hz + t / 2f, t, hx + t, new[] { -3.3f, 0f, 3.3f }, plaster);       // 창 자리는 구멍을 낸다
@@ -238,12 +240,12 @@ public static class InteriorSetup
 
         // 모서리 기둥: 큰 방 네 모퉁이, 현관 앞방 앞쪽 두 모퉁이
         foreach (Vector2 c in new[] { new Vector2(-hx, -hz), new Vector2(hx, -hz), new Vector2(-hx, hz), new Vector2(hx, hz) })
-            Cube(room, "CornerPost", new Vector3(c.x - Mathf.Sign(c.x) * 0.1f, Height / 2f, c.y - Mathf.Sign(c.y) * 0.1f), new Vector3(0.25f, Height, 0.25f), timber, false);
+            Cube(room, "CornerPost", new Vector3(c.x - Mathf.Sign(c.x) * 0.1f, Height / 2f, c.y - Mathf.Sign(c.y) * 0.1f), new Vector3(0.26f, Height - 0.004f, 0.26f), timber, false);
         foreach (float sign in new[] { -1f, 1f })
-            Cube(room, "CornerPost", new Vector3(sign * (vx - 0.1f), Height / 2f, vs + 0.1f), new Vector3(0.25f, Height, 0.25f), timber, false);
+            Cube(room, "CornerPost", new Vector3(sign * (vx - 0.1f), Height / 2f, vs + 0.1f), new Vector3(0.26f, Height - 0.004f, 0.26f), timber, false);
         // 현관 앞방과 큰 방이 만나는 모퉁이 기둥 (문 모양 입구의 양쪽)
         foreach (float sign in new[] { -1f, 1f })
-            Cube(room, "CornerPost", new Vector3(sign * (vx - 0.1f), Height / 2f, -hz - 0.1f), new Vector3(0.25f, Height, 0.25f), timber, false);
+            Cube(room, "CornerPost", new Vector3(sign * (vx - 0.1f), Height / 2f, -hz - 0.1f), new Vector3(0.26f, Height - 0.004f, 0.26f), timber, false);
 
         // 창: 큰 방 북쪽(작업대 뒤와 양옆), 동쪽(침대 위), 서쪽(책상 위). 투명한 유리로 밖이 보인다
         // 창 불빛은 둘만 켠다. 한 오브젝트가 받는 추가 불빛이 8개를 넘으면(URP) 그중 하나가 깜빡이며 꺼졌다 켜진다
@@ -262,12 +264,15 @@ public static class InteriorSetup
         wall.transform.localPosition = new Vector3(center.x, 0f, center.y);
         wall.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
         const float face = -0.02f; // 벽 안쪽 면에서 방 쪽으로 2cm
-        Cube(wall, "StoneBase", new Vector3(0f, 0.45f, face), new Vector3(halfLength * 2f, 0.9f, 0.05f), stone, false);
-        Cube(wall, "BeamLow", new Vector3(0f, 0.93f, face - 0.01f), new Vector3(halfLength * 2f, 0.12f, 0.1f), timber, false);
-        Cube(wall, "BeamHigh", new Vector3(0f, Height - 0.2f, face - 0.01f), new Vector3(halfLength * 2f, 0.2f, 0.1f), timber, false);
+        // 이웃한 벽의 보, 돌 밑단, 기둥이 같은 높이, 같은 앞면에서 겹쳐 줄무늬가 지지 않게, 벽마다 아주 조금씩(밀리미터) 다르게 놓는다
+        int k = trimCounter++ % 12;   // 벽마다 다른 번호
+        float j = k * 0.004f;
+        Cube(wall, "StoneBase", new Vector3(0f, 0.45f, face), new Vector3(halfLength * 2f, 0.9f + j, 0.05f), stone, false);
+        Cube(wall, "BeamLow", new Vector3(0f, 0.93f + j, face - 0.012f), new Vector3(halfLength * 2f, 0.12f, 0.1f + j), timber, false);
+        Cube(wall, "BeamHigh", new Vector3(0f, Height - 0.2f - j, face - 0.012f), new Vector3(halfLength * 2f, 0.2f + 0.01f * (k % 3), 0.1f + j), timber, false);
+        int n = 0;
         foreach (float s in studs)
-            Cube(wall, "Stud", new Vector3(s, Height / 2f, face - 0.01f), new Vector3(0.15f, Height, 0.1f), timber, false);
-    }
+            Cube(wall, "Stud", new Vector3(s, Height / 2f, face - 0.02f - 0.003f * (n++ % 3)), new Vector3(0.15f + 0.01f * (k % 3), Height, 0.12f + j), timber, false);    }
 
     private const string WindowPrefabPath = "Assets/Prefabs/House/Window.prefab";
 
