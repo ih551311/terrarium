@@ -174,9 +174,9 @@ public static class MaterialSetup
         new Entry("fx_glitter",       "반짝이 가루", Deco, "deco_fx_glitter",      new Color(0.93f, 0.75f, 0.25f), Shop, Buy, 4, 15),
         new Entry("fx_petals",        "꽃잎 날리기", Deco, "deco_fx_petals",       new Color(0.96f, 0.68f, 0.75f), Shop, Buy, 4, 15),
         new Entry("fx_snow",          "눈 내리기",   Deco, "deco_fx_snow",         new Color(0.80f, 0.92f, 0.97f), Shop, Buy, 5, 18),        // 눈 에셋의 건물을 작게 줄인 꾸밈 재료 (BuildingMaterialSetup이 모델을 만든다)
-        new Entry("snow_cottage1",    "눈 오두막 1", Deco, "deco_snow_cottage1",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 30),
-        new Entry("snow_cottage2",    "눈 오두막 2", Deco, "deco_snow_cottage2",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 32),
-        new Entry("snow_cottage3",    "눈 오두막 3", Deco, "deco_snow_cottage3",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 35),
+        new Entry("snow_cottage1",    "굴뚝 눈 오두막", Deco, "deco_snow_cottage1",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 30),
+        new Entry("snow_cottage2",    "굴뚝 없는 눈 오두막", Deco, "deco_snow_cottage2",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 32),
+        new Entry("snow_cottage3",    "눈 오두막", Deco, "deco_snow_cottage3",   new Color(0.92f, 0.75f, 0.55f), Shop, Buy, 5, 35),
         new Entry("snow_well",        "눈 우물",     Deco, "deco_snow_well",       new Color(0.80f, 0.72f, 0.60f), Shop, Buy, 4, 24),
         // ── 새 꾸밈 소품 12종 (우체통 구매하기). 모델은 PropModelMaker.BuildMore (ExtraPropModels.cs)
         new Entry("house",            "작은 집",     Deco, "deco_house",           new Color(0.96f, 0.90f, 0.78f), Shop, Buy, 5, 24),

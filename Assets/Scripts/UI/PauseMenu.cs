@@ -18,7 +18,7 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private Slider volumeSlider;
     [SerializeField] private Button musicButton, menuButton, quitButton;
     [Header("설정 (메인 화면 설정과 같은 값)")]
-    [SerializeField] private Slider lookSlider;
+    [SerializeField] private Slider lookSlider, musicSlider, sfxSlider;
     [SerializeField] private Button screenButton, resolutionButton, qualityButton;
 
     private bool isOpen;
@@ -53,6 +53,16 @@ public class PauseMenu : MonoBehaviour
             AudioListener.volume = v;
             PlayerPrefs.SetFloat(VolumeKey, v);
         });
+        if (musicSlider != null)
+        {
+            musicSlider.SetValueWithoutNotify(GameAudio.MusicVolume);
+            musicSlider.onValueChanged.AddListener(v => GameAudio.MusicVolume = v);
+        }
+        if (sfxSlider != null)
+        {
+            sfxSlider.SetValueWithoutNotify(GameAudio.SfxVolume);
+            sfxSlider.onValueChanged.AddListener(v => { GameAudio.SfxVolume = v; GameAudio.Play(GameAudio.Sfx.Click, 0.6f); });
+        }
         if (lookSlider != null)
         {
             float look = Mathf.Clamp(PlayerPrefs.GetFloat(MainMenu.LookKey, 1f), MainMenu.LookMin, MainMenu.LookMax);

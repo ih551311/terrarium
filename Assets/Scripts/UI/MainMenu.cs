@@ -42,6 +42,9 @@ public class MainMenu : MonoBehaviour
     [Header("설정")]
     [SerializeField] private Slider volumeSlider;
     [SerializeField] private TMP_Text volumeValue;
+    [Tooltip("배경 음악 크기와 효과음(발소리, 주변 소리 포함) 크기")]
+    [SerializeField] private Slider musicSlider, sfxSlider;
+    [SerializeField] private TMP_Text musicValue, sfxValue;
     [SerializeField] private Slider lookSlider;
     [SerializeField] private TMP_Text lookValue;
     [SerializeField] private Button musicButton, screenButton, resolutionButton, qualityButton;
@@ -121,6 +124,20 @@ public class MainMenu : MonoBehaviour
             PlayerPrefs.SetFloat(VolumeKey, v);
             volumeValue.text = Mathf.RoundToInt(v * 100f) + "%";
         });
+
+        // 음악 크기, 효과음 크기 (소리 크기에 곱해진다)
+        if (musicSlider != null)
+        {
+            musicSlider.SetValueWithoutNotify(GameAudio.MusicVolume);
+            if (musicValue != null) musicValue.text = Mathf.RoundToInt(GameAudio.MusicVolume * 100f) + "%";
+            musicSlider.onValueChanged.AddListener(v => { GameAudio.MusicVolume = v; if (musicValue != null) musicValue.text = Mathf.RoundToInt(v * 100f) + "%"; });
+        }
+        if (sfxSlider != null)
+        {
+            sfxSlider.SetValueWithoutNotify(GameAudio.SfxVolume);
+            if (sfxValue != null) sfxValue.text = Mathf.RoundToInt(GameAudio.SfxVolume * 100f) + "%";
+            sfxSlider.onValueChanged.AddListener(v => { GameAudio.SfxVolume = v; if (sfxValue != null) sfxValue.text = Mathf.RoundToInt(v * 100f) + "%"; GameAudio.Play(GameAudio.Sfx.Click, 0.6f); });
+        }
 
         // 마우스 감도 (배율. 100%가 기본)
         float look = Mathf.Clamp(PlayerPrefs.GetFloat(LookKey, 1f), LookMin, LookMax);

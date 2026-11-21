@@ -144,32 +144,40 @@ public static class UIBake
     {
         GameObject go = NewHolder("PauseMenu", "PauseMenuCanvas", 400, out RectTransform root, out Component comp, typeof(PauseMenu));
         UIKit.Backdrop(root);
-        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(640f, 840f)); // 크레딧 버튼이 밑에 붙으며 판이 112 늘어나도 화면(1080) 안에 들어오는 높이
+        RectTransform panel = UIKit.Panel(root, "Panel", new Vector2(640f, 850f)); // 크레딧 버튼이 밑에 붙으며 판이 112 늘어나도 화면(1080) 안에 들어오는 높이
 
-        UIKit.Label(panel, "잠시 쉬어가요", 48f, new Vector2(0f, 355f), new Vector2(560f, 70f));
-        UIKit.Label(panel, "소리 크기", 28f, new Vector2(0f, 285f), new Vector2(460f, 40f));
-        Slider volume = UIKit.MakeSlider(panel, new Vector2(0f, 245f), new Vector2(420f, 40f), 1f, null);
-        UIKit.Label(panel, "마우스 감도", 28f, new Vector2(0f, 185f), new Vector2(460f, 40f));
-        Slider look = UIKit.MakeSlider(panel, new Vector2(0f, 145f), new Vector2(420f, 40f), 0.5f, null);
-        look.name = "LookSlider";
+        UIKit.Label(panel, "잠시 쉬어가요", 48f, new Vector2(0f, 365f), new Vector2(560f, 70f));
+        Slider volume = SliderRow(panel, "소리 크기", 295f, 1f);
+        Slider music = SliderRow(panel, "음악 크기", 240f, 1f); music.name = "MusicSlider";
+        Slider sfx = SliderRow(panel, "효과음 크기", 185f, 1f); sfx.name = "SfxSlider";
+        Slider look = SliderRow(panel, "마우스 감도", 130f, 0.5f); look.name = "LookSlider";
 
-        Button music = Btn(panel, "음악 끄기", new Vector2(0f, 70f), new Vector2(460f, 64f));
-        Button screen = Btn(panel, "창 모드", new Vector2(0f, 0f), new Vector2(460f, 64f)); screen.name = "ScreenButton";
-        Button resolution = Btn(panel, "1920 x 1080", new Vector2(0f, -70f), new Vector2(460f, 64f)); resolution.name = "ResolutionButton";
-        Button quality = Btn(panel, "높음", new Vector2(0f, -140f), new Vector2(460f, 64f)); quality.name = "QualityButton";
-        Button menu = Btn(panel, "메인 화면으로", new Vector2(0f, -230f), new Vector2(460f, 72f));
-        Button quit = Btn(panel, "게임 끝내기", new Vector2(0f, -315f), new Vector2(460f, 72f));
+        Button musicBtn = Btn(panel, "음악 끄기", new Vector2(0f, 62f), new Vector2(460f, 60f));
+        Button screen = Btn(panel, "창 모드", new Vector2(0f, -8f), new Vector2(460f, 60f)); screen.name = "ScreenButton";
+        Button resolution = Btn(panel, "1920 x 1080", new Vector2(0f, -78f), new Vector2(460f, 60f)); resolution.name = "ResolutionButton";
+        Button quality = Btn(panel, "높음", new Vector2(0f, -148f), new Vector2(460f, 60f)); quality.name = "QualityButton";
+        Button menu = Btn(panel, "메인 화면으로", new Vector2(0f, -238f), new Vector2(460f, 70f));
+        Button quit = Btn(panel, "게임 끝내기", new Vector2(0f, -322f), new Vector2(460f, 70f));
 
         Put(comp, "root", root.gameObject);
         Put(comp, "volumeSlider", volume);
+        Put(comp, "musicSlider", music);
+        Put(comp, "sfxSlider", sfx);
         Put(comp, "lookSlider", look);
-        Put(comp, "musicButton", music);
+        Put(comp, "musicButton", musicBtn);
         Put(comp, "screenButton", screen);
         Put(comp, "resolutionButton", resolution);
         Put(comp, "qualityButton", quality);
         Put(comp, "menuButton", menu);
         Put(comp, "quitButton", quit);
         return go;
+    }
+
+    /// <summary>글자(왼쪽)와 슬라이더(오른쪽)가 한 줄에 놓인 설정 줄</summary>
+    private static Slider SliderRow(RectTransform panel, string label, float y, float value)
+    {
+        UIKit.Label(panel, label, 28f, new Vector2(-170f, y), new Vector2(230f, 40f), TextAlignmentOptions.Left);
+        return UIKit.MakeSlider(panel, new Vector2(100f, y), new Vector2(300f, 40f), value, null);
     }
     // ───────── 로딩 화면 ─────────
 

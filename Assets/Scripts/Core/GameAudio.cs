@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -26,6 +26,22 @@ public class GameAudio : MonoBehaviour
         set { musicOn = value; PlayerPrefs.SetInt("music_on", value ? 1 : 0); } // 다음에 켜도 그대로
     }
 
+    private static float musicVolume = 1f, sfxVolume = 1f;
+
+    /// <summary>배경 음악 크기 (0~1, 설정에서 바꾼다)</summary>
+    public static float MusicVolume
+    {
+        get { return musicVolume; }
+        set { musicVolume = Mathf.Clamp01(value); PlayerPrefs.SetFloat("music_volume", musicVolume); }
+    }
+
+    /// <summary>효과음, 발소리, 주변 소리(파도, 바람, 새) 크기 (0~1, 설정에서 바꾼다)</summary>
+    public static float SfxVolume
+    {
+        get { return sfxVolume; }
+        set { sfxVolume = Mathf.Clamp01(value); PlayerPrefs.SetFloat("sfx_volume", sfxVolume); }
+    }
+
     /// <summary>효과음을 한 번 낸다. 소리 시스템이 아직 없으면 아무 일도 하지 않는다.</summary>
     public static void Play(Sfx sfx, float volume = 1f)
     {
@@ -47,6 +63,8 @@ public class GameAudio : MonoBehaviour
     {
         instance = null;
         musicOn = PlayerPrefs.GetInt("music_on", 1) == 1;
+        musicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat("music_volume", 1f));
+        sfxVolume = Mathf.Clamp01(PlayerPrefs.GetFloat("sfx_volume", 1f));
     }
 
     // ───────── 소리 재료 ─────────
@@ -120,7 +138,7 @@ public class GameAudio : MonoBehaviour
 
     private void PlaySfx(Sfx sfx, float volume)
     {
-        if (sfxClips.TryGetValue(sfx, out AudioClip clip)) sfxSource.PlayOneShot(clip, volume);
+        if (sfxClips.TryGetValue(sfx, out AudioClip clip)) sfxSource.PlayOneShot(clip, volume * sfxVolume);
     }
 
     // ───────── 매 프레임 ─────────
@@ -144,7 +162,7 @@ public class GameAudio : MonoBehaviour
         Transform player = GameRoot.Instance != null ? GameRoot.Instance.Player : null;
 
         // 음악: 낮과 밤을 섞는다. 비 오는 날은 조금 작게.
-        float musicTarget = musicOn ? 0.32f * (1f - 0.35f * rain) : 0f;
+        float musicTarget = musicOn ? 0.32f * musicVolume * (1f - 0.35f * rain) : 0f;
         musicLevel = Mathf.MoveTowards(musicLevel, musicTarget, Time.deltaTime * 0.3f);
         if (music != null)
         {
@@ -163,10 +181,10 @@ public class GameAudio : MonoBehaviour
             float d = Vector2.Distance(new Vector2(player.position.x, player.position.z), new Vector2(0f, 30f));
             shore = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(70f, 140f, d));
         }
-        Fade(waves, outdoors ? Mathf.Lerp(0.05f, 0.26f, shore) : 0.015f);
-        Fade(wind, outdoors ? 0.17f + 0.12f * rain : 0.03f);
+        Fade(waves, sfxVolume * (outdoors ? Mathf.Lerp(0.05f, 0.26f, shore) : 0.015f));
+        Fade(wind, sfxVolume * (outdoors ? 0.17f + 0.12f * rain : 0.03f));
         Fade(rainLoop, 0f); // 빗소리와 폭풍 소리는 날씨 에셋(AudioModule)이 낸다
-        Fade(roomTone, outdoors ? 0f : 0.10f);
+        Fade(roomTone, sfxVolume * (outdoors ? 0f : 0.10f));
 
         // 낮의 새 소리 (바깥, 맑은 날)
         birdTimer -= Time.deltaTime;
@@ -176,7 +194,7 @@ public class GameAudio : MonoBehaviour
             if (outdoors && t < 0.7f && rain < 0.2f)
             {
                 sfxSource.panStereo = Random.Range(-0.7f, 0.7f);
-                sfxSource.PlayOneShot(birds[Random.Range(0, birds.Length)], Random.Range(0.12f, 0.24f));
+                sfxSource.PlayOneShot(birds[Random.Range(0, birds.Length)], Random.Range(0.12f, 0.24f) * sfxVolume);
                 sfxSource.panStereo = 0f;
             }
         }
@@ -205,7 +223,7 @@ public class GameAudio : MonoBehaviour
         stepTimer = 1f;
         bool sand = WeatherEffects.Outdoors && Vector2.Distance(new Vector2(player.position.x, player.position.z), new Vector2(0f, 30f)) > 108f; // 바닷가는 모래
         AudioClip[] set = sand ? sandSteps : steps;
-        sfxSource.PlayOneShot(set[Random.Range(0, set.Length)], sand ? 0.3f : 0.26f);
+        sfxSource.PlayOneShot(set[Random.Range(0, set.Length)], (sand ? 0.3f : 0.26f) * sfxVolume);
     }
 
     // ───────── 소리 만들기 ─────────

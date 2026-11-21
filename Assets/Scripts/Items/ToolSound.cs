@@ -19,11 +19,11 @@ public static class ToolSound
         }
         if (files.Length > 0)
         {
-            AudioSource.PlayClipAtPoint(files[Random.Range(0, files.Length)], position, 0.7f);
+            AudioSource.PlayClipAtPoint(files[Random.Range(0, files.Length)], position, 0.7f * GameAudio.SfxVolume);
             return;
         }
         if (clip == null) clip = MakeClip();
-        AudioSource.PlayClipAtPoint(clip, position, 0.7f);
+        AudioSource.PlayClipAtPoint(clip, position, 0.7f * GameAudio.SfxVolume);
     }
 
     private static AudioClip MakeClip()

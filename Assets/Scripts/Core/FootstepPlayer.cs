@@ -94,7 +94,7 @@ public class FootstepPlayer : MonoBehaviour
         last = index;
 
         source.pitch = pitchScale * Random.Range(0.95f, 1.06f);
-        source.PlayOneShot(list[index], volume);
+        source.PlayOneShot(list[index], volume * GameAudio.SfxVolume);
     }
 
     /// <summary>서 있는 자리의 바닥 종류</summary>

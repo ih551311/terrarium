@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: snow_cottage3
   m_EditorClassIdentifier: Assembly-CSharp::MaterialData
   id: snow_cottage3
-  displayName: "\uB208 \uC624\uB450\uB9C9 3"
+  displayName: "\uB208 \uC624\uB450\uB9C9"
   kind: 1
   icon: {fileID: 21300000, guid: a1fe67f1991202f409fe66be44255195, type: 3}
   zone: 4
