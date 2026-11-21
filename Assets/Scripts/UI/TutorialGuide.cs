@@ -4,10 +4,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// 길잡이(튜토리얼). 게임을 처음 시작하면 화면 왼쪽 위에 작은 쪽지가 떠서 해야 할 일을 한 가지씩 알려 준다.
+/// 튜토리얼. 게임을 처음 시작하면 화면 왼쪽 위에 작은 쪽지가 떠서 해야 할 일을 한 가지씩 알려 준다.
 /// 걷기 → 줍기 → 캐기 → 가방 → 집 → 병 만들기 → 선반에 올리기 → 우체통 → 잠자기. 하나를 해내면 "좋아요!"가 뜨고 다음으로 넘어간다.
-/// - 단계는 저장에 남는다 (GameState.TutorialStep). 길잡이가 생기기 전에 시작한 저장은 건너뛴다.
-/// - F1을 누르면 길잡이를 끈다. 메뉴의 "새로 시작"으로 저장을 지우면 다시 처음부터 나온다.
+/// - 단계는 저장에 남는다 (GameState.TutorialStep). 튜토리얼이 생기기 전에 시작한 저장은 건너뛴다.
+/// - F1을 누르면 튜토리얼을 끈다. 메뉴의 "새로 시작"으로 저장을 지우면 다시 처음부터 나온다.
 /// - 시작 편지를 닫은 뒤부터 나오고, 가방, 작업대 같은 화면이 열려 있는 동안과 자는 동안에는 숨는다.
 /// 화면은 Assets/Resources/UI/TutorialGuide.prefab (유니티에서 열어 모양을 고칠 수 있다). 글자는 아래 Steps 표에서 고친다.
 /// </summary>
@@ -92,7 +92,7 @@ public class TutorialGuide : MonoBehaviour
 
         if (finishing)
         {
-            Show("길잡이를 마쳤어요!", "이제 마음대로 정원을 꾸며 보세요.\n도움말은 메인 화면과 Esc 메뉴에 있어요.", string.Empty, true);
+            Show("튜토리얼을 마쳤어요!", "이제 마음대로 정원을 꾸며 보세요.\n도움말은 메인 화면과 Esc 메뉴에 있어요.", string.Empty, true);
             return;
         }
 
@@ -118,7 +118,7 @@ public class TutorialGuide : MonoBehaviour
 
         if (StepDone(step, player)) { flashUntil = Time.unscaledTime + 1.3f; GameAudio.Play(GameAudio.Sfx.Coin, 0.5f); }
 
-        if (visible) Show(Steps[step].title, Steps[step].body, (step + 1) + " / " + Steps.Length + "     F1 길잡이 끄기", false);
+        if (visible) Show(Steps[step].title, Steps[step].body, (step + 1) + " / " + Steps.Length + "     F1 튜토리얼 끄기", false);
         else root.SetActive(false);
     }
 
