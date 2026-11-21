@@ -119,9 +119,9 @@ public class BottleChooser : MonoBehaviour
             slot++;
 
             BottleContents bottle = station.Get(i);
-            string cost = GameState.FreeBottles > 0 ? " (공짜 병 " + GameState.FreeBottles + "개)" : requirePurchase ? " (" + PriceOf(i) + "코인)" : string.Empty;
+            string cost = GameState.FreeBottles > 0 ? "공짜 병 " + GameState.FreeBottles + "개" : requirePurchase ? PriceOf(i) + "코인" : string.Empty;
             bool unlocked = IsUnlocked(i);
-            labels[i].text = unlocked ? bottle.DisplayName + "\n만들기" + cost : bottle.DisplayName + "\n" + (i == 6 ? "사막 섬 배를 열면\n만들 수 있어요" : "눈 섬 배를 열면\n만들 수 있어요");
+            labels[i].text = unlocked ? bottle.DisplayName + (cost.Length > 0 ? "\n" + cost : string.Empty) : bottle.DisplayName + "\n" + (i == 6 ? "사막 섬 배를 열면\n만들 수 있어요" : "눈 섬 배를 열면\n만들 수 있어요");
             buttons[i].interactable = unlocked;
             backgrounds[i].color = unlocked ? normalColor : disabledColor;
         }

@@ -289,7 +289,7 @@ public class CollectionBook : MonoBehaviour
         if (selected == null)
         {
             detailName.text = "그림을 눌러 보세요";
-            detailBody.text = "얻은 재료는 그림이 채워지고, 아직 못 얻은 재료는 어디서 얻는지 알려 줘요.";
+            detailBody.text = "못 얻은 재료를 누르면 어디서 얻는지 알려 줘요.";
             return;
         }
         bool have = GameState.IsDiscovered(selected.id);

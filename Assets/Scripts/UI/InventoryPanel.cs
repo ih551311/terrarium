@@ -157,7 +157,10 @@ public class InventoryPanel : MonoBehaviour
             bottleTexts[i].fontSizeMin = 12f;
             bottleTexts[i].fontSizeMax = 20f;
             bool named = !string.IsNullOrEmpty(BottleStore.Get(id).name); // 이름이 없으면 첫 줄이 이미 종류를 말하므로 종류를 또 쓰지 않는다
-            bottleTexts[i].text = BottleStore.NameOf(id, typeName) + "\n" + (shown ? "선반에 전시 중" : named ? typeName : string.Empty);
+            // 대부분이 전시 중이라 전시 중이라는 말은 쓰지 않고, 선반에 없는 병만 알려 준다
+            string kindLine = named && typeName != "병" ? typeName : string.Empty; // "병"만 나오는 종류는 쓰지 않는다
+            if (!shown) kindLine = kindLine.Length > 0 ? kindLine + ", 선반에 없음" : "선반에 없음";
+            bottleTexts[i].text = BottleStore.NameOf(id, typeName) + (kindLine.Length > 0 ? "\n" + kindLine : string.Empty);
             Sprite sprite = typeIcons != null && type >= 0 && type < typeIcons.Length ? typeIcons[type] : null;
             bottleIcons[i].sprite = sprite;
             bottleIcons[i].enabled = sprite != null;

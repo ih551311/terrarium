@@ -108,8 +108,11 @@ public class BottleInventoryView : MonoBehaviour
             labels[i].fontSizeMin = 14f;
             labels[i].fontSizeMax = 26f;
             // 이름을 지어 줬으면 둘째 줄 앞에 병 종류를 붙인다. (지어 주지 않았으면 이름에 이미 종류가 들어 있다)
-            string status = shown ? "선반에 전시 중" : "눌러서 전시하기";
-            labels[i].text = name + "\n" + (string.IsNullOrEmpty(record.name) ? status : typeName + ", " + status);
+            // 전시 중인 병은 칸 색깔로 알 수 있어서 글자로는 쓰지 않는다
+            string kind = string.IsNullOrEmpty(record.name) ? string.Empty : typeName;
+            string hint = shown ? string.Empty : "눌러서 전시하기";
+            string second = kind.Length > 0 && hint.Length > 0 ? kind + ", " + hint : kind + hint;
+            labels[i].text = second.Length > 0 ? name + "\n" + second : name;
             backgrounds[i].color = shown ? displayedColor : normalColor;
 
             Sprite sprite = type >= 0 && typeIcons != null && type < typeIcons.Length ? typeIcons[type] : null;

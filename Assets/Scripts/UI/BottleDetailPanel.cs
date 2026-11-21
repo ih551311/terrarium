@@ -161,7 +161,7 @@ public class BottleDetailPanel : MonoBehaviour
         bool shown = BottleStore.IsDisplayed(bottleId);
 
         nameLabel.text = BottleStore.NameOf(bottleId, typeName);
-        string info = typeName + " #" + BottleStore.ArchiveNumber(bottleId) + "  |  재료 " + record.items.Count + "개  |  " + (shown ? "선반에 전시 중" : "선반에 없음");
+        string info = typeName + " #" + BottleStore.ArchiveNumber(bottleId) + "  |  재료 " + record.items.Count + "개";
         infoLabel.text = string.IsNullOrEmpty(notice) ? info : info + "\n" + notice;
         shelfLabel.text = shown ? "선반에서 내리기" : "선반에 올리기";
     }
