@@ -440,13 +440,15 @@ public static class InteriorSetup
         // 선반 말고도 병을 둘 자리 5곳: 책상 위(24번), 북쪽 창턱 둘(25, 26번), 동쪽 창턱 둘(27, 28번). 선반이 안 열려도 처음부터 쓸 수 있다.
         // (BottleStore.ExtraSlotStart, ExtraSlotCount와 맞춰야 한다)
         float bedWindowZ = -1.7f;
-        Furn(root, "deco_furn_sill", new Vector3(0f, 1.145f, HallHalfZ - 0.15f), 180f);   // 창턱: 받침 보가 달린 로우폴리 판
-        Furn(root, "deco_furn_sill", new Vector3(HallHalfX - 0.15f, 1.145f, bedWindowZ), -90f);
+        // 창턱은 창틀 아래쪽(높이 1.25)보다 1cm 아래에 둔다: 창틀과 판이 겹쳐서 같은 면이 깜빡이던 것을 막는다 (판 윗면 1.24)
+        const float SillY = 1.065f, SillTop = 1.245f;
+        Furn(root, "deco_furn_sill", new Vector3(0f, SillY, HallHalfZ - 0.15f), 180f);   // 창턱: 받침 보가 달린 로우폴리 판
+        Furn(root, "deco_furn_sill", new Vector3(HallHalfX - 0.15f, SillY, bedWindowZ), -90f);
         Vector3[] extra =
         {
             new Vector3(deskX, 0.79f, deskZ + 0.65f),
-            new Vector3(-0.28f, 1.32f, HallHalfZ - 0.15f), new Vector3(0.28f, 1.32f, HallHalfZ - 0.15f),
-            new Vector3(HallHalfX - 0.15f, 1.32f, bedWindowZ - 0.3f), new Vector3(HallHalfX - 0.15f, 1.32f, bedWindowZ + 0.3f)
+            new Vector3(-0.28f, SillTop, HallHalfZ - 0.15f), new Vector3(0.28f, SillTop, HallHalfZ - 0.15f),
+            new Vector3(HallHalfX - 0.15f, SillTop, bedWindowZ - 0.3f), new Vector3(HallHalfX - 0.15f, SillTop, bedWindowZ + 0.3f)
         };
         for (int i = 0; i < extra.Length; i++)
         {

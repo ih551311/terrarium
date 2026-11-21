@@ -121,7 +121,7 @@ public static partial class PropModelMaker
     {
         b = NewMirrored();
         BBox(V(0f, 0.02f, 0f), V(1.25f, 0.04f, 0.26f), 0.008f, Tan);
-        Box(V(0f, 0.005f, 0.115f), V(1.2f, 0.03f, 0.03f), DarkBrown);                                            // 앞 턱 아래
+        Box(V(0f, 0.0f, 0.12f), V(1.2f, 0.03f, 0.03f), DarkBrown);                                              // 앞 턱 아래 (판 앞면보다 5mm 나오게: 같은 면이 겹쳐 줄무늬 지지 않게)
         foreach (float x in new[] { -0.5f, 0f, 0.5f })                                                            // 받침 보
         {
             Box(V(x, -0.05f, 0.03f), V(0.06f, 0.1f, 0.2f), Brown);

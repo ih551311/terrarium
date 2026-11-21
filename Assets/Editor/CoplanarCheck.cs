@@ -11,6 +11,7 @@ public static class CoplanarCheck
 {
     private struct Tri { public Vector3 a, b, c, n; public float d; public Bounds box; public int owner; public float area; }
 
+    public static string Filter;
     private const float PlaneTol = 0.012f;   // 같은 평면으로 보는 거리
     private const float MinOverlap = 0.004f; // 겹침 넓이(m²)
 
@@ -47,7 +48,7 @@ public static class CoplanarCheck
                 pairs++;
                 string key = owners[p.owner] + " × " + owners[q.owner];
                 perOwner[key] = perOwner.TryGetValue(key, out int n) ? n + 1 : 1;
-                if (pairs <= 12 || (key.StartsWith("Cabin × ") && key != "Cabin × Cabin" && sb.Length < 6000)) sb.Append("  ").Append(key).Append(" 중심 ").Append(((p.box.center + q.box.center) * 0.5f).ToString("F2")).Append(" 넓이 ").Append(area.ToString("F3")).Append('\n');
+                if (pairs <= 12 || (key.StartsWith("Cabin × ") && key != "Cabin × Cabin" && sb.Length < 6000) || (Filter != null && key.Contains(Filter) && sb.Length < 9000)) sb.Append("  ").Append(key).Append(" 중심 ").Append(((p.box.center + q.box.center) * 0.5f).ToString("F2")).Append(" 넓이 ").Append(area.ToString("F3")).Append('\n');
             }
         }
         var head = new StringBuilder("겹친 면 쌍 " + pairs + "개 (면 " + tris.Count + "개 검사)\n");
