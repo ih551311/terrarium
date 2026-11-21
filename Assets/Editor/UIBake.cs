@@ -441,7 +441,7 @@ public static class UIBake
         "휠, Q, R은 병 속 재료에 마우스를 올리고 써요.\n\n" +
         "섬에서 재료를 모아 집 작업대(E)에서 병을 꾸며요. 완성한 병은 선반에 올려 둘 수 있어요.\n\n" +
         "우체통에 재료를 보내면 다음 날 코인이 돼요. 코인으로 장식을 사고, 도구를 강화하고, 선착장에서 다른 섬을 열어요.\n\n" +
-        "침대에서 자면 다음 날이 되고 저장돼요.";
+        "침대에서 자면 다음 날이 되고 저장돼요. 책상 위 책(E)은 정원 도감이에요.";
 
     /// <summary>지금 열려 있는 씬에 메인 화면 캔버스를 만들고 MainMenu 스크립트에 연결한다.</summary>
     public static void BuildMainMenuCanvas(MainMenu menu)
