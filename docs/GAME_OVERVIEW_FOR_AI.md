@@ -498,3 +498,9 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 
 ## 진짜 파도, 새 소리 연결 완료
 - Assets/Resources/Sfx/Wave1~4.flac (OpenGameArt 'Water Waves', transitking, CC0, 한 번짜리 파도 1.8~3.2초)와 BirdsAmbient.ogg ('Birds and Wind - Ambient', Spring Spring, CC0, 84초 이어 틀기, 바람 소리도 섞임)를 연결했다. GameAudio가 파도는 몇 초마다 하나씩 겹쳐 틀고(바닷가에 가까울수록 잦고 크게), 새 소리는 낮 맑은 날 바깥에서 이어 튼다. 코드로 만든 파도, 새는 파일이 있으면 꺼진다. 크레딧에 출처를 적었다. 소리는 귀로 확인하지 못했다.
+
+
+## Windows 빌드 (스토브 올리기 전)
+- 2026-11-21 기준 최신 빌드: C:\Users\ih551\tools\MiniTerra_build_v1\Mini Terra.exe (약 315MB, 오류 0). 버전 1.0.0. 빌드 후 BurstDebugInformation_DoNotShip 폴더는 지웠다(올리지 않는다). 실행해 20초 켜 보았고 로그에 오류는 없었다.
+- 다시 만들 때: 에디터에서 BuildPipeline.BuildPlayer(씬 4개, StandaloneWindows64) 후 exe와 _Data 폴더 이름을 'Mini Terra'로 맞춘다.
+- 이 빌드에서 해상도, 전체 화면 전환, 소리(파도, 새, 음악)를 직접 확인해야 한다.
