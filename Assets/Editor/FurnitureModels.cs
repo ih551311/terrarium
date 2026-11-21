@@ -13,7 +13,9 @@ public static partial class PropModelMaker
     [MenuItem("유리병 정원/가구 모델 만들기")]
     public static string BuildFurniture()
     {
-        FurnBed(); FurnDesk(); FurnBedside(); FurnShelf(); FurnWorkbench(); FurnSill(); FurnBook(); FurnMailbox();
+        boxJitter = true; boxCount = 0;
+        try { FurnBed(); FurnDesk(); FurnBedside(); FurnShelf(); FurnWorkbench(); FurnSill(); FurnBook(); FurnMailbox(); }
+        finally { boxJitter = false; }
         AssetDatabase.Refresh();
         return "가구 모델 8종을 만들었어요 (이어서 '장식 모델 가져오기 설정'을 누르세요)";
     }

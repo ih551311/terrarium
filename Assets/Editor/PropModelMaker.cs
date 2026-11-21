@@ -39,8 +39,13 @@ public static partial class PropModelMaker
 
     // ───────── 기본 모양 ─────────
 
+    /// <summary>켜면 상자마다 크기를 0~4mm씩 다르게 키운다: 이웃한 부품의 면이 같은 평면에 놓여 줄무늬(z-fighting)가 지는 것을 막는다 (가구 모델용)</summary>
+    private static bool boxJitter;
+    private static int boxCount;
+
     private static void Box(Vector3 c, Vector3 s, int color)
     {
+        if (boxJitter) s += Vector3.one * ((boxCount++ % 5) * 0.002f);
         Vector3 h = s * 0.5f;
         Vector3 p000 = c + new Vector3(-h.x, -h.y, -h.z), p100 = c + new Vector3(h.x, -h.y, -h.z), p110 = c + new Vector3(h.x, h.y, -h.z), p010 = c + new Vector3(-h.x, h.y, -h.z);
         Vector3 p001 = c + new Vector3(-h.x, -h.y, h.z), p101 = c + new Vector3(h.x, -h.y, h.z), p111 = c + new Vector3(h.x, h.y, h.z), p011 = c + new Vector3(-h.x, h.y, h.z);

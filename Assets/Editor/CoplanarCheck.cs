@@ -12,7 +12,7 @@ public static class CoplanarCheck
     private struct Tri { public Vector3 a, b, c, n; public float d; public Bounds box; public int owner; public float area; }
 
     public static string Filter;
-    public static float PlaneTol = 0.003f;   // 3mm 안이면 같은 평면(줄무늬 위험)   // 같은 평면으로 보는 거리
+    public static float PlaneTol = 0.0008f;   // 0.8mm 안이면 같은 평면(줄무늬 위험)   // 같은 평면으로 보는 거리
     private const float MinOverlap = 0.004f; // 겹침 넓이(m²)
 
     [MenuItem("유리병 정원/겹친 면 검사 (선택한 물체 또는 Cabin)")]
