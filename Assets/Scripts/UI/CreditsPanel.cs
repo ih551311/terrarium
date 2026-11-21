@@ -14,7 +14,7 @@ public class CreditsPanel : MonoBehaviour
         "<size=150%>Mini Terra</size>\n미니 테라리움 꾸미기\n\n" +
         "<b>만든 사람</b>\n" +
         "기획, 제작: CheeseBugi\n" +
-        "햄부기 모델: 제작자가 직접 만듦\n\n" +
+        "햄부기 캐릭터: CheeseBugi\n\n" +
         "<b>3D 에셋 (Unity Asset Store)</b>\n" +
         "Cozy Snowy Environment - Low Poly (HobiSoLoved)\n" +
         "Low Poly Nature Pack (BD Studios)\n" +

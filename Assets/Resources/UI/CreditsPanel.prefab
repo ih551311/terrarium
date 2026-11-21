@@ -464,15 +464,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: "<size=150%>Mini Terra</size>\n\uBBF8\uB2C8 \uD14C\uB77C\uB9AC\uC6C0 \uAFB8\uBBF8\uAE30\n\n<b>\uB9CC\uB4E0
     \uC0AC\uB78C</b>\n\uAE30\uD68D, \uC81C\uC791: CheeseBugi\n\uD584\uBD80\uAE30
-    \uBAA8\uB378: \uC81C\uC791\uC790\uAC00 \uC9C1\uC811 \uB9CC\uB4E6\n\n<b>3D \uC5D0\uC14B
-    (Unity Asset Store)</b>\nCozy Snowy Environment - Low Poly (HobiSoLoved)\nLow
-    Poly Nature Pack (BD Studios)\nLow Poly Tree Mega Pack - 1000 Trees (MysticForge)\nMedieval
-    Town Exteriors (Lylek Games)\nPoly Desert (Runemark Studio)\nAllSky Free - 10
-    Sky / Skybox Set (rpgwhitelock)\nURP Dynamic Weather System (CreaTuMundo)\n\n<b>\uC74C\uC545\uACFC
-    \uC18C\uB9AC</b>\nDreamcore Music (juanjo_sound / Michael Barker)\nFootsteps
-    Sounds - Volume 02 (The Sound Guild)\n\uD6A8\uACFC\uC74C \uC77C\uBD80: EarShot
-    (Leon Lin, MIT License)\n\n<b>\uAE00\uAF34</b>\nCafe24 \uB3D9\uB3D9 (Cafe24)\n\n<b>\uB9CC\uB4E0
-    \uB3C4\uAD6C</b>\nUnity 6\n\n\uD50C\uB808\uC774\uD574 \uC8FC\uC154\uC11C \uACE0\uB9C8\uC6CC\uC694."
+    \uCE90\uB9AD\uD130: CheeseBugi\n\n<b>3D \uC5D0\uC14B (Unity Asset Store)</b>\nCozy
+    Snowy Environment - Low Poly (HobiSoLoved)\nLow Poly Nature Pack (BD Studios)\nLow
+    Poly Tree Mega Pack - 1000 Trees (MysticForge)\nMedieval Town Exteriors (Lylek
+    Games)\nPoly Desert (Runemark Studio)\nAllSky Free - 10 Sky / Skybox Set (rpgwhitelock)\nURP
+    Dynamic Weather System (CreaTuMundo)\n\n<b>\uC74C\uC545\uACFC \uC18C\uB9AC</b>\nDreamcore
+    Music (juanjo_sound / Michael Barker)\nFootsteps Sounds - Volume 02 (The Sound
+    Guild)\n\uD6A8\uACFC\uC74C \uC77C\uBD80: EarShot (Leon Lin, MIT License)\n\n<b>\uAE00\uAF34</b>\nCafe24
+    \uB3D9\uB3D9 (Cafe24)\n\n<b>\uB9CC\uB4E0 \uB3C4\uAD6C</b>\nUnity 6\n\n\uD50C\uB808\uC774\uD574
+    \uC8FC\uC154\uC11C \uACE0\uB9C8\uC6CC\uC694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 12a7679df9b4ac24ebc4a8e9609b7914, type: 2}
   m_sharedMaterial: {fileID: -8047715167007059581, guid: 12a7679df9b4ac24ebc4a8e9609b7914, type: 2}
