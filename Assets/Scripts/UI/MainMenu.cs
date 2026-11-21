@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// 게임을 켜면 처음 나오는 메인 화면 (MainMenu 씬). 시작하기, 도움말, 설정 세 가지가 있다.
+/// 게임을 켜면 처음 나오는 메인 화면 (MainMenu 씬). 시작하기, 도움말, 설정, 게임 종료가 있고, 저장이 있으면 왼쪽 아래에 "새로 시작"도 있다.
 /// 화면(캔버스)은 MainMenu 씬 안에 실제 오브젝트로 들어 있다: 어두운 청회색 바탕, 떠다니는 반딧불이, 흙 위에 식물이 놓인 유리병,
 /// 왼쪽의 제목과 버튼, 도움말과 설정 판. 모양을 바꾸려면 씬에서 직접 고치거나, 메뉴 "유리병 정원 > 메인 화면 만들기"로 다시 만든다(UIBake).
 /// 이 스크립트는 버튼을 연결하고, 병 속 식물을 무작위로 고르고, 반딧불이를 움직인다.
@@ -16,7 +16,7 @@ using UnityEngine.UI;
 /// </summary>
 public class MainMenu : MonoBehaviour
 {
-    public const string GameTitle = "유리병 정원";
+    public const string GameTitle = "Mini Terra";
     private const string FirstScene = "Island";
     private const string VolumeKey = "master_volume";
 
@@ -27,6 +27,10 @@ public class MainMenu : MonoBehaviour
     [Header("버튼")]
     [SerializeField] private Button startButton;
     [SerializeField] private Button helpButton, settingsButton;
+    [Tooltip("게임 끝내기")]
+    [SerializeField] private Button quitButton;
+    [Tooltip("저장을 지우고 처음부터 (저장이 있을 때만 보인다, 두 번 눌러야 지워진다)")]
+    [SerializeField] private Button newGameButton;
     [SerializeField] private TMP_Text noteLabel;
 
     [Header("판 (도움말, 설정)")]
@@ -40,7 +44,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private TMP_Text volumeValue;
     [SerializeField] private Slider lookSlider;
     [SerializeField] private TMP_Text lookValue;
-    [SerializeField] private Button musicButton, screenButton;
+    [SerializeField] private Button musicButton, screenButton, qualityButton;
 
     [Header("그림")]
     [SerializeField] private CanvasGroup curtain;
@@ -53,6 +57,8 @@ public class MainMenu : MonoBehaviour
     private bool starting;
     private bool fullScreen;
     private float jarBaseX, jarBaseY;
+    private float newGameArmedUntil;
+    private string savedNote;
 
     private sealed class Firefly
     {
@@ -92,10 +98,20 @@ public class MainMenu : MonoBehaviour
         Canvas menuCanvas = settingsButton.GetComponentInParent<Canvas>();
         if (menuCanvas != null) CreditsPanel.AddCornerButton(settingsButton, menuCanvas.transform).transform.SetSiblingIndex(1);
 
+        if (quitButton != null) quitButton.onClick.AddListener(OnQuit);
+        if (newGameButton != null)
+        {
+            newGameButton.gameObject.SetActive(SaveSystem.HasSave);
+            newGameButton.onClick.AddListener(OnNewGame);
+        }
+        if (qualityButton != null)
+            qualityButton.onClick.AddListener(() => { PerformanceDefaults.CycleQuality(); RefreshSettingTexts(); });
+
         string note = null;
         if (SaveSystem.LoadFailed) note = "저장 파일을 읽지 못해서 새로 시작해요";
         else if (SaveSystem.HasSave) note = "저장된 정원이 있어요 (" + GameState.Day + "일째)";
         noteLabel.text = note ?? string.Empty;
+        savedNote = noteLabel.text;
 
         // 소리 크기
         float volume = Mathf.Clamp01(PlayerPrefs.GetFloat(VolumeKey, 1f));
@@ -175,6 +191,7 @@ public class MainMenu : MonoBehaviour
     {
         UIKit.SetButtonText(musicButton, GameAudio.MusicOn ? "켜짐" : "꺼짐");
         UIKit.SetButtonText(screenButton, fullScreen ? "전체 화면" : "창 모드");
+        if (qualityButton != null) UIKit.SetButtonText(qualityButton, PerformanceDefaults.QualityLabel());
     }
 
     // ───────── 패널 열고 닫기 ─────────
@@ -203,13 +220,64 @@ public class MainMenu : MonoBehaviour
         if (starting) return;
         starting = true;
         ClosePanel();
-        startButton.interactable = helpButton.interactable = settingsButton.interactable = false;
+        SetMenuInteractable(false);
         GameAudio.Play(GameAudio.Sfx.Chime, 0.5f);
 
         // 이 화면은 씬과 함께 사라지므로, 씬을 넘어가는 일은 남는 오브젝트에게 맡긴다
         GameObject host = new GameObject("MainMenuTravel");
         DontDestroyOnLoad(host);
         host.AddComponent<Travel>().Begin(FirstScene);
+    }
+
+    private void SetMenuInteractable(bool on)
+    {
+        startButton.interactable = helpButton.interactable = settingsButton.interactable = on;
+        if (quitButton != null) quitButton.interactable = on;
+        if (newGameButton != null) newGameButton.interactable = on;
+    }
+
+    // ───────── 게임 끝내기, 새로 시작 ─────────
+
+    private void OnQuit()
+    {
+        if (starting) return;
+        starting = true;
+        SetMenuInteractable(false);
+        PlayerPrefs.Save();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    /// <summary>저장을 지우는 버튼. 실수로 누르지 않게 4초 안에 한 번 더 눌러야 지워진다.</summary>
+    private void OnNewGame()
+    {
+        if (starting) return;
+        if (Time.unscaledTime > newGameArmedUntil)
+        {
+            newGameArmedUntil = Time.unscaledTime + 4f;
+            UIKit.SetButtonText(newGameButton, "지울까요?");
+            noteLabel.text = "저장된 정원이 지워져요. 지우려면 한 번 더 눌러 주세요";
+            return;
+        }
+        starting = true;
+        SetMenuInteractable(false);
+        SaveSystem.DeleteSave();
+        noteLabel.text = "저장을 지웠어요. 게임을 다시 켜면 처음부터 시작해요";
+        StartCoroutine(QuitAfterDelay());
+    }
+
+    private IEnumerator QuitAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(2.5f);
+        PlayerPrefs.Save();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     private sealed class Travel : MonoBehaviour
@@ -247,6 +315,14 @@ public class MainMenu : MonoBehaviour
     {
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame) ClosePanel();
+
+        // 새로 시작 버튼을 한 번 누르고 가만히 두면 원래대로 돌아간다
+        if (newGameArmedUntil > 0f && !starting && Time.unscaledTime > newGameArmedUntil)
+        {
+            newGameArmedUntil = 0f;
+            UIKit.SetButtonText(newGameButton, "새로 시작");
+            noteLabel.text = savedNote;
+        }
 
         float t = Time.unscaledTime;
 

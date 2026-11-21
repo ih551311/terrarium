@@ -459,3 +459,8 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 사막 섬: 알로에(aloe_m)와 마른 가지(deco_dry_branch) 45개가 키의 절반쯤 모래에 묻혀 있어서 땅 위로 올렸다(밑이 땅 위 2~3cm). 바위 모델(PolyDesert) 중 하나는 덩어리 둘이 허공에 떠 있어서 `RockFixer`(메뉴: 유리병 정원/떠 있는 바위 덩어리 지우기)로 그 덩어리를 지운 복사본 메쉬(`Assets/Models/Cleaned/`)를 11개 바위에 연결했다. 원본 모델은 그대로.
 - 세 섬의 나무, 바위, 장식을 종류별로 땅 높이를 재서, 같은 종류 중앙값에서 0.3m 넘게 벗어난 것(눈 섬 소나무 8, 사막 바위 1, 야자 3)을 다른 것과 같게 맞췄다. 섬 나무는 기울어진 야자 등 재는 방법이 맞지 않아 건드리지 않았다.
 - 섬을 처음부터 다시 만드는 코드(IslandSetup 등)는 이 높이 고침을 모른다 → 다시 만들면 이 점검을 다시 해야 한다.
+
+## 출시 전 메인 화면, 설정 보강
+- 메인 화면 제목 상수(`MainMenu.GameTitle`)가 옛 이름 "유리병 정원"으로 남아 있어서 "Mini Terra"로 고쳤다 (씬의 글자는 이미 Mini Terra였고, 이 상수는 메인 화면을 UIBake로 다시 만들 때 쓰인다).
+- 메인 화면에 "게임 종료" 버튼(왼쪽 버튼 줄 맨 아래)과 "새로 시작" 버튼(왼쪽 아래, 크레딧 옆. 저장이 있을 때만 보임)을 추가했다. 새로 시작은 4초 안에 두 번 눌러야 저장을 지우고, 지운 뒤에는 게임을 끈다(게임 안의 날짜, 가방이 메모리에 남아 있어서 끄고 다시 켜는 것이 가장 안전). 저장 백업(save.json.bak)은 남긴다. 버튼은 MainMenu 씬 안의 실제 오브젝트이고 MainMenu의 quitButton, newGameButton 칸에 연결돼 있다.
+- 설정에 "그래픽: 높음/보통" 줄을 추가했다. 윈도우에서 품질 단계가 PC 하나뿐이어서(Mobile이 Standalone에서 빠져 있었음) ProjectSettings/QualitySettings.asset 의 Mobile 단계에서 Standalone 제외를 풀었다. 처음에는 높음, 고른 값은 PlayerPrefs(quality_level)에 남는다 (PerformanceDefaults).
