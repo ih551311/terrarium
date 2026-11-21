@@ -71,7 +71,9 @@ public class GameAudio : MonoBehaviour
 
     private readonly Dictionary<Sfx, AudioClip> sfxClips = new Dictionary<Sfx, AudioClip>();
     private AudioClip[] steps, sandSteps, birds;
-    private AudioSource sfxSource, waves, wind, rainLoop, roomTone, musicDay, musicNight;
+    private AudioSource sfxSource, waves, wind, rainLoop, roomTone, musicDay, musicNight, waveSfx, birdsAmbient;
+    private AudioClip[] waveFiles;   // Resources/Sfx/Wave1~4 (진짜 파도 녹음). 있으면 코드로 만든 파도 대신 섞어서 틀고 
+    private float waveTimer;
 
     private MusicPlayer music;
     private FootstepPlayer footsteps;
@@ -110,6 +112,15 @@ public class GameAudio : MonoBehaviour
         AudioClip windFile = Resources.Load<AudioClip>("Sfx/WindLoop");
         if (windFile != null) { wind.clip = windFile; wind.Play(); }
         roomTone = NewSource("Room", Loop("Room", RoomData(), Rate), 0f, true);
+
+        // 진짜 녹음이 Resources/Sfx에 있으면 쓴다 (없으면 위의 코드 소리를 그대로 쓴다)
+        //  Wave1~4: 파도 한 번 (여러 개를 번갈아 겹쳐 틀어 끊임없는 파도 소리를 만든다)
+        //  BirdsAmbient: 낮의 새 소리가 든 이어 틀기용 소리
+        var waveList = new List<AudioClip>();
+        for (int i = 1; i <= 4; i++) { AudioClip w = Resources.Load<AudioClip>("Sfx/Wave" + i); if (w != null) waveList.Add(w); }
+        if (waveList.Count > 0) { waveFiles = waveList.ToArray(); waveSfx = NewSource("WaveShots", null, 1f, false); }
+        AudioClip birdFile = Resources.Load<AudioClip>("Sfx/BirdsAmbient");
+        if (birdFile != null) { birdsAmbient = NewSource("BirdsAmbient", birdFile, 0f, true); birdsAmbient.Play(); }
 
         // 발소리: 사신 소리 모음(Footsteps Sounds)이 있으면 바닥에 맞는 진짜 소리를, 없으면 코드로 만든 소리를 쓴다
         footsteps = gameObject.AddComponent<FootstepPlayer>();
@@ -181,14 +192,27 @@ public class GameAudio : MonoBehaviour
             float d = Vector2.Distance(new Vector2(player.position.x, player.position.z), new Vector2(0f, 30f));
             shore = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(70f, 140f, d));
         }
-        Fade(waves, sfxVolume * (outdoors ? Mathf.Lerp(0.05f, 0.26f, shore) : 0.015f));
+        float waveLevel = outdoors ? Mathf.Lerp(0.05f, 0.26f, shore) : 0.015f;
+        if (waveFiles != null)
+        {
+            // 진짜 파도: 코드로 만든 파도는 끄고, 녹음된 파도를 몇 초마다 하나씩 겹쳐 튼다 (바닷가에 가까울수록 크고 잦게)
+            Fade(waves, 0f);
+            waveTimer -= Time.deltaTime;
+            if (waveTimer <= 0f)
+            {
+                waveTimer = Random.Range(Mathf.Lerp(7f, 2.5f, shore), Mathf.Lerp(12f, 5f, shore));
+                if (outdoors) { waveSfx.panStereo = Random.Range(-0.5f, 0.5f); waveSfx.PlayOneShot(waveFiles[Random.Range(0, waveFiles.Length)], Mathf.Clamp01(waveLevel * 3.2f) * sfxVolume); waveSfx.panStereo = 0f; }
+            }
+        }
+        else Fade(waves, sfxVolume * waveLevel);
         Fade(wind, sfxVolume * (outdoors ? 0.17f + 0.12f * rain : 0.03f));
         Fade(rainLoop, 0f); // 빗소리와 폭풍 소리는 날씨 에셋(AudioModule)이 낸다
         Fade(roomTone, sfxVolume * (outdoors ? 0f : 0.10f));
 
         // 낮의 새 소리 (바깥, 맑은 날)
+        if (birdsAmbient != null) Fade(birdsAmbient, sfxVolume * (outdoors && t < 0.7f && rain < 0.2f ? 0.22f : 0f));
         birdTimer -= Time.deltaTime;
-        if (birdTimer <= 0f)
+        if (birdsAmbient == null && birdTimer <= 0f)
         {
             birdTimer = Random.Range(4f, 11f);
             if (outdoors && t < 0.7f && rain < 0.2f)

@@ -490,3 +490,7 @@ docs/                ITEM_SOURCES.md(재료 얻는 곳 표), GAME_OVERVIEW_FOR_A
 - 설정(메인 화면, 일시정지)에 '음악 크기', '효과음 크기' 슬라이더 추가. 음악은 배경 음악, 효과음은 효과음, 발소리, 도구 소리, 파도, 바람, 새, 방 소리에 곱해진다 (소리 크기는 전체). PlayerPrefs music_volume, sfx_volume. 날씨 에셋의 빗소리는 소리 크기만 따른다.
 - 일시정지 메뉴 프리팹 배치를 한 줄(글자+슬라이더)로 압축했다 (판 높이 850).
 - 눈 섬 재료 '눈 오두막 1/2/3'을 모양에 맞춰 '굴뚝 눈 오두막', '굴뚝 없는 눈 오두막', '눈 오두막'으로 바꿨다.
+
+
+## 진짜 주변 소리 연결 준비
+- GameAudio가 Resources/Sfx/Wave1~4(파도 한 번짜리, 있는 만큼)와 Resources/Sfx/BirdsAmbient(이어 틀기용 새 소리)가 있으면 코드로 만든 파도, 새 소리 대신 쓴다. 없으면 이전 소리 그대로. 후보(둘 다 CC0): OpenGameArt 'Water Waves'(transitking, flac 4개 약 1.6MB), 'Birds and Wind - Ambient'(Spring Spring, ogg 1.9MB, 바람 소리도 섞여 있어 바람은 따로 키우지 말 것). 받는 것은 사용자가 직접(또는 허락 규칙을 준 뒤) 한다.
