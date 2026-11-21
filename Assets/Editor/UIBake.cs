@@ -45,6 +45,7 @@ public static class UIBake
             SavePrefab(BuildCredits(), "CreditsPanel");
             SavePrefab(BuildBook(), "CollectionBook");
             SavePrefab(BuildSleep(), "SleepSequence");
+            SavePrefab(BuildTutorial(), "TutorialGuide");
         }
         finally
         {
@@ -53,7 +54,27 @@ public static class UIBake
         }
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        return "화면 프리팹 일곱 개를 만들었어요: " + PrefabFolder;
+        return "화면 프리팹 여덟 개를 만들었어요: " + PrefabFolder;
+    }
+
+    /// <summary>길잡이(튜토리얼) 쪽지 프리팹만 새로 만든다.</summary>
+    [MenuItem("유리병 정원/길잡이 화면 프리팹 만들기")]
+    public static string BakeTutorialOnly()
+    {
+        if (EditorApplication.isPlaying) return "Play 중에는 만들 수 없어요";
+        Directory.CreateDirectory(PrefabFolder);
+        Scene previous = SceneManager.GetActiveScene();
+        Scene temp = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+        SceneManager.SetActiveScene(temp);
+        try { SavePrefab(BuildTutorial(), "TutorialGuide"); }
+        finally
+        {
+            SceneManager.SetActiveScene(previous);
+            EditorSceneManager.CloseScene(temp, true);
+        }
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        return "길잡이 화면 프리팹을 만들었어요: " + PrefabFolder;
     }
 
     /// <summary>일시정지 메뉴 프리팹만 새로 만든다.</summary>
@@ -283,6 +304,33 @@ public static class UIBake
         Put(comp, "blurbs", blurbs);
         Put(comp, "buttons", buttons);
         Put(comp, "closeButton", close);
+        return go;
+    }
+
+    // ───────── 길잡이(튜토리얼) 쪽지: 화면 왼쪽 위 ─────────
+
+    private static GameObject BuildTutorial()
+    {
+        GameObject go = NewHolder("TutorialGuide", "TutorialGuideCanvas", 300, out RectTransform root, out Component comp, typeof(TutorialGuide));
+        RectTransform card = UIKit.Panel(root, "Card", new Vector2(500f, 208f));
+        card.anchorMin = card.anchorMax = card.pivot = new Vector2(0f, 1f);
+        card.anchoredPosition = new Vector2(30f, -30f);
+        Image bg = card.GetComponent<Image>();
+        bg.raycastTarget = false;
+        TMP_Text title = UIKit.Label(card, "걸어 보세요", 36f, new Vector2(0f, 66f), new Vector2(460f, 50f), TextAlignmentOptions.Left, Brown);
+        title.name = "Title";
+        TMP_Text body = UIKit.Label(card, "", 27f, new Vector2(0f, -14f), new Vector2(460f, 110f), TextAlignmentOptions.TopLeft);
+        body.name = "Body";
+        TMP_Text footer = UIKit.Label(card, "", 21f, new Vector2(0f, -80f), new Vector2(460f, 30f), TextAlignmentOptions.Left, Mist);
+        footer.name = "Footer";
+        footer.color = new Color(0.45f, 0.40f, 0.36f, 1f);
+        foreach (TMP_Text tm in new[] { title, body, footer }) tm.raycastTarget = false;
+
+        Put(comp, "root", card.gameObject);
+        Put(comp, "titleText", title);
+        Put(comp, "bodyText", body);
+        Put(comp, "footerText", footer);
+        Put(comp, "cardBackground", bg);
         return go;
     }
 

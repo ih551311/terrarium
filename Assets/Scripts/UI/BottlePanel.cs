@@ -51,6 +51,9 @@ public class BottlePanel : MonoBehaviour
     private Camera bottleCamera;
     private BottleContents namingBottle; // 완성했고 이름을 짓는 중인 병
 
+    /// <summary>병 꾸미기 화면이 열려 있는가</summary>
+    public bool IsOpenNow => isOpen;
+
     private void Awake()
     {
         root.SetActive(false);

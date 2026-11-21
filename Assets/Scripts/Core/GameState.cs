@@ -259,6 +259,9 @@ public static class GameState
     /// <summary>재료를 처음 얻었을 때 부른다 (도감에 담긴다)</summary>
     public static event Action<MaterialData> Discovered;
 
+    /// <summary>길잡이(튜토리얼) 단계. 0부터 시작해 TutorialGuide가 올리고, TutorialGuide.Done이면 끝이다.</summary>
+    public static int TutorialStep { get; set; }
+
     /// <summary>도감에 담긴 재료 수</summary>
     public static int DiscoveredCount => discovered.Count;
 
@@ -424,6 +427,7 @@ public static class GameState
         data.dockOpen = DockOpen;
         data.desertDockOpen = DesertDockOpen;
         data.dexSeeded = true;
+        data.tutorialStep = TutorialStep;
         foreach (string id in discovered) data.discovered.Add(id);
         foreach (string id in dexClaimed) data.dexClaimed.Add(id);
         foreach (string id in taken) data.taken.Add(id);
@@ -464,6 +468,8 @@ public static class GameState
         RequestsDone = data.requestsDone;
         DockOpen = data.dockOpen;
         DesertDockOpen = data.desertDockOpen;
+        // 길잡이: 저장돼 있으면 이어서, 길잡이가 생기기 전의 저장은 이미 시작한 게임이므로 건너뛴다
+        TutorialStep = data.tutorialStep >= 0 ? data.tutorialStep : (data.day > 1 || data.letterRead ? TutorialGuide.Done : 0);
 
         outbox.Clear(); orders.Clear(); arrivedItems.Clear(); taken.Clear();
         if (data.taken != null) foreach (string id in data.taken) taken.Add(id);
@@ -516,6 +522,7 @@ public static class GameState
         WeatherToday = WeatherKind.Clear;
         WeatherYesterday = WeatherKind.Clear;
         FreeBottles = 1;
+        TutorialStep = 0;
         RequestId = -1;
         RequestSeen = false;
         RequestAge = 0;
